@@ -271,11 +271,11 @@ namespace GraceProject.Controllers.Admin
 
         [HttpPost]
         [Route("GetSlideList")]
-        public IActionResult GetSlideList()
+        public IActionResult GetSlideList([FromBody] int ModuleId)
         {
             try
             {
-                var Slides = _context.Slide;
+                var Slides = _context.Slide.Where(s=>s.ModuleId== ModuleId);
                 return Ok(Slides);
             }
             catch (Exception ex)

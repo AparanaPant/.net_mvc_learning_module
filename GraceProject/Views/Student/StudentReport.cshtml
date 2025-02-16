@@ -1,0 +1,33 @@
+﻿<!-- Views/Student/StudentReport.cshtml -->
+@{
+    ViewBag.Title = "Student Report";
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewBag.Title</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        .centered-image {
+            max-width: 80%;
+            max-height: 80%;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <img src="~/PanelsTemplate/images/underConstruction.jpg" alt="Under Construction" class="centered-image" />
+    </div>
+</body>
+</html>

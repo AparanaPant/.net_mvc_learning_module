@@ -49,22 +49,5 @@ public class ApplicationUser : IdentityUser
     public Gender Gender { get; set; }
     public virtual Address Address { get; set; }
 
-    [Key]
-    [PersonalData]
-    [Column(TypeName = "nvarchar(450)")]
-    public string Id { get; set; } = null!;
-
-    [PersonalData]
-    [Column(TypeName = "nvarchar(256)")]
-    public string? UserName { get; set; }
-
     public ICollection<UserSchool> UserSchools { get; set; }
-
-    public virtual ICollection<Course> Courses { get; set; } = new List<Course>();
-
-    public virtual ICollection<Educator> Educators { get; set; } = new List<Educator>();
-
-    public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
-
-    public virtual ICollection<Student> Students { get; set; } = new List<Student>();
 }
