@@ -1,0 +1,11 @@
+﻿@model GraceProject.Models.UserQuiz
+@{
+    ViewData["Title"] = "create_quiz";
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+}
+
+<h2>Quiz Result</h2>
+
+<p>Quiz: @Model.Quiz.Title</p>
+<p>Score: @Model.Score</p>
+<p>Completed At: @Model.CompletedAt</p>

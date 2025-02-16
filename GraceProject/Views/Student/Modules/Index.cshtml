@@ -1,0 +1,265 @@
+﻿@using GraceProject.Data;
+@using Newtonsoft.Json;
+@model IEnumerable<GraceProject.Models.Module>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+}
+
+@using Microsoft.EntityFrameworkCore
+@using System.Security.Claims;
+@inject IConfiguration Configuration
+@{
+    var optionsBuilder = new DbContextOptionsBuilder<GraceDbContext>();
+    optionsBuilder.UseSqlServer(Configuration.GetConnectionString("AuthDbContextConnection"));
+
+    GraceDbContext _context = new GraceDbContext(optionsBuilder.Options);
+    var roles = from userRole in _context.UserRoles
+                join role in _context.Roles on userRole.RoleId equals role.Id
+                where userRole.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)
+                select role.Name;
+
+    bool IsAdmin = roles.Where(r => r == "Admin") != null;
+}
+
+<style>
+    #treeview ul {
+        margin-top: 10px;
+        margin-right: -15px;
+        margin-bottom: -10px;
+        border-top: 1px solid #ddd;
+    }
+
+    #treeview li {
+        padding: 10px 15px 10px 0;
+        /*border-top: 1px solid #ddd;*/
+    }
+
+        #treeview li:before {
+            content: '';
+            display: block;
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            margin-top: -11px;
+            background: #ddd;
+        }
+</style>
+
+
+<div class="page-title">
+    <div class="title_left">
+        <h3>Courses <small>(Controlled Environment Agriculture)</small></h3>
+    </div>
+</div>
+
+<div class="clearfix"></div>
+
+@if (IsAdmin == true)
+{
+    <div class="col-xs-12">
+    <a href="/admin/Modules/Index" type="button" class="btn btn-success pull-right">
+         Module Managemet
+        </a>
+    </div>
+}
+<div class="row">
+    <div class="col-md-12">
+        <div class="x_panel">
+            <div class="x_content">
+                <div id="treeview">
+                    <ul>
+                        @foreach (var topLevelModule in Model.Where(m => m.ParentModuleId == 0 || m.ParentModuleId == null))
+                        {
+                            <li>
+                                <a href="/Student/Slides/Info?moduleid=@topLevelModule.Id">
+                                    <div>
+                                         @topLevelModule.ModuleName
+                                        <div class="project_progress" style="display: inline-block;width: 10%;">
+                                            <div class="progress progress_sm">
+                                                <div class="progress-bar bg-danger" role="progressbar" data-transitiongoal="10" title="10%"></div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </a>
+                                @if (Model.Any(m => m.ParentModuleId == topLevelModule.Id))
+                                {
+                                    <ul class="ul_first">
+                                        @foreach (var level2Module in Model.Where(m => m.ParentModuleId == topLevelModule.Id))
+                                        {
+                                            <li>
+                                                <a href="/Student/Slides/Info?moduleid=@level2Module.Id">
+                                                    <div>
+                                                         @level2Module.ModuleName
+                                                        <div class="project_progress" style="display: inline-block;width: 10%;">
+                                                            <div class="progress progress_sm">
+                                                                <div class="progress-bar bg-warning" role="progressbar" data-transitiongoal="43" title="43%" ></div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                    </div>
+                                                </a>
+                                                @if (Model.Any(m => m.ParentModuleId == level2Module.Id))
+                                                {
+                                                    <ul class="ul_second">
+                                                        @foreach (var level3Module in Model.Where(m => m.ParentModuleId == level2Module.Id))
+                                                        {
+                                                            <li>
+                                                                <a href="/Student/Slides/Info?moduleid=@level3Module.Id">
+                                                                    <div>
+                                                                        @level3Module.ModuleName
+                                                                        <div class="project_progress" style="display: inline-block;width: 10%;">
+                                                                            <div class="progress progress_sm">
+                                                                                <div class="progress-bar bg-green" role="progressbar" data-transitiongoal="57" title="57%"></div>
+                                                                            </div>
+                                                                        </div>
+
+                                                                    </div>
+                                                                </a>
+                                                                @if (Model.Any(m => m.ParentModuleId == level3Module.Id))
+                                                                {
+                                                                    <ul class="ul_third">
+                                                                        @foreach (var level4Module in Model.Where(m => m.ParentModuleId == level3Module.Id))
+                                                                        {
+                                                                            <li>
+                                                                                <a href="/Student/Slides/Info?moduleid=@level4Module.Id">
+                                                                                    <div>
+                                                                                         @level4Module.ModuleName
+                                                                                        <div class="project_progress" style="display: inline-block;width: 10%;">
+                                                                                            <div class="progress progress_sm">
+                                                                                                <div class="progress-bar bg-green" role="progressbar" data-transitiongoal="90" title="90%"></div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </a>
+                                                                            </li>
+                                                                        }
+                                                                    </ul>
+                                                                }
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                }
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @*<script>
+        $(document).ready(function () {
+            $('#treeview').treeview({
+                levels: 4 // Adjust levels as needed
+            });
+        });
+    </script>*@
+}
+
+
+
+
+
+
+
+
+@*
+@model IEnumerable<GraceProject.Models.Module>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+}
+
+<div class="page-title">
+    <div class="title_left">
+        <h3>Courses <small>(Controlled Environment Agriculture)</small></h3>
+    </div>
+</div>
+
+<div class="clearfix"></div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2>Courses</h2>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+
+                <p>Table of course listing with progress</p>
+
+                <table class="table table-striped projects">
+                    <thead>
+                        <tr>
+                            <th>
+                                #
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.ModuleName)
+                            </th>
+                            <th>
+                                Teacher
+                            </th>
+                            <th>
+                                Progress
+                            </th>
+                            <th>
+                                Status
+                            </th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.ToList().Count; i++)
+                        {
+                            var item = Model.ToList()[i];
+                            var num = i + 1;
+                            <tr>
+                                <td>
+                                    @(num)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.ModuleName)
+                                </td>
+                                <td>
+                                    <ul class="list-inline">
+                                        <li>
+                                            <img src="~/PanelsTemplate/images/user.png" class="avatar" alt="Avatar">
+                                        </li>
+
+                                    </ul>
+                                </td>
+                                <td class="project_progress">
+                                    <div class="progress progress_sm">
+                                        <div class="progress-bar bg-green" role="progressbar" data-transitiongoal="57"></div>
+                                    </div>
+                                    <small>57% Complete</small>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-xs">Not Completed</button>
+                                </td>
+                                <td>
+                                    <a class="btn btn-primary" href="/Student/Slides/Info?moduleid=@item.Id"><i class="fa fa-folder"></i>&nbsp;View</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+*@

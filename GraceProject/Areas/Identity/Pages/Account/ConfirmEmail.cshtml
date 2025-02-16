@@ -1,0 +1,16 @@
+﻿@page
+@model GraceProject.Areas.Identity.Pages.Account.ConfirmEmailModel
+
+@{
+    ViewData["Title"] = "Email Confirmation Page";
+}
+
+<h1>@ViewData["Title"]</h1>
+<p class="text-success">@Model.StatusMessage</p>
+
+@if (Model.StatusMessage.Contains("Thank you for confirming your email."))
+{
+    <p>
+        <a class="btn btn-primary" href="/Identity/Account/Login">Login to your account</a>
+    </p>
+}

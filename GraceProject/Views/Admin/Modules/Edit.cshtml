@@ -1,0 +1,60 @@
+﻿@model GraceProject.Models.Module
+
+@{
+    ViewData["Title"] = "Edit";
+    //Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+}
+
+<h1>Edit</h1>
+
+<h4>Module</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            
+
+
+            <div class="form-group">
+                <label asp-for="ParentModuleId" class="control-label">Parent Module</label>
+                <select asp-for="ParentModuleId" class="form-control" asp-items="@((IEnumerable<SelectListItem>)ViewData["ModuleList"])">
+                    <option value="">-- Select Parent Module --</option>
+                </select>
+                <span asp-validation-for="ParentModuleId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+
+                <input asp-for="UserId" class="form-control" style="display:none" />
+                <input asp-for="SavedDateTime" class="form-control" style="display:none" />
+
+                <label asp-for="ModuleName" class="control-label"></label>
+                <input asp-for="ModuleName" class="form-control" />
+                <span asp-validation-for="ModuleName" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <br />
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        // JavaScript to set the selected value
+        var selectedValue = @(Model.ParentModuleId);
+        if (selectedValue) {
+            document.getElementById("ParentModuleId").value = selectedValue.toString();
+        }
+    </script>
+}

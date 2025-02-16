@@ -1,0 +1,201 @@
+﻿@using GraceProject.Data;
+@using Newtonsoft.Json;
+@model IEnumerable<GraceProject.Models.Slide>
+
+@{
+    ViewData["Title"] = "Slides";
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+}
+
+
+
+
+@using Microsoft.EntityFrameworkCore
+@using System.Security.Claims;
+@inject IConfiguration Configuration
+@{
+    var optionsBuilder = new DbContextOptionsBuilder<GraceDbContext>();
+    optionsBuilder.UseSqlServer(Configuration.GetConnectionString("AuthDbContextConnection"));
+
+    GraceDbContext _context = new GraceDbContext(optionsBuilder.Options);
+    var roles = from userRole in _context.UserRoles
+                join role in _context.Roles on userRole.RoleId equals role.Id
+                where userRole.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)
+                select role.Name;
+
+    bool IsAdmin = roles.Where(r => r == "Admin") != null;
+}
+
+
+
+
+@*pie chart*@
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<div role="main">
+    <div class="">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>Course : Water Quality</h2>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                        <div id="TopMenu" class=row>
+                            <div id="controls" class="col-lg-10 col-xs-12">
+                                <div class="col-lg-2 col-xs-12 col-md-6">
+                                    <label for="volumeRange">Vol:</label>
+                                    <input type="range" class="custom-range" id="volumeRange" min="0" max="1" step="0.1" value="1" style="height: 3px;">
+                                </div>
+                                <div class="col-lg-2 col-xs-12 col-md-6">
+                                    <label for="rateRange">Speed:</label>
+                                    <input type="range" class="custom-range" id="rateRange" min="0.1" max="2" step="0.1" value="1" style="height: 3px;">
+                                </div>
+                                <div class="col-lg-2 col-xs-12 col-md-6">
+                                    <div id="controls">
+                                        <button id="playButton" class="btn btn-default"><span class="glyphicon glyphicon-play"></span></button>
+                                        <button id="stopButton" class="btn btn-default"><span class="glyphicon glyphicon-stop"></span></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-2 col-xs-12">
+                                <button class="btn btn-default fullscreen-btn pull-right"><span class="glyphicon glyphicon-fullscreen" aria-hidden="true"></span></button>
+                            </div>
+                        </div>
+
+                        <div class="modal" id="div_Modal_Information" Style="z-index:10;" data-backdrop="static">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+
+                                    <!-- Modal Header -->
+                                    <div class="modal-header">
+                                        <h4 class="modal-title">Chart Information</h4>
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    </div>
+
+                                    <!-- Modal Body -->
+                                    <div class="modal-body">
+                                        <p>Description...</p>
+                                    </div>
+
+                                    <!-- Modal Footer -->
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="product-slider" style="text-align: justify;">
+                            <div class="bg-green" style="padding: 10px;">
+                                <span>Water Quality</span>
+                                <span class="carousel-indicator-text pull-right" id="carouselIndicatorText">1/@Model.Count()</span>
+
+                                @{
+                                    if (IsAdmin == true)
+                                    {
+                                        <button type="button" class="btn btn-danger pull-right" style="font-size: 12px;height: 27px;" id="btn_DeleteCurrentSlide">
+                                            <i class="fas fa-trash"></i> Delete Current Slide
+                                        </button>
+                                        <button type="button" id="btn_ModalEditInfo" class="btn btn-primary pull-right" style="font-size: 12px;height: 27px;" data-toggle="modal" data-target="#modal_AddOrEditModalSlideInfo">
+                                            <i class="fas fa-edit"></i> Edit Current Slide
+                                        </button>
+                                        <button type="button" id="btn_ModalAddInfo" class="btn btn-success pull-right" style="font-size: 12px;height: 27px;" data-toggle="modal" data-target="#modal_AddOrEditModalSlideInfo">
+                                            <i class="fas fa-plus"></i> Add a New Slide
+                                        </button>
+                                    }
+                                }
+                            </div>
+                            <div id="carousel" class="carousel slide fullscreenDiv" data-ride="carousel" data-interval="false">
+                                @*Slides*@
+                                <div id="div_slides" class="carousel-inner">
+                                </div>
+                                <a id="a_BackwardButton" class="left carousel-control" href="#carousel" role="button" data-slide="prev"> <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span> </a>
+                                <a id="a_ForwardButton" class="right carousel-control" href="#carousel" role="button" data-slide="next"> <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span> </a>
+                            </div>
+                            <div class="clearfix">
+                                <div id="thumbcarousel" class="carousel slide" data-interval="false">
+                                    <div class="carousel-inner">
+                                        @*Thumb Slides*@
+                                        <div id="div_thumbslides" class="item active">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@if (IsAdmin == true)
+{
+    <div class="modal fade" id="modal_AddOrEditModalSlideInfo" tabindex="-1" role="dialog" aria-labelledby="modal_AddOrEditModalSlideInfo" aria-hidden="true">
+        <div class="modal-dialog  modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="AddOrEditModalLabel">Add Slide</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    @await Html.PartialAsync("~/Views/Admin/Slides/SlideInfo.cshtml")
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" id="btn_AddOrEditModalSlideInfo">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $("#btn_ModalEditInfo").click(function () {
+                ClearSlideInfo();
+                var id = GetIdofActiveSlide();
+                GetSlideInfo(id);
+                SetAction("update");
+
+            });
+            $("#btn_ModalAddInfo").click(function () {
+                ClearSlideInfo();
+                SetAction("add");
+            });
+            
+            $("#modal_AddOrEditModalSlideInfo").find("#btn_AddOrEditModalSlideInfo").click(function () {
+                SaveSlideInfo();
+            })
+        })
+    </script>
+}
+
+@*should be added here and also in Info.cshtml*@
+
+<!-- TinyMCE for displaying professional editor -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+<!-- ClickableImage -->
+<link rel="stylesheet" href="~/PanelsTemplate/build/slide/Files/custome/ClickableImages/ClickableImage-CSS.css" />
+<script src="~/PanelsTemplate/build/slide/Files/custome/ClickableImages/JS/jquery.imagemapster.js"></script>
+<script src="~/PanelsTemplate/build/slide/Files/custome/ClickableImages/ClickableImage-JS.js"></script>
+
+<script src="~/PanelsTemplate/build/slide/Files/custome/Carousel/Carousel-JS.js"></script>
+<script src="~/panelstemplate/build/slide/files/custome/slideslist/slideslist.js"></script>
+<script>
+    var slidesJson = @Html.Raw(JsonConvert.SerializeObject(Model));
+    DisplaySlides(slidesJson, "div_slides", "div_thumbslides");
+
+    $("#btn_DeleteCurrentSlide").click(function () {
+        DeleteSlideInfo(GetIdofActiveSlide());
+    })
+</script>
+
+

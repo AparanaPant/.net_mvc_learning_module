@@ -1,0 +1,11 @@
+.custom-range::-webkit-slider-thumb {
+    background: #4F862B !important;
+}
+
+.custom-range::-moz-range-thumb {
+    background: #4F862B !important;
+}
+
+.custom-range::-ms-thumb {
+    background: #4F862B !important;
+}

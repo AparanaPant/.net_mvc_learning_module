@@ -1,0 +1,167 @@
+.product-slider {
+    
+}
+
+    .product-slider #carousel {
+		/*border-right: 4px solid #1ABB9C !important;*/
+        /*border-bottom: 4px solid #1ABB9C !important;*/
+        margin: 0;
+    }
+
+    .product-slider #thumbcarousel {
+        padding: 10px;
+    }
+
+        .product-slider #thumbcarousel .item {
+            text-align: center;
+        }
+
+            .product-slider #thumbcarousel .item .thumb {
+                border: 4px solid #cecece;
+                min-width: 15%;
+                display: inline-block;
+                vertical-align: middle;
+                cursor: pointer;
+                margin:5px;
+                padding:4.5px;
+            }
+
+                .product-slider #thumbcarousel .item .thumb:hover {
+                    border-color: #1089c0;
+                }
+
+
+.carousel-control {
+    color: #4F862B;
+    text-align: center;
+    text-shadow: none;
+    font-size: 30px;
+    width: 30px;
+    height: 30px;
+    line-height: 20px;
+    top: 50% !important;
+    margin: 10px;
+}
+
+    .carousel-control:hover, .carousel-control:focus, .carousel-control:active {
+        color: #333;
+    }
+
+    .carousel-caption, .carousel-control .fa {
+        font: normal normal normal 30px/26px FontAwesome;
+    }
+
+.carousel-control {
+    background-color: rgba(0, 0, 0, 0);
+    bottom: auto;
+    font-size: 20px;
+    left: 0;
+    position: absolute;
+    top: 30%;
+    width: auto;
+}
+
+    .carousel-control.right, .carousel-control.left {
+        background-color: rgba(0, 0, 0, 0);
+        background-image: none;
+    }
+
+
+
+
+
+
+.carousel-control {
+    color: #4F862B;
+    text-align: center;
+    text-shadow: none;
+    font-size: 30px;
+    width: 30px;
+    height: 30px;
+    line-height: 20px;
+    top: 23%;
+}
+
+    .carousel-control:hover,
+    .carousel-control:focus,
+    .carousel-control:active {
+        color: #333;
+    }
+
+    .carousel-caption,
+    .carousel-control .fa {
+        font: normal normal normal 30px/26px FontAwesome;
+    }
+
+.carousel-control {
+    background-color: rgba(0, 0, 0, 0);
+    bottom: auto;
+    font-size: 20px;
+    left: 0;
+    position: absolute;
+    top: 30%;
+    width: auto;
+}
+
+    .carousel-control.right,
+    .carousel-control.left {
+        background-color: rgba(0, 0, 0, 0);
+        background-image: none;
+    }
+
+
+#carousel .carousel-inner .item {
+    margin: 45px;
+    height: 600px;
+}
+
+
+/* make scroll for Thumb images */
+#thumbcarousel {
+    white-space: nowrap; /* Prevent items from wrapping to the next line */
+    scrollbar-width: thin; /* Optional: customize scrollbar width for Firefox */
+}
+
+
+
+    #thumbcarousel .carousel-inner {
+        overflow: auto;
+    }
+
+
+/* ..............................Display Text in slide(Justify Mood)...................................... */
+
+/* Apply text justification to the div */
+.justified-text-container {
+    text-align: justify;
+    max-width: 400px; /* Set a maximum width for the container */
+    margin: 0 auto; /* Center the container horizontally */
+    padding: 10px; /* Add padding to the container */
+    border: 1px solid #ccc; /* Add a border for better visualization */
+}
+
+    /* Set span elements to inline-block to allow text justification */
+    .justified-text-container span {
+        display: inline-block;
+        white-space: normal; /* Allow text to wrap within the span */
+    }
+
+
+
+
+
+/* ..............................carousel active class...................................... */
+
+
+
+/* Style for the active item in the thumbnail carousel */
+#thumbcarousel .carousel-inner .item .active {
+    border: 4px solid #4F862B; /* Add your desired border styling */
+    color: #4F862B;
+}
+
+
+.carousel-indicator-text{
+	font-size:20px;
+	font-weight:bold;
+}

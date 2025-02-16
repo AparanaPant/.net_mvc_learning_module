@@ -1,0 +1,25 @@
+﻿@model GraceProject.Models.ApplicationUser
+
+@{
+    ViewData["Title"] = "Profile";
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+}
+
+<h1 class="mt-4">Profile</h1>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-3">
+            <img src="~/PanelsTemplate/images/user.png" alt="User Photo" class="img-thumbnail">
+        </div>
+        <div class="col-md-9">
+            <h2>User Information</h2>
+            <p><strong>Username:</strong> @Model.UserName</p>
+            <p><strong>Email:</strong> @Model.Email</p>
+            <p><strong>Phone Number:</strong> @Model.PhoneNumber</p>
+            <p><strong>First Name:</strong> @Model.FirstName</p>
+            <p><strong>Last Name:</strong> @Model.LastName</p>
+            <a href="/student/profile/edit" class="btn btn-primary mt-3">Edit Profile</a>
+        </div>
+    </div>
+</div>

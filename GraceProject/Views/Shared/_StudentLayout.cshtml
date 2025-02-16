@@ -1,0 +1,307 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using GraceProject.Data
+
+@inject SignInManager<GraceProject.Models.ApplicationUser> SignInManager
+@inject UserManager<GraceProject.Models.ApplicationUser> UserManager
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Grace - Green Reimaging Agriculture of Controlled Environments</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap -->
+    <link href="~/PanelsTemplate/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="~/PanelsTemplate/vendors/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <!-- NProgress -->
+    <link href="~/PanelsTemplate/vendors/nprogress/nprogress.css" rel="stylesheet">
+    <!-- iCheck -->
+    <link href="~/PanelsTemplate/vendors/iCheck/skins/flat/green.css" rel="stylesheet">
+
+    <!-- jQuery -->
+    <script src="~/PanelsTemplate/build/slide/Files/jquery slim 3.5.1/jquery-3.5.1.slim.min.js"></script>
+    <!-- Bootstrap JavaScript -->
+    <script src="~/PanelsTemplate/build/slide/Files/bootstrap/bootstrap.min.js"></script>
+    <!-- Bootstrap CSS -->
+
+    <link rel="stylesheet" type="text/css" href="~/PanelsTemplate/build/slide/Files/bootstrap/bootstrap.min.css">
+    <!-- JQuery JavaScript -->
+    <script src="~/PanelsTemplate/build/slide/Files/jquery 3.6.4/jquery-3.6.4.min.js"></script>
+
+
+    <!-- Custome CSS files -->
+    <link rel="stylesheet" type="text/css" href="~/PanelsTemplate/build/slide/Files/custome/Carousel/Carousel-CSS.css">
+    <link rel="stylesheet" type="text/css" href="~/PanelsTemplate/build/slide/Files/custome/FullScreen/FullScreen-CSS.css">
+    <link rel="stylesheet" type="text/css" href="~/PanelsTemplate/build/slide/Files/custome/TextToSpeech/TextToSpeech-CSS.css">
+
+
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Custom Theme Style -->
+    <link href="~/PanelsTemplate/build/css/custom.css" rel="stylesheet">
+
+
+    <!-- Drag and Drop items -->
+    <link href='~/panelstemplate/build/slide/Files/custome/DragandDropItems/Dragula/dist/dragula.css' rel='stylesheet' type='text/css' />
+    <link href='~/panelstemplate/build/slide/Files/custome/DragandDropItems/Dragula/example/example.css' rel='stylesheet' type='text/css' />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.2/dragula.min.js"></script>
+
+    <!-- TransportProcess -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.5.0/fabric.min.js"></script>
+    <script src="~/PanelsTemplate/build/slide/Files/custome/DisplayTransportProcess/DisplayTransportProcess-JS.js"></script>
+
+
+</head>
+<body class="nav-sm">
+    <div class="container body">
+        <div class="main_container">
+            <header>
+                <div class="top_nav">
+                    <div class="nav_menu">
+                        <div class="nav toggle">
+                            <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+                        </div>
+                        <nav class="nav navbar-nav" Style="float:right;">
+                            <ul class=" navbar-right">
+                                <li class="nav-item dropdown" style="padding-left: 15px;">
+                                    <a href="javascript:;" class="user-profile dropdown-toggle" aria-haspopup="true" id="navbarDropdown" data-toggle="dropdown" aria-expanded="false">
+                                        <img src="~/PanelsTemplate/images/user.png" alt="">@UserManager.GetUserName(User)!
+                                    </a>
+                                    <div class="dropdown-menu dropdown-usermenu pull-right" aria-labelledby="navbarDropdown">
+                                        <a class="dropdown-item" href="javascript:;"> Profile</a>
+                                        <a class="dropdown-item" href="javascript:;">
+                                            <span class="badge bg-red pull-right">50%</span>
+                                            <span>Settings</span>
+                                        </a>
+                                        <a class="dropdown-item" href="javascript:;">Help</a>
+                                        <form id="logoutForm" class="form-inline my-2 my-lg-0" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                                            <button id="logout" type="submit" class="btn btn-link text-dark" style="padding: 0; background-color: transparent; border: none;">Logout</button>
+                                        </form>
+                                    </div>
+                                </li>
+
+                                <li role="presentation" class="nav-item dropdown">
+                                    <a href="javascript:;" class="dropdown-toggle info-number" id="navbarDropdown1" data-toggle="dropdown" aria-expanded="false">
+                                        <i class="fa fa-envelope-o"></i>
+                                        <span class="badge bg-green">6</span>
+                                    </a>
+                                    <ul class="dropdown-menu list-unstyled msg_list" role="menu" aria-labelledby="navbarDropdown1">
+                                        <li class="nav-item">
+                                            <a class="dropdown-item">
+                                                <span class="image"><img src="~/PanelsTemplate/images/img.jpg" alt="Profile Image" /></span>
+                                                <span>
+                                                    <span>John Smith</span>
+                                                    <span class="time">3 mins ago</span>
+                                                </span>
+                                                <span class="message">
+                                                    Film festivals used to be do-or-die moments for movie makers. They were where...
+                                                </span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="dropdown-item">
+                                                <span class="image"><img src="~/PanelsTemplate/images/img.jpg" alt="Profile Image" /></span>
+                                                <span>
+                                                    <span>John Smith</span>
+                                                    <span class="time">3 mins ago</span>
+                                                </span>
+                                                <span class="message">
+                                                    Film festivals used to be do-or-die moments for movie makers. They were where...
+                                                </span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="dropdown-item">
+                                                <span class="image"><img src="~/PanelsTemplate/images/img.jpg" alt="Profile Image" /></span>
+                                                <span>
+                                                    <span>John Smith</span>
+                                                    <span class="time">3 mins ago</span>
+                                                </span>
+                                                <span class="message">
+                                                    Film festivals used to be do-or-die moments for movie makers. They were where...
+                                                </span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="dropdown-item">
+                                                <span class="image"><img src="~/PanelsTemplate/images/img.jpg" alt="Profile Image" /></span>
+                                                <span>
+                                                    <span>John Smith</span>
+                                                    <span class="time">3 mins ago</span>
+                                                </span>
+                                                <span class="message">
+                                                    Film festivals used to be do-or-die moments for movie makers. They were where...
+                                                </span>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <div class="text-center">
+                                                <a class="dropdown-item">
+                                                    <strong>See All Alerts</strong>
+                                                    <i class="fa fa-angle-right"></i>
+                                                </a>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+
+            </header>
+            <div class="container">
+                <main role="main" class="pb-3">
+                    <div class="col-md-3 left_col">
+                        <div class="left_col scroll-view">
+                            <div class="navbar nav_title" style="border: 0;">
+                                <a href="index.html" class="site_title"><i class="fa fa-leaf"></i> <span>Grace</span></a>
+                            </div>
+
+                            <div class="clearfix"></div>
+
+                            <!-- menu profile quick info -->
+                            <div class="profile clearfix">
+                                <div class="profile_pic">
+                                    <img src="~/PanelsTemplate/images/user.png" alt="..." class="img-circle profile_img">
+                                </div>
+                                <div class="profile_info">
+                                    <span>Welcome,</span>
+                                    <h2> @UserManager.GetUserName(User)!</h2>
+                                </div>
+                            </div>
+                            <!-- /menu profile quick info -->
+
+                            <br />
+
+                            <!-- sidebar menu -->
+                            <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
+                                <div class="menu_section">
+                                    <ul class="nav side-menu">
+                                        <li>
+                                            <a href="~/Student/Home/Dashboard"><i class="fa fa-home"></i> Home </a>
+                                        </li>
+                                        <li>
+                                            <a href="calendar.html"><i class="fa fa-calendar"></i> Calendar </a>
+                                        </li>
+                                        <li>
+                                            <a href="~/Student/Modules/Index"><i class="fa fa-book"></i> Courses</a>
+                                        </li>
+
+                                        <li>
+                                            <a asp-controller="Quiz" asp-action="Index"><i class="fa fa-question-circle"></i> Quizzes </a>
+                                        </li>
+                                        <li>
+                                            <a href="studentreport.html"><i class="fa fa-bar-chart-o"></i> Grades</a>
+                                        </li>
+                                        <li>
+                                            <a href="~/Student/Profile/profile"><i class="fa fa-user"></i>Profile</a>
+                                        </li>
+                                        <li>
+                                            <a href="contactus.html"><i class="fa fa-phone"></i>Contact Us</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <!-- /sidebar menu -->
+                            <!-- /menu footer buttons -->
+                            <div class="sidebar-footer hidden-small">
+                                <a data-toggle="tooltip" data-placement="top" title="Settings">
+                                    <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+                                </a>
+                                <a data-toggle="tooltip" data-placement="top" title="FullScreen">
+                                    <span class="glyphicon glyphicon-fullscreen" aria-hidden="true"></span>
+                                </a>
+                                <a data-toggle="tooltip" data-placement="top" title="Lock">
+                                    <span class="glyphicon glyphicon-eye-close" aria-hidden="true"></span>
+                                </a>
+                                <form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                                    <button id="logout" type="submit" class="nav-link btn btn-link text-dark border-0">Logout</button>
+                                </form>
+                            </div>
+                            <!-- /menu footer buttons -->
+                        </div>
+                    </div>
+                    <div class="right_col" role="main">
+                        @RenderBody()
+                    </div>
+                </main>
+            </div>
+
+            <!-- footer content -->
+            <footer>
+                <div class="pull-right">
+                    Grace - Bootstrap Admin Template by <a href="https://colorlib.com">Colorlib</a>
+                </div>
+                <div class="clearfix"></div>
+            </footer>
+            <!-- /footer content -->
+        </div>
+    </div>
+
+    
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- ChartsOnReport-->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custome JS files -->
+    <script src="~/PanelsTemplate/build/slide/Files/custome/TextToSpeech/TextToSpeech.js"></script>
+    <script src="~/PanelsTemplate/build/slide/Files/custome/FullScreen/FullScreen.js"></script>
+    <!-- Display the total number of Carousel and the number of current Carousel -->
+    <!--<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script> -->
+    @*should be added here and also in Info.cshtml*@
+    <script src="~/PanelsTemplate/build/slide/Files/custome/Carousel/Carousel-JS.js"></script>
+
+
+    <!-- jQuery -->
+    @* <script src="~/PanelsTemplate/vendors/jquery/dist/jquery.min.js"></script> *@
+    <!-- Bootstrap -->
+    <script src="~/PanelsTemplate/vendors/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- FastClick -->
+    <script src="~/PanelsTemplate/vendors/fastclick/lib/fastclick.js"></script>
+    <!-- NProgress -->
+    <script src="~/PanelsTemplate/vendors/nprogress/nprogress.js"></script>
+    <!-- bootstrap-progressbar -->
+    <script src="~/PanelsTemplate/vendors/bootstrap-progressbar/bootstrap-progressbar.min.js"></script>
+
+    <!-- Custom Theme Scripts -->
+    @* <script src="~/PanelsTemplate/build/js/custom.js"></script>  *@
+
+    <!-- blinking -->
+    <link rel="stylesheet" href="~/PanelsTemplate/build/slide/Files/custome/Blinking/Blinking-CSS.css" />
+    <script src="~/PanelsTemplate/build/slide/Files/custome/Blinking/Blinking-JS.js"></script>
+
+    
+
+    <!-- Animate Elements -->
+    <link rel="stylesheet" href="~/PanelsTemplate/build/slide/Files/custome/Animate/Animate-CSS.css" />
+    <script src="~/PanelsTemplate/build/slide/Files/custome/Animate/Animate-JS.js"></script>
+
+
+    <!-- ClickableImage -->
+    <link rel="stylesheet" href="~/PanelsTemplate/build/slide/Files/custome/ClickableImages/ClickableImage-CSS.css" />
+    <script src="~/PanelsTemplate/build/slide/Files/custome/ClickableImages/JS/jquery.imagemapster.js"></script>
+    <script src="~/PanelsTemplate/build/slide/Files/custome/ClickableImages/ClickableImage-JS.js"></script>
+
+    <!-- Drag and Drop items -->
+    <link href='~/PanelsTemplate/build/slide/Files/custome/DragandDropItems/Dragula/dist/dragula.css' rel='stylesheet' type='text/css' />
+    <link href='~/PanelsTemplate/build/slide/Files/custome/DragandDropItems/Dragula/example/example.css' rel='stylesheet' type='text/css' />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.2/dragula.min.js"></script>
+
+    <!-- TransformtoSlide -->
+    <link rel="stylesheet" href="~/PanelsTemplate/build/slide/Files/custome/TransformToSlide/TransformToSlide-CSS.css" />
+    <script src="~/PanelsTemplate/build/slide/Files/custome/TransformToSlide/TransformToSlide-JS.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

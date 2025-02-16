@@ -1,0 +1,678 @@
+﻿@page
+@using GraceProject.Models;
+@model RegisterModel
+@{
+    ViewData["Title"] = "Register";
+    Layout = "~/Areas/Identity/Pages/_AuthLayout.cshtml";
+    var schoolList = ViewData["Schools"] as IEnumerable<SelectListItem>;
+}
+
+<div class="container mt-3">
+    <div class="container mt-3">
+        <div class="text-center">
+            <h2>Join as</h2>
+        </div>
+        <div class="nav nav-tabs justify-content-center nav-green">
+            <a class="nav-link active" data-bs-toggle="tab" href="#teacher">Teacher</a>
+            <a class="nav-link" data-bs-toggle="tab" href="#learner">Learner</a>
+            <a class="nav-link" data-bs-toggle="tab" href="#parent">Guest</a>
+        </div>
+
+        <div class="tab-content">
+            <!-- Teacher Tab Pane -->
+            <div id="teacher" class="container tab-pane active">
+                <br>
+                <form asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                    <input type="hidden" name="userType" value="Guest" />
+                    <hr />
+                    <div asp-validation-summary="All" class="text-danger"></div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-floating mb-3">
+                                <input asp-for="Input.FirstName" class="form-control" autocomplete="firstname" aria-required="true" placeholder="first name" />
+                                <label asp-for="Input.FirstName">First Name</label>
+                                <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-floating mb-3">
+                                <input asp-for="Input.LastName" class="form-control" autocomplete="lastname" aria-required="true" placeholder="last name" />
+                                <label asp-for="Input.LastName">Last Name</label>
+                                <span asp-validation-for="Input.LastName" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <select asp-for="Input.Gender" asp-items="Html.GetEnumSelectList<Gender>()" class="form-control">
+                            <option value="">Select</option>
+                        </select>
+                        <label asp-for="Input.Gender">Gender</label>
+                        <span asp-validation-for="Input.Gender" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                        <label asp-for="Input.Email">Email</label>
+                        <span asp-validation-for="Input.Email" class="text-danger"></span>
+                    </div>
+                    <!-- School Selection -->
+                    <div class="form-floating mb-3">
+                        <select asp-for="Input.SchoolID" class="form-select" id="schoolSelect" name="Input.SchoolID" asp-items="@(ViewData["Schools"] as SelectList)">
+                            <option value="">Select a school...</option>
+                            <option value="other">Other (not listed)</option>
+                        </select>
+                        <label asp-for="Input.SchoolID" for="schoolSelect">School</label>
+                        <span asp-validation-for="Input.SchoolID" class="text-danger"></span>
+                    </div>
+
+                    <!-- Link to show the form to add a new school -->
+                    <div class="mb-3">
+                        <a href="#" id="addNewSchoolLink" style="text-decoration: underline;">Can't find your school? Add it here.</a>
+                    </div>
+
+                    <!-- Hidden form to add a new school -->
+                    <div id="newSchoolForm" style="display: none; padding: 20px; border: 1px solid #ccc; border-radius: 5px; margin-top: 10px;">
+                        <h3 style="color: #333;">Add New School</h3>
+
+                        <!-- School Name -->
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="newSchoolName" name="Input.NewSchoolName" placeholder="School Name" />
+                            <label for="newSchoolName">School Name</label>
+                        </div>
+
+                        <!-- Country Selection -->
+                        <div class="form-floating mb-3">
+                            <select class="form-select" id="countrySelect" name="Input.Country">
+                                <option value="">Select a country...</option>
+                                <option value="US">United States</option>
+                                <option value="CA">Canada</option>
+                                <option value="GB">United Kingdom</option>
+                                <!-- Additional countries as needed -->
+                            </select>
+                            <label for="countrySelect">Country</label>
+                        </div>
+
+                        <!-- Additional fields for USA address -->
+                        
+                        <div id="usAddressFields" style="display: none; background-color: #f9f9f9; padding: 15px; border-radius: 5px;">
+                            <div class="form-floating mb-3">
+                                <select class="form-select" id="state" name="Input.State">
+                                    <option value="">Select a state...</option>
+                                    <!-- States options -->
+                                </select>
+                                <label for="state">State</label>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="addressLine1" name="Input.AddressLine1" placeholder="Address Line 1" />
+                                <label for="addressLine1">Address Line 1</label>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="addressLine2" name="Input.AddressLine2" placeholder="Address Line 2 (optional)" />
+                                <label for="addressLine2">Address Line 2 (Optional)</label>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="city" name="Input.City" placeholder="City" />
+                                <label for="city">City</label>
+                            </div>
+                            <div class="form-floating mb-3" style="margin-bottom: 20px;">
+                                <input type="text" class="form-control" id="zipCode" name="Input.ZIPCode" placeholder="ZIP Code" />
+                                <label for="zipCode">ZIP Code</label>
+                            </div>
+                        </div>
+                        <!-- Moved Save School button to be always visible -->
+                        <button type="button" id="saveButton" class="btn  btn-custom" style="margin-top: 20px;">Save School</button>
+
+                        <!-- Placeholder for Displaying Saved Information -->
+                        <div id="savedInfo" style="margin-top: 20px;"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">High School Grades You Teach:</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="9" id="grade9" name="grades[]">
+                            <label class="form-check-label" for="grade9">
+                                Grade 9
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="10" id="grade10" name="grades[]">
+                            <label class="form-check-label" for="grade10">
+                                Grade 10
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="11" id="grade11" name="grades[]">
+                            <label class="form-check-label" for="grade11">
+                                Grade 11
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="12" id="grade12" name="grades[]">
+                            <label class="form-check-label" for="grade12">
+                                Grade 12
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Courses Teach:</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value=" Chemistry" id="courseChemistry" name="courses[]">
+                            <label class="form-check-label" for="courseChemistry">
+                                 Chemistry
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="Biology" id="courseBiology" name="courses[]">
+                            <label class="form-check-label" for="courseBiology">
+                                Biology
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="Agriculture" id="courseAgriculture" name="courses[]">
+                            <label class="form-check-label" for="courseAgriculture">
+                                Agriculture
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="EnvironmentalScience" id="courseEnvironmental Science" name="courses[]">
+                            <label class="form-check-label" for="courseEnvironmental Science">
+                                Environmental Science
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="Others" id="courseOthers" name="courses[]" onclick="document.getElementById('textOthers').disabled = !this.checked;">
+                            <label class="form-check-label" for="courseOthers">
+                                Others
+                            </label>
+                        </div>
+                        <div class="mb-3">
+                            <label for="textOthers" class="form-label">If others, please specify:</label>
+                            <input type="text" class="form-control" id="textOthers" name="otherCourses" disabled>
+                        </div>
+                    </div>
+                   
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                        <label asp-for="Input.Password">Password</label>
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                        <label asp-for="Input.ConfirmPassword">Confirm Password</label>
+                        <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn btn-custom">Register</button>
+                </form>
+            </div>
+
+            <!-- Learner Tab Pane -->
+            <div id="learner" class="container tab-pane fade">
+                <br>
+                <form asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                    <input type="hidden" name="userType" value="Guest" />
+                    <hr />
+                    <div asp-validation-summary="All" class="text-danger"></div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-floating mb-3">
+                                <input asp-for="Input.FirstName" class="form-control" autocomplete="firstname" aria-required="true" placeholder="first name" />
+                                <label asp-for="Input.FirstName">First Name</label>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-floating mb-3">
+                                <input asp-for="Input.LastName" class="form-control" autocomplete="lastname" aria-required="true" placeholder="last name" />
+                                <label asp-for="Input.LastName">Last Name</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <select asp-for="Input.Gender" asp-items="Html.GetEnumSelectList<Gender>()" class="form-control">
+                            <option value="">Select</option>
+                        </select>
+                        <label asp-for="Input.Gender">Gender</label>
+                        <span asp-validation-for="Input.Gender" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                        <label asp-for="Input.Email">Email</label>
+                        <span asp-validation-for="Input.Email" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <select class="form-select" id="schoolSelect" name="Input.School">
+                            <option value="">Select a school...</option>
+                            <option value="School1">School 1</option>
+                            <option value="School2">School 2</option>
+                            <option value="School3">School 3</option>
+                        </select>
+                        <label for="schoolSelect">School</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <select class="form-select" id="learnerGradeSelect" name="Input.LearnerGrade">
+                            <option value="">Select your grade...</option>
+                            <option value="9">Grade 9</option>
+                            <option value="10">Grade 10</option>
+                            <option value="11">Grade 11</option>
+                            <option value="12">Grade 12</option>
+                        </select>
+                        <label for="learnerGradeSelect">Grade</label>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Courses</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value=" Chemistry" id="courseChemistry" name="courses[]">
+                            <label class="form-check-label" for="courseChemistry">
+                                 Chemistry
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="biology" id="courseBiology" name="courses[]">
+                            <label class="form-check-label" for="courseBiology">
+                                Biology
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="Agriculture" id="courseAgriculture" name="courses[]">
+                            <label class="form-check-label" for="courseAgriculture">
+                                Agriculture
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="EnvironmentalScience" id="courseEnvironmental Science" name="courses[]">
+                            <label class="form-check-label" for="courseEnvironmental Science">
+                                Environmental Science
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                        <label asp-for="Input.Password">Password</label>
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                        <label asp-for="Input.ConfirmPassword">Confirm Password</label>
+                        <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn btn-custom">Register</button>
+                </form>
+            </div>
+
+            <!-- Guest Tab Pane -->
+            <div id="parent" class="container tab-pane fade">
+                <br>
+                <form asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                    <input type="hidden" name="userType" value="Guest" />
+                    <hr />
+                    <div asp-validation-summary="All" class="text-danger"></div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-floating mb-3">
+                                <input asp-for="Input.FirstName" class="form-control" autocomplete="firstname" aria-required="true" placeholder="first name" />
+                                <label asp-for="Input.FirstName">First Name</label>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-floating mb-3">
+                                <input asp-for="Input.LastName" class="form-control" autocomplete="lastname" aria-required="true" placeholder="last name" />
+                                <label asp-for="Input.LastName">Last Name</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <select asp-for="Input.Gender" asp-items="Html.GetEnumSelectList<Gender>()" class="form-control">
+                            <option value="">Select</option>
+                        </select>
+                        <label asp-for="Input.Gender">Gender</label>
+                        <span asp-validation-for="Input.Gender" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                        <label asp-for="Input.Email">Email</label>
+                        <span asp-validation-for="Input.Email" class="text-danger"></span>
+                    </div>
+                    <!-- Country Dropdown -->
+                    <div class="form-floating mb-3">
+                        <select asp-for="Input.Country" class="form-select" id="guestCountrySelect" name="Input.GuestCountry">
+                            <option value="">Select a country...</option>
+                            <option value="US">United States</option>
+                            <option value="CA">Canada</option>
+                            <option value="GB">United Kingdom</option>
+                            <!-- Add other countries as needed -->
+                        </select>
+                        <label for="guestCountrySelect">Country</label>
+                    </div>
+
+                    <!-- State Dropdown - Initially Hidden -->
+                    <div class="form-floating mb-3" id="guestStateContainer" style="display: none;">
+                        <select asp-for="Input.State" class="form-select" id="guestStateSelect" name="Input.State">
+                            <option value="">Select a state...</option>
+                            <!-- States options will be dynamically populated -->
+                        </select>
+                        <label for="guestStateSelect">State</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                        <label asp-for="Input.Password">Password</label>
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                        <label asp-for="Input.ConfirmPassword">Confirm Password</label>
+                        <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn  btn-custom">Register</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+        <!-- Include Bootstrap JS for tabs functionality -->
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.bundle.min.js"></script>
+        <!-- Include jQuery -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <!-- Include Select2 CSS and JS -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.full.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const guestCountrySelect = document.getElementById('guestCountrySelect');
+                const guestStateContainer = document.getElementById('guestStateContainer');
+                const guestStateSelect = document.getElementById('guestStateSelect');
+
+                function toggleStateVisibility(country) {
+                    // Clear existing options first
+                    guestStateSelect.innerHTML = '<option value="">Select a state...</option>';
+
+                    // Show the state dropdown only if USA is selected
+                    if (country === 'US') {
+                        guestStateContainer.style.display = ''; // Show the state container
+
+                        const usStates = [
+                            "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
+                            "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
+                            "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana",
+                            "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota",
+                            "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada",
+                            "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina",
+                            "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania",
+                            "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas",
+                            "Utah", "Vermont", "Virginia", "Washington", "West Virginia",
+                            "Wisconsin", "Wyoming"
+                        ];
+
+                        // Populate the dropdown with states
+                        usStates.forEach(state => {
+                            const option = document.createElement('option');
+                            option.value = state;
+                            option.text = state;
+                            guestStateSelect.appendChild(option);
+                        });
+                    } else {
+                        guestStateContainer.style.display = 'none'; // Hide the state container
+                    }
+                }
+
+                // Listen for changes in the country selection
+                guestCountrySelect.addEventListener('change', function () {
+                    toggleStateVisibility(this.value);
+                });
+            });
+        </script>
+        <script>
+            document.getElementById('courseOthers').onclick = function () {
+                document.getElementById('textOthers').disabled = !this.checked;
+            };
+        </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const addNewSchoolLink = document.getElementById('addNewSchoolLink');
+                const newSchoolForm = document.getElementById('newSchoolForm');
+                const schoolSelect = document.getElementById('schoolSelect');
+                const countrySelect = document.getElementById('countrySelect');
+                const usAddressFields = document.getElementById('usAddressFields');
+                const stateSelect = document.getElementById('state'); // Adjusted to match the provided HTML structure
+                const saveButton = document.getElementById('saveButton');
+
+                document.getElementById('saveButton').addEventListener('click', function () {
+                    const schoolName = document.getElementById('newSchoolName').value;
+                    const country = document.getElementById('countrySelect').value;
+                    const state = country === 'US' ? document.getElementById('state').value : '';
+                    const addressLine1 = document.getElementById('addressLine1').value;
+                    const addressLine2 = document.getElementById('addressLine2').value;
+                    const city = document.getElementById('city').value;
+                    const zipCode = document.getElementById('zipCode').value;
+
+                    let infoHtml = `<strong>Saved School Information:</strong><br>
+                                Name: ${schoolName}<br>
+                                Country: ${country}<br>`;
+
+                    if (country === 'US') {
+                        infoHtml += `State: ${state}<br>
+                               Address Line 1: ${addressLine1}<br>
+                               Address Line 2: ${addressLine2}<br>
+                               City: ${city}<br>
+                               ZIP Code: ${zipCode}<br>`;
+                    } else {
+                        // For other countries, include city and potentially other details
+                        infoHtml += `City: ${city}<br>
+                               Address Line 1: ${addressLine1}<br>
+                               Address Line 2: ${addressLine2}<br>
+                               ZIP Code: ${zipCode}<br>`;
+                    }
+
+                    document.getElementById('savedInfo').innerHTML = infoHtml;
+                });
+
+                addNewSchoolLink.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    newSchoolForm.style.display = 'block'; // Show the new school form
+                });
+
+                countrySelect.addEventListener('change', function () {
+                    if (this.value === 'US') {
+                        usAddressFields.style.display = 'block'; // Show address fields for the US
+                    } else {
+                        usAddressFields.style.display = 'none'; // Hide address fields for other countries
+                    }
+                });
+
+                schoolSelect.addEventListener('change', function () {
+                    if (this.value === 'other') {
+                        newSchoolForm.style.display = 'block';
+                    } else {
+                        newSchoolForm.style.display = 'none';
+                    }
+                });
+            });
+        </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const addNewSchoolLink = document.getElementById('addNewSchoolLink');
+                const newSchoolForm = document.getElementById('newSchoolForm');
+                const schoolSelect = document.getElementById('schoolSelect');
+                const countrySelect = document.getElementById('countrySelect');
+                const usAddressFields = document.getElementById('usAddressFields');
+                const stateSelect = document.getElementById('state'); // Adjusted to match the provided HTML structure
+
+                // Function to toggle visibility of address fields and populate states for the US
+                function toggleAndPopulateAddressFields() {
+                    if (countrySelect.value === 'US') {
+                        // Populate state dropdown with options
+                        stateSelect.innerHTML = '<option value="">Select a state...</option>'; // Reset content
+                        const states = [
+                            "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
+                            "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
+                            "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana",
+                            "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota",
+                            "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada",
+                            "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina",
+                            "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania",
+                            "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas",
+                            "Utah", "Vermont", "Virginia", "Washington", "West Virginia",
+                            "Wisconsin", "Wyoming"
+                        ];
+                        states.forEach(state => {
+                            const option = document.createElement('option');
+                            option.value = state;
+                            option.text = state;
+                            stateSelect.appendChild(option);
+                        });
+
+                        usAddressFields.style.display = 'block'; // Show the address fields
+                    } else {
+                        usAddressFields.style.display = 'none'; // Hide the address fields
+                        stateSelect.innerHTML = ''; // Clear state selection
+                    }
+                }
+
+                addNewSchoolLink.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    newSchoolForm.style.display = 'block'; // Show the new school form
+                    countrySelect.style.display = 'block'; // Ensure country select is visible
+                });
+
+                countrySelect.addEventListener('change', toggleAndPopulateAddressFields);
+
+                schoolSelect.addEventListener('change', function () {
+                    if (this.value === 'other') {
+                        newSchoolForm.style.display = 'block';
+                        countrySelect.style.display = 'block'; // Ensure country select is visible
+                    } else {
+                        newSchoolForm.style.display = 'none';
+                        countrySelect.style.display = 'none';
+                        usAddressFields.style.display = 'none'; // Hide address fields
+                    }
+                });
+            });
+        </script>
+        <script>
+        // JavaScript to toggle the new School form
+        document.addEventListener('DOMContentLoaded', function() {
+            var addNewSchoolLink = document.getElementById('addNewSchoolLink');
+            var newSchoolForm = document.getElementById('newSchoolForm');
+            var schoolSelect = document.getElementById('schoolSelect');
+
+            addNewSchoolLink.addEventListener('click', function(event) {
+                event.preventDefault(); // Prevent the default anchor action
+                newSchoolForm.style.display = 'block'; // Show the new school form
+                schoolSelect.value = 'other'; // Set the school dropdown to 'Other'
+            });
+
+            // If "Other (not listed)" is selected, show the new school form
+            schoolSelect.addEventListener('change', function() {
+                if(this.value === 'other') {
+                    newSchoolForm.style.display = 'block';
+                } else {
+                    newSchoolForm.style.display = 'none';
+                }
+            });
+        });
+    </script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                // Function to activate a tab based on saved value
+                function activateTab() {
+                    var activeTab = sessionStorage.getItem('activeTab');
+                    if (activeTab) {
+                        var someTabTriggerEl = document.querySelector(`.nav-tabs .nav-link[href="${activeTab}"]`);
+                        if (someTabTriggerEl) {
+                            new bootstrap.Tab(someTabTriggerEl).show(); // Make the tab active
+                        }
+                    }
+                }
+
+                // Save the current tab on click to sessionStorage
+                var tabLinks = document.querySelectorAll('.nav-tabs .nav-link');
+                tabLinks.forEach(function (link) {
+                    link.addEventListener('click', function () {
+                        sessionStorage.setItem('activeTab', link.getAttribute('href'));
+                        sessionStorage.removeItem('formSubmitted');
+                    });
+                });
+
+                activateTab(); // Activate the tab on page load
+
+                // Listen for form submission
+                var forms = document.querySelectorAll('form');
+                forms.forEach(function (form) {
+                    form.addEventListener('submit', function () {
+                        // Indicate the form has been submitted
+                        sessionStorage.setItem('formSubmitted', 'true');
+                    });
+                });
+
+                // Listen for page unload events which occur on refresh or navigation
+                window.addEventListener('beforeunload', function () {
+                    // If the form was not submitted, clear sessionStorage to reset the form on next load
+                    if (!sessionStorage.getItem('formSubmitted')) {
+                        sessionStorage.clear();
+                    }
+                });
+
+                // Clear the active tab only if the form was submitted
+                if (sessionStorage.getItem('formSubmitted')) {
+                    sessionStorage.removeItem('activeTab');
+                    // Do not clear 'formSubmitted' here to differentiate between refresh and navigation
+                } else {
+                    // Optionally, reset the form fields if 'formSubmitted' is not set, indicating a refresh
+                    // Note: This is a safety check; actual form reset should be handled by the browser on refresh
+                    document.querySelectorAll('form').forEach(function (form) {
+                        form.reset();
+                    });
+                }
+            });
+        </script>
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <style>
+        .text-green {
+            color: #508E41; /* Bootstrap's 'success' green */
+        }
+
+        .nav-green .nav-link {
+            color: #508E41; /* Bootstrap's 'success' green */
+        }
+
+            .nav-green .nav-link.active,
+            .nav-green .nav-link:hover {
+                background-color: #508E41; /* Bootstrap's 'success' green */
+                color: white;
+            }
+
+            /* Optional: Add green borders to the active tab */
+            .nav-green .nav-link.active {
+                border: 1px solid #508E41;
+                border-bottom-color: transparent; /* Remove bottom border */
+            }
+
+        .btn-custom {
+            background-color: #508E41; /* Green background */
+            color: white; /* White text */
+        }
+
+        /* Style for other form elements, buttons, etc., can go here */
+    </style>
+
+
+
+

@@ -1,0 +1,172 @@
+﻿@model IEnumerable<GraceProject.Models.Module>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+
+
+<style>
+    #treeview ul {
+        margin-top: 10px;
+        margin-right: -15px;
+        margin-bottom: -10px;
+        border-top: 1px solid #ddd;
+    }
+
+    #treeview li {
+        padding: 10px 15px 10px 0;
+        /*border-top: 1px solid #ddd;*/
+    }
+
+        #treeview li:before {
+            content: '';
+            display: block;
+            /*position: absolute;*/
+            left: 0;
+            /*width: 100%;*/
+            height: 1px;
+            margin-top: -11px;
+            background: #ddd;
+        }
+</style>
+
+
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="x_panel">
+            <div class="x_content">
+                <div id="treeview">
+                    <ul>
+                        @foreach (var item in Model.Where(m => m.ParentModuleId == 0 || m.ParentModuleId == null))
+                        {
+                            <li>
+                                <div>
+                                     @item.ModuleName (@item.ApplicationUser.FirstName @item.ApplicationUser.LastName)
+                                </div>
+                                <div>
+                                    <small>@item.SavedDateTime</small>
+                                </div>
+                                <div>
+                                    <a class="btn btn-primary" href="/Student/Slides/Info?moduleid=@item.Id"><i class="fa fa-folder"></i>&nbsp;Slides</a>
+                                    <a class="btn btn-warning" href="/Admin/Modules/edit?id=@item.Id"><i class="fa fa-pencil"></i>&nbsp;Edit</a>
+                                    <a class="btn btn-danger" href="/Admin/Modules/Delete?id=@item.Id"><i class="fa fa-trash"></i>&nbsp;Delete</a>
+                                </div>
+                                
+                                @if (Model.Any(m => m.ParentModuleId == item.Id))
+                                {
+                                    <ul>
+                                        @foreach (var subItem in Model.Where(m => m.ParentModuleId == item.Id))
+                                        {
+                                            <li>
+                                                <div>
+                                                     @subItem.ModuleName (@subItem.ApplicationUser.FirstName @subItem.ApplicationUser.LastName)
+                                                </div>
+                                                <div>
+                                                    <small>@subItem.SavedDateTime</small>
+                                                </div>
+                                                <div>
+                                                    <a class="btn btn-primary" href="/Student/Slides/Info?moduleid=@subItem.Id"><i class="fa fa-folder"></i>&nbsp;Slides</a>
+                                                    <a class="btn btn-warning" href="/Admin/Modules/edit?id=@subItem.Id"><i class="fa fa-pencil"></i>&nbsp;Edit</a>
+                                                    <a class="btn btn-danger" href="/Admin/Modules/Delete?id=@subItem.Id"><i class="fa fa-trash"></i>&nbsp;Delete</a>
+                                                </div>
+                                                
+                                                @if (Model.Any(m => m.ParentModuleId == subItem.Id))
+                                                {
+                                                    <ul>
+                                                        @foreach (var subSubItem in Model.Where(m => m.ParentModuleId == subItem.Id))
+                                                        {
+                                                            <li>
+                                                                <div>
+                                                                     @subSubItem.ModuleName (@subItem.ApplicationUser.FirstName @subSubItem.ApplicationUser.LastName)
+                                                                </div>
+                                                                <div>
+                                                                    <small>@subSubItem.SavedDateTime</small>
+                                                                </div>
+                                                                <div>
+                                                                    <a class="btn btn-primary" href="/Student/Slides/Info?moduleid=@subSubItem.Id"><i class="fa fa-folder"></i>&nbsp;Slides</a>
+                                                                    <a class="btn btn-warning" href="/Admin/Modules/edit?id=@subSubItem.Id"><i class="fa fa-pencil"></i>&nbsp;Edit</a>
+                                                                    <a class="btn btn-danger" href="/Admin/Modules/Delete?id=@subSubItem.Id"><i class="fa fa-trash"></i>&nbsp;Delete</a>
+                                                                </div>
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                }
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+@*@model IEnumerable<GraceProject.Models.Module>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Submitted by
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ModuleName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SavedDateTime)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ApplicationUser.FirstName)
+                    @Html.DisplayFor(modelItem => item.ApplicationUser.LastName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ModuleName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.SavedDateTime)
+                </td>
+                <td>
+                    <a class="btn btn-primary" href="/Student/Slides/Info?moduleid=@item.Id"><i class="fa fa-folder"></i>&nbsp;Slides</a>
+                    <a class="btn btn-warning" href="/Admin/Modules/edit?id=@item.Id"><i class="fa fa-pencil"></i>&nbsp;Edit</a>
+                    <a class="btn btn-danger" href="/Admin/Modules/Delete?id=@item.Id"><i class="fa fa-trash"></i>&nbsp;Delete</a>
+
+                   
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+*@

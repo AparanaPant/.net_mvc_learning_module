@@ -1,0 +1,41 @@
+/* blinking controller */
+    @keyframes blink {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0;
+        }
+    }
+
+    /* Apply the blinking animation to the "blink" class */
+    .blink {
+        animation: blink 1s infinite;
+    }
+
+    /* Additional style for the active state of the blinking effect */
+    .blink-active {
+        color: red !important; /* Change color or any other style as needed */
+    }
+	
+	
+	
+	
+	/*Blinking border */
+
+	@keyframes blink {
+        0% {
+            border-color: navy;
+        }
+            50% {
+                border-color: transparent;
+            }
+        100% {
+            border-color: navy;
+        }
+        }
+
+.blinking-border {
+    border: 2px solid navy;
+    animation: blink 2.5s infinite;
+}
