@@ -19,7 +19,17 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Quiz> Quizzes { get; set; } 
     public DbSet<Question> Questions { get; set; }
     public DbSet<Option> Options { get; set; } 
-    public DbSet<UserQuiz> UserQuizzes { get; set; } 
+    public DbSet<UserQuiz> UserQuizzes { get; set; }
+
+    public DbSet<Course> Course { get; set; }
+
+    public DbSet<Educator> Educator { get; set; }
+
+    public DbSet<Enrollment> Enrollment { get; set; }
+
+    public DbSet<Student> Student { get; set; }
+
+    public DbSet<SchoolInfo> SchoolInfo { get; set; }
 
     public GraceDbContext(DbContextOptions<GraceDbContext> options)
         : base(options)
@@ -73,7 +83,46 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
             .HasOne(uq => uq.User)
             .WithMany()
             .HasForeignKey(uq => uq.UserId);
+        
+        builder.Entity<SchoolInfo>().ToTable("SchoolInfo");
+        builder.Entity<SchoolInfo>(entity =>
+        {
+            // Define primary key
+            //entity.HasKey(e => e.SchoolID).HasName("PK_SchoolInfo");
 
+            //// Map to table name
+            //entity.ToTable("SchoolInfo");
 
+            //// Define properties
+            //entity.Property(e => e.SchoolID)
+            //    .HasColumnName("SchoolID")
+            //    .IsRequired(); // Primary key, required
+
+            //entity.Property(e => e.SchoolName)
+            //    .HasColumnName("SchoolName")
+            //    .IsRequired()
+            //    .HasMaxLength(255); // You can adjust the max length as per your requirements
+
+            //entity.Property(e => e.Country)
+            //    .HasColumnName("Country")
+            //    .IsRequired()
+            //    .HasMaxLength(100); // You can adjust the max length as per your requirements
+
+            // Define relationships
+            entity.HasMany(e => e.Course)
+                .WithOne(c => c.SchoolInfo)
+                .HasForeignKey(c => c.SchoolID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasMany(e => e.Educator)
+                .WithOne(ed => ed.SchoolInfo)
+                .HasForeignKey(ed => ed.SchoolID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasMany(e => e.Student)
+                .WithOne(s => s.SchoolInfo)
+                .HasForeignKey(s => s.SchoolID)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
     }
 }
