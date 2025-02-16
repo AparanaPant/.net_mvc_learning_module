@@ -50,4 +50,11 @@ public class ApplicationUser : IdentityUser
     public virtual Address Address { get; set; }
 
     public ICollection<UserSchool> UserSchools { get; set; }
+    public virtual ICollection<Course> Courses { get; set; } = new List<Course>();
+
+    public virtual ICollection<Educator> Educators { get; set; } = new List<Educator>();
+
+    public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+
+    public virtual ICollection<Student> Students { get; set; } = new List<Student>();
 }

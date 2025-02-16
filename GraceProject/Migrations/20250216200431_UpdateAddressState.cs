@@ -5,11 +5,19 @@
 namespace GraceProject.Migrations
 {
     /// <inheritdoc />
-    public partial class AddressRequiredFieldsModel : Migration
+    public partial class UpdateAddressState : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AlterColumn<string>(
+                name: "ZIPCode",
+                table: "Address",
+                type: "nvarchar(20)",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "nvarchar(20)");
+
             migrationBuilder.AlterColumn<string>(
                 name: "StreetAddress",
                 table: "Address",
@@ -19,23 +27,7 @@ namespace GraceProject.Migrations
                 oldType: "nvarchar(200)");
 
             migrationBuilder.AlterColumn<string>(
-                name: "City",
-                table: "Address",
-                type: "nvarchar(100)",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(100)");
-
-            migrationBuilder.AlterColumn<string>(
                 name: "State",
-                table: "Address",
-                type: "nvarchar(20)",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(20)");
-
-            migrationBuilder.AlterColumn<string>(
-                name: "ZIPCode",
                 table: "Address",
                 type: "nvarchar(20)",
                 nullable: true,
@@ -47,21 +39,23 @@ namespace GraceProject.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
-               name: "StreetAddress",
-               table: "Address",
-               type: "nvarchar(200)",
-               nullable: false,
-               oldClrType: typeof(string),
-               oldType: "nvarchar(200)",
-               oldNullable: true);
+                name: "ZIPCode",
+                table: "Address",
+                type: "nvarchar(20)",
+                nullable: false,
+                defaultValue: "",
+                oldClrType: typeof(string),
+                oldType: "nvarchar(20)",
+                oldNullable: true);
 
             migrationBuilder.AlterColumn<string>(
-                name: "City",
+                name: "StreetAddress",
                 table: "Address",
-                type: "nvarchar(100)",
+                type: "nvarchar(200)",
                 nullable: false,
+                defaultValue: "",
                 oldClrType: typeof(string),
-                oldType: "nvarchar(100)",
+                oldType: "nvarchar(200)",
                 oldNullable: true);
 
             migrationBuilder.AlterColumn<string>(
@@ -69,15 +63,7 @@ namespace GraceProject.Migrations
                 table: "Address",
                 type: "nvarchar(20)",
                 nullable: false,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(20)",
-                oldNullable: true);
-
-            migrationBuilder.AlterColumn<string>(
-                name: "ZIPCode",
-                table: "Address",
-                type: "nvarchar(20)",
-                nullable: false,
+                defaultValue: "",
                 oldClrType: typeof(string),
                 oldType: "nvarchar(20)",
                 oldNullable: true);

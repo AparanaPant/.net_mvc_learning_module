@@ -5,31 +5,31 @@
 namespace GraceProject.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateImageUrlToQuestions : Migration
+    public partial class UpdateAddress : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
-                name: "ImageUrl",
-                table: "Questions",
-                type: "nvarchar(max)",
+                name: "City",
+                table: "Address",
+                type: "nvarchar(100)",
                 nullable: true,
                 oldClrType: typeof(string),
-                oldType: "nvarchar(max)");
+                oldType: "nvarchar(100)");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
-                name: "ImageUrl",
-                table: "Questions",
-                type: "nvarchar(max)",
+                name: "City",
+                table: "Address",
+                type: "nvarchar(100)",
                 nullable: false,
                 defaultValue: "",
                 oldClrType: typeof(string),
-                oldType: "nvarchar(max)",
+                oldType: "nvarchar(100)",
                 oldNullable: true);
         }
     }
