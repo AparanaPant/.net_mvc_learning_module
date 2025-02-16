@@ -9,7 +9,13 @@ function DisplayTransportProcess(ControllerParameters, Action) {
     var Button2ImagePath = ControllerParameters.Button2ImagePath;
     var Button2Title = ControllerParameters.Button2Title;
 
+    //////debugger;
     var Arrows = ControllerParameters.Arrows;
+    if (Arrows != undefined)
+        for (var i = 0; i < Arrows.length; i++) {
+            if (Arrows[i].color == undefined)
+                Arrows[i].color = "#cccccc";
+        }
 
     var startPoints = [];
     var endPoints = [];
@@ -33,7 +39,7 @@ function DisplayTransportProcess(ControllerParameters, Action) {
     var $rightButton = $('<div class="text-center col-lg-4 col-lg-4 col-lg-4' + (Action == 'edit' ? ' hide ' : '') + '" style="margin-top:50px;"><label class="pull-left col-lg-12">' + Button2Title + '</label><img class="pull-left col-lg-12"  id="img_TransportProcess_Button2" src="" alt="" style="padding: 0 100px 0 100px; height: auto;display: inline-block;"/></div>');
     var $canvas = $('<div class="text-center col-lg-4 col-lg-4 col-lg-4"><canvas id="' + canvasId + '" width="400" height="430" style="display: block;"></canvas></div>');
 
-
+    //debugger;
     return {
         'canvasId': canvasId,
         'leftButton': $leftButton,
@@ -41,7 +47,9 @@ function DisplayTransportProcess(ControllerParameters, Action) {
         'rightButton': $rightButton,
         'MainImagePath': MainImagePath,
         'Button1ImagePath': Button1ImagePath,
+        'Button1CorrespondingArrowsColor': ControllerParameters.Button1CorrespondingArrowsColor /*!= undefined ? ControllerParameters.Button1CorrespondingArrowsColor : "#FF0000"*/,
         'Button2ImagePath': Button2ImagePath,
+        'Button2CorrespondingArrowsColor': ControllerParameters.Button2CorrespondingArrowsColor /*!= undefined ? ControllerParameters.Button2CorrespondingArrowsColor : "#0000FF"*/,
         'startPoints': startPoints,
         'endPoints': endPoints,
         'curveDefinitions': curveDefinitions
@@ -50,17 +58,30 @@ function DisplayTransportProcess(ControllerParameters, Action) {
 
 var CanvasList = [];
 //action: display or edit
-function InitiateDisplayTransportProcess(Action, Container, CanvasId, BackgroundImage, Div1Image, Div2Image, StartPoints, EndPoints, CurveDefinitions) {
+function InitiateDisplayTransportProcess(Action, Container, NormalizedParameters) {
+
+    CanvasId = NormalizedParameters.canvasId;
+    BackgroundImage = NormalizedParameters.MainImagePath;
+    LeftImage = NormalizedParameters.Button1ImagePath;
+    LeftImageCorrespondingArrowsColor = NormalizedParameters.Button1CorrespondingArrowsColor != undefined ? NormalizedParameters.Button1CorrespondingArrowsColor : $("#" + Container).find('#input_color_picker_Left').val() /*'#FF0000'*/;
+    RightImage = NormalizedParameters.Button2ImagePath;
+    RightImageCorrespondingArrowsColor = NormalizedParameters.Button2CorrespondingArrowsColor != undefined ? NormalizedParameters.Button2CorrespondingArrowsColor : $("#" + Container).find('#input_color_picker_Right').val() /*'#0000FF'*/;
+    StartPoints = NormalizedParameters.startPoints;
+    EndPoints = NormalizedParameters.endPoints;
+    CurveDefinitions = NormalizedParameters.curveDefinitions;
+
+
+    ////debugger;
 
     //Div1Image = 'url(' + Div1Image +')';
     //Set the background of the right button
-    $('#' + Container).find('#img_TransportProcess_Button1').attr('src', Div1Image);
+    $('#' + Container).find('#img_TransportProcess_Button1').attr('src', LeftImage);
 
     //Div2Image = 'url(' + Div2Image + ')';
     //Set the background of the left button
-    $('#' + Container).find('#img_TransportProcess_Button2').attr('src', Div2Image);
+    $('#' + Container).find('#img_TransportProcess_Button2').attr('src', RightImage);
 
-    //debugger;
+    ////////debugger;
     // Create a Fabric.js canvas
     var canvas = new fabric.Canvas(CanvasId);
     CanvasList.push({ id: CanvasId, canvas: canvas });
@@ -78,7 +99,7 @@ function InitiateDisplayTransportProcess(Action, Container, CanvasId, Background
         }
     });
 
-    AddArrows(Action, Container, canvas, StartPoints, EndPoints, CurveDefinitions);
+    AddArrows(Action, Container, canvas, StartPoints, EndPoints, CurveDefinitions, LeftImageCorrespondingArrowsColor, RightImageCorrespondingArrowsColor);
 
 
 
@@ -88,7 +109,7 @@ function InitiateDisplayTransportProcess(Action, Container, CanvasId, Background
         var endPoint = null;
         var curveDefinitions = [];
         var pointMarkers = [];
-        //debugger;
+        ////////debugger;
 
 
 
@@ -126,18 +147,33 @@ function InitiateDisplayTransportProcess(Action, Container, CanvasId, Background
                 pointMarkers.push(startMarker);
                 console.log('Start Point:', startPoint);
 
+                var arrowImage, _LeftImageCorrespondingArrowsColor, _RightImageCorrespondingArrowsColor;
                 if (confirm('Will the arrow flash when clicking on the left image? \n - Yes or Ok: "Left Image" \n - No or Cancel: "Right Image"')) {
-                    var color = 'red';
+                    ArrowCorrespondingImage = "left";
+                    //maybe the user changed the color in UI
+                    _LeftImageCorrespondingArrowsColor = $("#" + Container).find('#input_color_picker_Left').val();
                 } else {
-                    var color = 'skyblue';
+                    ArrowCorrespondingImage = "right";
+                    //maybe the user changed the color in UI
+                    _RightImageCorrespondingArrowsColor = $("#" + Container).find('#input_color_picker_Right').val();
                 }
 
                 var curveDefinition = {
                     position: `M ${startPoint.x} ${startPoint.y} Q ${(startPoint.x + endPoint.x) / 2} ${(startPoint.y + endPoint.y) / 2 - 50} ${endPoint.x} ${endPoint.y}`,
-                    color: color
+                    color: ArrowCorrespondingImage == 'left' ? _LeftImageCorrespondingArrowsColor : _RightImageCorrespondingArrowsColor,
+                    ArrowCorrespondingImage: ArrowCorrespondingImage
                 };
                 curveDefinitions.push(curveDefinition);
-                AddArrows(Action, Container, canvas, [startPoint], [endPoint], [curveDefinition]);
+
+                AddArrows(
+                    Action,
+                    Container,
+                    canvas,
+                    [startPoint], [endPoint], [curveDefinition],
+                    _LeftImageCorrespondingArrowsColor,
+                    _RightImageCorrespondingArrowsColor,
+                    ArrowCorrespondingImage
+                );
                 startPoint = null; // reset for the next arrow
                 endPoint = null;   // reset for the next arrow
 
@@ -149,7 +185,7 @@ function InitiateDisplayTransportProcess(Action, Container, CanvasId, Background
     }
 }
 function SetCanvasBackgroundImage(Container, BackgroundImage) {
-    //debugger;
+    ////////debugger;
     var _canvas = $("#" + Container).find("canvas").get(0);
 
     var canvas;
@@ -168,6 +204,7 @@ function SetCanvasBackgroundImage(Container, BackgroundImage) {
             });
         }
         else {
+            //////debugger;
             var NormalizedParameters = DisplayTransportProcess({ MainImagePath: BackgroundImage }, 'edit');
             // Append elements to container
             $('#' + Container).find("#div_TransportProcess_MainImage").append(
@@ -177,14 +214,47 @@ function SetCanvasBackgroundImage(Container, BackgroundImage) {
             InitiateDisplayTransportProcess(
                 'edit',
                 Container,
-                NormalizedParameters.canvasId,
-                NormalizedParameters.MainImagePath,
-                NormalizedParameters.Button1ImagePath,
-                NormalizedParameters.Button2ImagePath,
-                NormalizedParameters.startPoints,
-                NormalizedParameters.endPoints,
-                NormalizedParameters.curveDefinitions
+                {
+                    canvasId: NormalizedParameters.canvasId,
+                    MainImagePath: NormalizedParameters.MainImagePath,
+                    Button1ImagePath: NormalizedParameters.Button1ImagePath,
+                    Button1CorrespondingArrowsColor: $("#" + Container).find('#input_color_picker_Left').val(),
+                    //NormalizedParameters.Button1CorrespondingArrowsColor,
+                    Button2ImagePath: NormalizedParameters.Button2ImagePath,
+                    //NormalizedParameters.Button2CorrespondingArrowsColor,
+                    Button2CorrespondingArrowsColor: $("#" + Container).find('#input_color_picker_Right').val(),
+                    startPoints: NormalizedParameters.startPoints,
+                    endPoints: NormalizedParameters.endPoints,
+                    CurveDefinitions: NormalizedParameters.curveDefinitions
+                }
             );
+
+
+
+            //debugger;
+            $("#" + Container).find('#input_color_picker_Left').unbind().on('change', function (event) {
+                //new color of corresponding arrows of the left image
+                const newColorofCorrespondingArrowsofLeftImage = event.target.value;
+                // color of corresponding arrows of the right image
+                const ColorofCorrespondingArrowsofRightImage = $("#" + Container).find("#div_displaying_process").find("#input_color_picker_Right").val();
+
+                ChangeArrowColor(Container, NormalizedParameters.canvasId, 'left', newColorofCorrespondingArrowsofLeftImage);
+
+            });
+
+            $("#" + Container).find('#input_color_picker_Right').unbind().on('change', function (event) {
+                //debugger;
+                //new color of corresponding arrows of the left image
+                const newColorofCorrespondingArrowsofRightImage = event.target.value;
+                // color of corresponding arrows of the right image
+                const ColorofCorrespondingArrowsofLeftImage = $("#" + Container).find("#div_displaying_process").find("#input_color_picker_Left").val();
+
+                ChangeArrowColor(Container, NormalizedParameters.canvasId, 'right', newColorofCorrespondingArrowsofRightImage);
+
+
+            });
+
+
         }
     });
 }
@@ -198,23 +268,27 @@ function toggleBlinking() {
 
 }
 //Add Arrows
-function AddArrows(Action, Container, canvas, startPoints, endPoints, curveDefinitions) {
+function AddArrows(Action, Container, canvas, startPoints, endPoints, curveDefinitions, Image1ArrowsColor, Image2ArrowsColor) {
+    //debugger;
     // Define the start point of the arrow's path
     //var startPoint = new fabric.Point(50, 50);
     if (!(curveDefinitions != null && curveDefinitions.length > 0))
         return;
-    var redarrows = [], bluearrows = [];
+    var Image1arrows = [], Image2arrows = [];
     for (var i = 0; i < curveDefinitions.length; i++) {
+        //////debugger;
         var curveDefinition = curveDefinitions[i];
         var startPoint = startPoints[i];
         var endPoint = endPoints[i];
 
+        ////debugger;
         // Create a quadratic curve representing the arrow's path
         var curve = new fabric.Path(curveDefinition.position, {
             fill: '',
             stroke: curveDefinition.color,
             strokeWidth: 3, // Increase the strokeWidth to make the curve bolder
             selectable: false, // Disable selection and dragging
+            ArrowCorrespondingImage: curveDefinition.ArrowCorrespondingImage
         });
 
         var angle = Math.atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x) * (180 / Math.PI);
@@ -230,6 +304,8 @@ function AddArrows(Action, Container, canvas, startPoints, endPoints, curveDefin
             top: startPoint.y - 10,
             angle: 80, // the angle of the head of arrow
             selectable: false, // Disable selection and dragging
+            ArrowCorrespondingImage: curveDefinition.ArrowCorrespondingImage
+
         });
 
 
@@ -247,7 +323,7 @@ function AddArrows(Action, Container, canvas, startPoints, endPoints, curveDefin
                 left: 10,
                 top: 10,
                 fontSize: 12,
-                fill: 'red',
+                fill: curveDefinition.color,
                 selectable: false,
                 evented: false,
                 originX: 'center',
@@ -270,7 +346,7 @@ function AddArrows(Action, Container, canvas, startPoints, endPoints, curveDefin
             });
 
             deleteButtonGroup.on('mousedown', function () {
-                //debugger;
+                ////////debugger;
                 var group = this;
                 canvas.remove(group.get('associatedCurve'),
                     group.get('associatedArrowHeadStart'),
@@ -284,20 +360,20 @@ function AddArrows(Action, Container, canvas, startPoints, endPoints, curveDefin
 
             // Add objects to the canvas
             canvas.add(curve, arrowHeadStart, deleteButtonGroup);
-            if (curveDefinition.color == "red")
-                redarrows.push({ "curve": curve, "arrowHeadStart": arrowHeadStart, "deleteButton": deleteButtonGroup });
+            if (curveDefinition.color == Image1ArrowsColor)
+                Image1arrows.push({ "curve": curve, "arrowHeadStart": arrowHeadStart, "deleteButton": deleteButtonGroup });
             else
-                if (curveDefinition.color == "skyblue")
-                    bluearrows.push({ "curve": curve, "arrowHeadStart": arrowHeadStart, "deleteButton": deleteButtonGroup });
+                if (curveDefinition.color == Image2ArrowsColor)
+                    Image2arrows.push({ "curve": curve, "arrowHeadStart": arrowHeadStart, "deleteButton": deleteButtonGroup });
 
         }
         else {
             canvas.add(curve, arrowHeadStart);
-            if (curveDefinition.color == "red")
-                redarrows.push({ "curve": curve, "arrowHeadStart": arrowHeadStart });
+            if (curveDefinition.color == Image1ArrowsColor)
+                Image1arrows.push({ "curve": curve, "arrowHeadStart": arrowHeadStart });
             else
-                if (curveDefinition.color == "skyblue")
-                    bluearrows.push({ "curve": curve, "arrowHeadStart": arrowHeadStart });
+                if (curveDefinition.color == Image2ArrowsColor)
+                    Image2arrows.push({ "curve": curve, "arrowHeadStart": arrowHeadStart });
 
         }
 
@@ -313,15 +389,15 @@ function AddArrows(Action, Container, canvas, startPoints, endPoints, curveDefin
         for (var i = 0; i < BlinkingIntervalIds.length; i++) {
             clearInterval(BlinkingIntervalIds[i]);
         }
-        //display bluearrows
-        for (var i = 0; i < bluearrows.length; i++) {
-            toggleBlinking(canvas, bluearrows[i].curve, bluearrows[i].arrowHeadStart, true);
+        //display Image2arrows
+        for (var i = 0; i < Image2arrows.length; i++) {
+            toggleBlinking(canvas, Image2arrows[i].curve, Image2arrows[i].arrowHeadStart, true);
         }
 
-        for (var i = 0; i < redarrows.length; i++) {
+        for (var i = 0; i < Image1arrows.length; i++) {
             (function (index) {
                 var intervalId = setInterval(function () {
-                    toggleBlinking(canvas, redarrows[index].curve, redarrows[index].arrowHeadStart);
+                    toggleBlinking(canvas, Image1arrows[index].curve, Image1arrows[index].arrowHeadStart);
                 }, 500);
 
                 BlinkingIntervalIds.push(intervalId);
@@ -335,15 +411,15 @@ function AddArrows(Action, Container, canvas, startPoints, endPoints, curveDefin
         for (var i = 0; i < BlinkingIntervalIds.length; i++) {
             clearInterval(BlinkingIntervalIds[i]);
         }
-        //display redarrows
-        for (var i = 0; i < redarrows.length; i++) {
-            toggleBlinking(canvas, redarrows[i].curve, redarrows[i].arrowHeadStart, true);
+        //display Image1arrows
+        for (var i = 0; i < Image1arrows.length; i++) {
+            toggleBlinking(canvas, Image1arrows[i].curve, Image1arrows[i].arrowHeadStart, true);
         }
 
-        for (var i = 0; i < bluearrows.length; i++) {
+        for (var i = 0; i < Image2arrows.length; i++) {
             (function (index) {
                 var intervalId = setInterval(function () {
-                    toggleBlinking(canvas, bluearrows[index].curve, bluearrows[index].arrowHeadStart);
+                    toggleBlinking(canvas, Image2arrows[index].curve, Image2arrows[index].arrowHeadStart);
                 }, 500);
 
                 BlinkingIntervalIds.push(intervalId);
@@ -354,7 +430,7 @@ function AddArrows(Action, Container, canvas, startPoints, endPoints, curveDefin
 
 }
 function getArrowPaths(container) {
-    //debugger;
+    ////////debugger;
     var paths = arrowPaths.filter(function (item) {
         return item.container === container;
     });
@@ -377,6 +453,8 @@ function getArrowPathsFromHTML(container, canvas) {
             // Extract the path data
             var pathData = obj.get('path');
 
+            var ArrowCorrespondingImage = obj.get('ArrowCorrespondingImage');
+
             // Extract the color (assuming the color is stored in the 'stroke' property)
             var color = obj.get('stroke') || obj.get('fill'); // Change as needed based on your implementation
 
@@ -387,11 +465,13 @@ function getArrowPathsFromHTML(container, canvas) {
 
             // Check if the path has already been added
             if (!seenPaths.has(formattedPath)) {
+                //////debugger;
                 // Push formatted path data and color to the array
                 arrowPaths.push({
                     container: container,
                     position: formattedPath,
-                    color: color
+                    color: color,
+                    ArrowCorrespondingImage: ArrowCorrespondingImage
                 });
 
                 // Add the path to the set of seen paths
@@ -404,6 +484,31 @@ function getArrowPathsFromHTML(container, canvas) {
 }
 
 
+function ChangeArrowColor(Container, CanvasId, ArrowCorrespondingImage, NewColor) {
+    var canvas;
+    for (var i = 0; i < CanvasList.length; i++) {
+        if (CanvasList[i].id == CanvasId) {
+            canvas = CanvasList[i].canvas;
+        }
+    }
+    //debugger;
+    canvas.getObjects().forEach(function (obj) {
+        if (obj.type === 'path' || obj.type === 'triangle') {
+            if (obj.ArrowCorrespondingImage === ArrowCorrespondingImage) {
+                //changing color of arrows of left image
+                if (obj.stroke)
+                    obj.set('stroke', NewColor);
+                canvas.renderAll();
+                if (obj.fill)
+                    obj.set('fill', NewColor);
+                canvas.renderAll();
+            }
+        }
+    });
+    canvas.renderAll();
+
+    arrowPaths = getArrowPathsFromHTML(Container, canvas);
+}
 
 // Function to toggle blinking effect
 function toggleBlinking(canvas, curve, arrowHeadStart, visibleStatus) {

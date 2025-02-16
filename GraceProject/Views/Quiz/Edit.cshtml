@@ -15,20 +15,29 @@
 
 <h2>Edit Quiz</h2>
 
-<form asp-action="Edit" enctype="multipart/form-data">
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <input type="hidden" asp-for="QuizId" />
 
     <div class="form-group">
         <label asp-for="Title" class="control-label">Title</label>
-        <input asp-for="Title" class="form-control" />
+        <input asp-for="Title" class="form-control" readonly />
         <span asp-validation-for="Title" class="text-danger"></span>
     </div>
 
     <div class="form-group">
         <label asp-for="Duration" class="control-label">Duration (in minutes)</label>
-        <input asp-for="Duration" class="form-control" type="number" min="1" max="300" step="1" style="width: 100px;" />
+        <input asp-for="Duration" class="form-control" type="number" min="1" max="300" step="1" style="width: 100px;" readonly />
         <span asp-validation-for="Duration" class="text-danger"></span>
+    </div>
+
+    <div class="d-flex justify-content-between mb-3">
+        <button type="button" class="btn btn-secondary btn-sm edit-quiz">
+            <i class="fas fa-edit"></i> Edit Quiz
+        </button>
+        <button type="button" class="btn btn-success btn-sm save-quiz" style="display: none;">
+            <i class="fas fa-save"></i> Save Quiz
+        </button>
     </div>
 
     <h3>Questions</h3>
@@ -42,38 +51,52 @@
                             Question @(i + 1): @(Model.Questions[i].Text ?? "undefined")
                         </button>
                         <div>
-                            <button type="button" class="btn btn-secondary btn-sm edit-question">Edit</button>
-                            <button type="button" class="btn btn-danger btn-sm delete-question">Delete</button>
+                            <button type="button" class="btn btn-secondary btn-sm toggle-collapse" data-toggle="collapse" data-target="#collapse@(i)">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm delete-question" data-index="@i">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
                         </div>
                     </h5>
                 </div>
 
                 <div id="collapse@(i)" class="collapse" aria-labelledby="heading@(i)">
                     <div class="card-body">
+                        <input type="hidden" asp-for="Questions[i].QuestionId" />
+                        <div class="d-flex justify-content-end mb-2">
+                            <button type="button" class="btn btn-secondary btn-sm edit-question" data-index="@i">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button type="button" class="btn btn-success btn-sm save-question" data-index="@i" style="display: none;">
+                                <i class="fas fa-save"></i> Save
+                            </button>
+                        </div>
                         <div class="form-row">
                             <div class="form-group col-md-6">
-                                <label>Question Type</label>
-                                <select asp-for="Questions[i].Type" class="form-control" disabled>
-                                    <option value="Multiple Choice" selected>@Model.Questions[i].Type</option>
-                                </select>
+                                <label asp-for="Questions[i].Type" class="control-label">Question Type</label>
+                                <input asp-for="Questions[i].Type" class="form-control" readonly />
+                                <span asp-validation-for="Questions[i].Type" class="text-danger"></span>
                             </div>
                             <div class="form-group col-md-6">
-                                <label>Points</label>
-                                <input asp-for="Questions[i].Points" class="form-control" />
+                                <label asp-for="Questions[i].Points" class="control-label">Points</label>
+                                <input asp-for="Questions[i].Points" class="form-control" readonly />
+                                <span asp-validation-for="Questions[i].Points" class="text-danger"></span>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Question Text</label>
-                            <textarea asp-for="Questions[i].Text" class="form-control" rows="3"></textarea>
+                            <label asp-for="Questions[i].Text" class="control-label">Question Text</label>
+                            <textarea asp-for="Questions[i].Text" class="form-control" rows="3" readonly></textarea>
+                            <span asp-validation-for="Questions[i].Text" class="text-danger"></span>
                         </div>
                         <div class="form-group">
-                            <label>Question Image</label>
+                            <label asp-for="Questions[i].ImageUrl" class="control-label">Question Image</label>
                             @if (!string.IsNullOrEmpty(Model.Questions[i].ImageUrl))
                             {
                                 <img id="questionImagePreview@(i)" src="@Model.Questions[i].ImageUrl" alt="Question Image" class="img-fluid mb-2 img-small" />
                             }
                             <div class="custom-file">
-                                <input type="file" class="custom-file-input" id="questionImage@(i)" name="Questions[@i].ImageFile" onchange="handleFileUpload(this, @i)">
+                                <input type="file" class="custom-file-input" id="questionImage@(i)" name="Questions[@i].Image" onchange="handleFileUpload(this, @i)" disabled>
                                 <label class="custom-file-label" for="questionImage@(i)">Choose file</label>
                             </div>
                         </div>
@@ -82,47 +105,64 @@
                         {
                             <h5>Options</h5>
                             <div class="options-container">
-                                @for (int j = 0; j < Model.Questions[i].Options.Count; j++)
+                                @if (Model.Questions[i].Options != null && Model.Questions[i].Options.Count > 0)
                                 {
-                                    <div class="form-group d-flex align-items-center">
-                                        <input type="radio" name="Questions[@i].CorrectOptionIndex" value="@j" @(Model.Questions[i].Options[j].IsCorrect ? "checked" : "") class="mr-2" />
-                                        <input asp-for="Questions[i].Options[j].Text" class="form-control mr-2" placeholder="Option text" />
-                                        <button type="button" class="btn btn-outline-danger delete-option">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    </div>
+                                    @for (int j = 0; j < Model.Questions[i].Options.Count; j++)
+                                    {
+                                        <div class="form-group d-flex align-items-center">
+                                            <input type="hidden" asp-for="Questions[i].Options[j].OptionId" />
+                                            <input type="radio" name="Questions[@i].CorrectOptionIndex" value="@j" @(Model.Questions[i].Options[j].IsCorrect ? "checked" : "") class="mr-2 correct-option-radio" data-question-index="@i" data-option-index="@j" disabled />
+                                            <input asp-for="Questions[i].Options[j].Text" class="form-control mr-2 option-text" placeholder="Option text" readonly />
+                                            <button type="button" class="btn btn-outline-danger delete-option" data-question-index="@i" data-option-index="@j" style="display: none;">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                            <input type="hidden" asp-for="Questions[i].Options[j].IsCorrect" />
+                                        </div>
+                                    }
                                 }
                             </div>
-                            <button type="button" class="btn btn-primary mb-3 add-option" data-question-index="@i">Add Option</button>
+                            <button type="button" class="btn btn-primary mb-3 add-option" data-question-index="@i" style="display: none;">Add Option</button>
                         }
                         else if (Model.Questions[i].Type == "Fill in the Blank")
                         {
                             <h5>Answers</h5>
                             <div class="answers-container">
-                                @for (int k = 0; k < Model.Questions[i].FillInTheBlankAnswers.Count; k++)
+                                @if (Model.Questions[i].FillInTheBlankAnswers != null && Model.Questions[i].FillInTheBlankAnswers.Count > 0)
                                 {
-                                    <div class="form-group d-flex align-items-center">
-                                        <input name="Questions[@i].FillInTheBlankAnswers[@k]" value="@Model.Questions[i].FillInTheBlankAnswers[k]" class="form-control mr-2" placeholder="Answer text" />
-                                        <button type="button" class="btn btn-outline-danger delete-answer">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    </div>
+                                    @for (int k = 0; k < Model.Questions[i].FillInTheBlankAnswers.Count; k++)
+                                    {
+                                        <div class="form-group d-flex align-items-center">
+                                            <input asp-for="Questions[i].FillInTheBlankAnswers[k]" class="form-control mr-2 answer-text" placeholder="Answer text" readonly />
+                                            <button type="button" class="btn btn-outline-danger delete-answer" data-question-index="@i" data-answer-index="@k" style="display: none;">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </div>
+                                    }
                                 }
                             </div>
-                            <button type="button" class="btn btn-primary mb-3 add-answer" data-question-index="@i">Add Answer</button>
+                            <button type="button" class="btn btn-primary mb-3 add-answer" data-question-index="@i" style="display: none;">Add Answer</button>
                         }
                         else if (Model.Questions[i].Type == "True/False")
                         {
                             <h5>Options</h5>
                             <div class="options-container">
-                                <div class="form-group d-flex align-items-center">
-                                    <input type="radio" name="Questions[@i].CorrectOptionIndex" value="0" @(Model.Questions[i].Options[0].IsCorrect ? "checked" : "") class="mr-2" />
-                                    <input type="text" value="True" class="form-control mr-2" readonly />
-                                </div>
-                                <div class="form-group d-flex align-items-center">
-                                    <input type="radio" name="Questions[@i].CorrectOptionIndex" value="1" @(Model.Questions[i].Options[1].IsCorrect ? "checked" : "") class="mr-2" />
-                                    <input type="text" value="False" class="form-control mr-2" readonly />
-                                </div>
+                                @if (Model.Questions[i].Options != null && Model.Questions[i].Options.Count >= 2)
+                                {
+                                    <div class="form-group d-flex align-items-center">
+                                        <input type="hidden" asp-for="Questions[i].Options[0].OptionId" />
+                                        <input type="radio" name="Questions[@i].CorrectOptionIndex" value="0" @(Model.Questions[i].Options[0].IsCorrect ? "checked" : "") class="mr-2 correct-option-radio" data-question-index="@i" data-option-index="0" disabled />
+                                        <input type="hidden" asp-for="Questions[i].Options[0].Text" value="True" />
+                                        <input type="text" value="True" class="form-control mr-2" readonly />
+                                        <input type="hidden" asp-for="Questions[i].Options[0].IsCorrect" />
+                                    </div>
+                                    <div class="form-group d-flex align-items-center">
+                                        <input type="hidden" asp-for="Questions[i].Options[1].OptionId" />
+                                        <input type="radio" name="Questions[@i].CorrectOptionIndex" value="1" @(Model.Questions[i].Options[1].IsCorrect ? "checked" : "") class="mr-2 correct-option-radio" data-question-index="@i" data-option-index="1" disabled />
+                                        <input type="hidden" asp-for="Questions[i].Options[1].Text" value="False" />
+                                        <input type="text" value="False" class="form-control mr-2" readonly />
+                                        <input type="hidden" asp-for="Questions[i].Options[1].IsCorrect" />
+                                    </div>
+                                }
                             </div>
                         }
                     </div>
@@ -142,17 +182,37 @@
     }
     <script>
         $(document).ready(function () {
+            var changedFields = {};
+
             // Add new option
             $(document).on('click', '.add-option', function () {
                 var questionIndex = $(this).data('question-index');
                 var optionsContainer = $(this).siblings('.options-container');
                 var optionCount = optionsContainer.children().length;
                 var newOptionHtml = '<div class="form-group d-flex align-items-center">' +
-                    '<input type="radio" name="Questions[' + questionIndex + '].CorrectOptionIndex" value="' + optionCount + '" class="mr-2" />' +
-                    '<input class="form-control mr-2" placeholder="Option text" name="Questions[' + questionIndex + '].Options[' + optionCount + '].Text" />' +
-                    '<button type="button" class="btn btn-outline-danger delete-option"><i class="fas fa-trash-alt"></i></button>' +
+                    '<input type="radio" name="Questions[' + questionIndex + '].CorrectOptionIndex" value="' + optionCount + '" class="mr-2 correct-option-radio" data-question-index="' + questionIndex + '" data-option-index="' + optionCount + '" disabled />' +
+                    '<input class="form-control mr-2 option-text" placeholder="Option text" name="Questions[' + questionIndex + '].Options[' + optionCount + '].Text" />' +
+                    '<button type="button" class="btn btn-outline-danger delete-option" data-question-index="' + questionIndex + '" data-option-index="' + optionCount + '"><i class="fas fa-trash-alt"></i></button>' +
+                    '<input type="hidden" name="Questions[' + questionIndex + '].Options[' + optionCount + '].IsCorrect" value="false" />' +
                     '</div>';
                 optionsContainer.append(newOptionHtml);
+                markChanged('Questions[' + questionIndex + '].Options[' + optionCount + '].Text');
+            });
+
+            // Delete option
+            $(document).on('click', '.delete-option', function () {
+                var questionIndex = $(this).data('question-index');
+                var optionIndex = $(this).data('option-index');
+                var optionId = $(this).siblings('input[name="Questions[' + questionIndex + '].Options[' + optionIndex + '].OptionId"]').val();
+
+                // Mark the option for deletion
+                if (optionId) {
+                    var deleteOptionHtml = '<input type="hidden" name="Questions[' + questionIndex + '].OptionsToDelete" value="' + optionId + '" />';
+                    $(this).closest('.question-card').append(deleteOptionHtml);
+                }
+
+                $(this).closest('.form-group').remove();
+                markChanged('Questions[' + questionIndex + '].Options[' + optionIndex + '].Text');
             });
 
             // Add new answer
@@ -161,47 +221,161 @@
                 var answersContainer = $(this).siblings('.answers-container');
                 var answerCount = answersContainer.children().length;
                 var newAnswerHtml = '<div class="form-group d-flex align-items-center">' +
-                    '<input class="form-control mr-2" placeholder="Answer text" name="Questions[' + questionIndex + '].FillInTheBlankAnswers[' + answerCount + ']" />' +
-                    '<button type="button" class="btn btn-outline-danger delete-answer"><i class="fas fa-trash-alt"></i></button>' +
+                    '<input class="form-control mr-2 answer-text" placeholder="Answer text" name="Questions[' + questionIndex + '].FillInTheBlankAnswers[' + answerCount + ']" />' +
+                    '<button type="button" class="btn btn-outline-danger delete-answer" data-question-index="' + questionIndex + '" data-answer-index="' + answerCount + '"><i class="fas fa-trash-alt"></i></button>' +
                     '</div>';
                 answersContainer.append(newAnswerHtml);
-            });
-
-            // Delete option
-            $(document).on('click', '.delete-option', function () {
-                $(this).closest('.form-group').remove();
+                markChanged('Questions[' + questionIndex + '].FillInTheBlankAnswers[' + answerCount + ']');
             });
 
             // Delete answer
             $(document).on('click', '.delete-answer', function () {
+                var questionIndex = $(this).data('question-index');
+                var answerIndex = $(this).data('answer-index');
                 $(this).closest('.form-group').remove();
+                markChanged('Questions[' + questionIndex + '].FillInTheBlankAnswers[' + answerIndex + ']');
+            });
+
+            // Mark field as changed
+            $(document).on('change', '.option-text, .answer-text', function () {
+                var name = $(this).attr('name');
+                markChanged(name);
+            });
+
+            // Update correct option
+            $(document).on('change', '.correct-option-radio', function () {
+                var questionIndex = $(this).data('question-index');
+                var optionIndex = $(this).data('option-index');
+                $('input[name="Questions[' + questionIndex + '].CorrectOptionIndex"]').val(optionIndex);
+
+                // Update IsCorrect for all options of the question
+                $('input[name^="Questions[' + questionIndex + '].Options["]').each(function () {
+                    if ($(this).attr('name').endsWith('.IsCorrect')) {
+                        var currentOptionIndex = $(this).attr('name').match(/Options\[([0-9]+)\]/)[1];
+                        $(this).val(currentOptionIndex == optionIndex);
+                    }
+                });
+
+                markChanged('Questions[' + questionIndex + '].Options[' + optionIndex + '].IsCorrect');
+            });
+
+            // Enable editing when clicking the edit button
+            $(document).on('click', '.edit-question, .edit-quiz', function () {
+                var isQuizEdit = $(this).hasClass('edit-quiz');
+
+                if (isQuizEdit) {
+                    $('input[name="Title"], input[name="Duration"]').prop('readonly', false);
+                    $('.save-quiz').show();
+                    $('.edit-quiz').hide();
+                } else {
+                    var questionIndex = $(this).data('index');
+                    var questionCard = $(this).closest('.question-card');
+
+                    questionCard.find('input, textarea').not('[name$=".Type"], [value="True"], [value="False"]').prop('readonly', false);
+                    questionCard.find('input[type="file"], .btn-outline-danger, .add-option, .add-answer').prop('disabled', false).show();
+                    questionCard.find('.delete-option, .delete-answer').show();
+
+                    // Enable radio buttons for multiple choice and true/false
+                    questionCard.find('.correct-option-radio').prop('disabled', false);
+
+                    // Show save button and hide edit button
+                    questionCard.find('.save-question').show();
+                    questionCard.find('.edit-question').hide();
+                }
+            });
+
+            // Save question without collapsing
+            $(document).on('click', '.save-question, .save-quiz', function () {
+                var isQuizSave = $(this).hasClass('save-quiz');
+
+                if (isQuizSave) {
+                    $('input[name="Title"], input[name="Duration"]').prop('readonly', true);
+                    $('.save-quiz').hide();
+                    $('.edit-quiz').show();
+                } else {
+                    var questionIndex = $(this).data('index');
+                    var questionCard = $(this).closest('.question-card');
+
+                    questionCard.find('input, textarea').prop('readonly', true);
+                    questionCard.find('input[type="file"], .btn-outline-danger, .add-option, .add-answer').prop('disabled', true).hide();
+                    questionCard.find('.delete-option, .delete-answer').hide();
+
+                    // Disable radio buttons for multiple choice and true/false
+                    questionCard.find('.correct-option-radio').prop('disabled', true);
+
+                    // Show edit button and hide save button
+                    questionCard.find('.edit-question').show();
+                    questionCard.find('.save-question').hide();
+                }
             });
 
             // Delete question
             $(document).on('click', '.delete-question', function () {
+                var questionIndex = $(this).data('index');
                 $(this).closest('.question-card').remove();
+                updateQuestionIndices();
+            });
+
+            function markChanged(name) {
+                changedFields[name] = true;
+            }
+
+            function updateQuestionIndices() {
+                $('#questions-container .question-card').each(function (index) {
+                    $(this).attr('data-index', index);
+                    $(this).find('.card-header button[data-toggle="collapse"]').attr('data-target', '#collapse' + index).attr('aria-controls', 'collapse' + index);
+                    $(this).find('.collapse').attr('id', 'collapse' + index).attr('aria-labelledby', 'heading' + index);
+                    $(this).find('.card-header').attr('id', 'heading' + index);
+                    $(this).find('.toggle-collapse').attr('data-target', '#collapse' + index);
+                    $(this).find('.delete-question').attr('data-index', index);
+
+                    // Update input names and ids for each question
+                    $(this).find('[name^="Questions["]').each(function () {
+                        var name = $(this).attr('name');
+                        var newName = name.replace(/Questions\[\d+\]/, 'Questions[' + index + ']');
+                        $(this).attr('name', newName);
+                    });
+                    $(this).find('[id^="questionImagePreview"]').each(function () {
+                        var id = $(this).attr('id');
+                        var newId = id.replace(/questionImagePreview\d+/, 'questionImagePreview' + index);
+                        $(this).attr('id', newId);
+                    });
+                    $(this).find('[id^="questionImage"]').each(function () {
+                        var id = $(this).attr('id');
+                        var newId = id.replace(/questionImage\d+/, 'questionImage' + index);
+                        $(this).attr('id', newId);
+                        var label = $(this).siblings('label.custom-file-label');
+                        label.attr('for', newId);
+                    });
+                });
+            }
+
+            // Handle file upload preview
+            window.handleFileUpload = function (input, index) {
+                const file = input.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const img = document.getElementById(`questionImagePreview${index}`);
+                        if (img) {
+                            img.src = e.target.result;
+                        } else {
+                            const newImg = document.createElement('img');
+                            newImg.id = `questionImagePreview${index}`;
+                            newImg.src = e.target.result;
+                            newImg.alt = 'Question Image';
+                            newImg.className = 'img-fluid mb-2 img-small';
+                            input.parentNode.insertBefore(newImg, input.parentNode.firstChild);
+                        }
+                    }
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            // Redirect submit button to another page
+            document.getElementById('submit-button').addEventListener('click', function () {
+                window.location.href = '/Student/Home/studentreport.html';
             });
         });
-
-        function handleFileUpload(input, index) {
-            const file = input.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const img = document.getElementById(`questionImagePreview${index}`);
-                    if (img) {
-                        img.src = e.target.result;
-                    } else {
-                        const newImg = document.createElement('img');
-                        newImg.id = `questionImagePreview${index}`;
-                        newImg.src = e.target.result;
-                        newImg.alt = 'Question Image';
-                        newImg.className = 'img-fluid mb-2 img-small';
-                        input.parentNode.insertBefore(newImg, input.parentNode.firstChild);
-                    }
-                }
-                reader.readAsDataURL(file);
-            }
-        }
     </script>
 }

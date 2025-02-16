@@ -147,6 +147,10 @@
 
 @section Scripts {
     <script>
+        document.getElementById('submit-button').addEventListener('click', function () {
+            window.location.href = '/Student/StudentReport';
+        });
+
         let currentQuestionIndex = 0;
         const totalQuestions = @Model.Questions.Count;
         let startTime = new Date();

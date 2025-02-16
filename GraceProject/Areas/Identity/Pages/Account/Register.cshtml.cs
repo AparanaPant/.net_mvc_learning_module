@@ -254,7 +254,7 @@ namespace GraceProject.Areas.Identity.Pages.Account
                    
                     await SendEmailAsync(Input.Email, "Confirm your email",
                         $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-
+                    Console.WriteLine("Reurn url ================"+ returnUrl);
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
                         return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
@@ -336,7 +336,7 @@ namespace GraceProject.Areas.Identity.Pages.Account
             {
                 // Send the email
                 await smtpClient.SendMailAsync(message);
-                Console.WriteLine("Email sent successfully");
+                Console.WriteLine("Email sent successfully!!!!!!!!!!!!!!!!");
                 return true;
             }
             catch (Exception e)

@@ -20,7 +20,7 @@
                 where userRole.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)
                 select role.Name;
 
-    bool IsAdmin = roles.Where(r => r == "Admin") != null;
+    bool IsAdmin = roles.Count() > 0 ? roles.Where(r => r == "Admin").Count() > 0 ? true : false : false;
 }
 
 <style>
