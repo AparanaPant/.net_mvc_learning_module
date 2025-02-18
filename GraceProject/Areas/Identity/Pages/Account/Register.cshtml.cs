@@ -61,6 +61,9 @@ namespace GraceProject.Areas.Identity.Pages.Account
         [BindProperty]
         public InputModel Input { get; set; }
 
+        [BindProperty]
+        public List<string> SelectedCourses { get; set; } = new List<string>();
+
         public string ReturnUrl { get; set; }
 
         /// <summary>
@@ -194,6 +197,20 @@ namespace GraceProject.Areas.Identity.Pages.Account
 
                     var userId = await _userManager.GetUserIdAsync(user);
 
+                    if (SelectedCourses != null && SelectedCourses.Any())
+                    {
+                        foreach (var courseId in SelectedCourses)
+                        {
+                            var enrollment = new Enrollment
+                            {
+                                CourseID = courseId,
+                                StudentUserID = userId
+                            };
+                            _context.Enrollment.Add(enrollment);
+                        }
+                        await _context.SaveChangesAsync();
+                    }
+
                     var address = new Address
                     {   Country = Input.Country ?? "USA",
                         StreetAddress = Input.StreetAddress,
@@ -258,7 +275,7 @@ namespace GraceProject.Areas.Identity.Pages.Account
                    
                     await SendEmailAsync(Input.Email, "Confirm your email",
                         $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-                    Console.WriteLine("Reurn url ================"+ returnUrl);
+                
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
                         return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
@@ -340,13 +357,11 @@ namespace GraceProject.Areas.Identity.Pages.Account
             {
                 // Send the email
                 await smtpClient.SendMailAsync(message);
-                Console.WriteLine("Email sent successfully!!!!!!!!!!!!!!!!");
                 return true;
             }
             catch (Exception e)
             {
-                Log.Error("An error occurred while processing the request###########################");
-                Log.Error("Exception occurred while sending email:$$$$$$$$$$ " + e);
+     
                 return false;
             }
         }

@@ -154,14 +154,21 @@
                     <div class="mb-3">
                         <label class="form-label">Courses Taught:</label>
 
-                        @foreach (var course in (IEnumerable<GraceProject.Models.Course>)ViewData["Courses"])
+                        @if (ViewData["Courses"] is IEnumerable<GraceProject.Models.Course> courses)
                         {
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="@course.CourseID" id="course@course.CourseID" name="courses[]">
-                                <label class="form-check-label" for="course@course.CourseID">
-                                    @course.Title
-                                </label>
-                            </div>
+                            @foreach (var course in courses)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="@course.CourseID" id="course@course.CourseID" name="SelectedCourses">
+                                    <label class="form-check-label" for="course@course.CourseID">
+                                        @course.Title
+                                    </label>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p>No courses available.</p>
                         }
                     </div>
                    
