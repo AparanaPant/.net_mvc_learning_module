@@ -34,6 +34,7 @@ public class Address
     public string? State { get; set; }
 
 
+
     [Column(TypeName = "nvarchar(20)")]
     public string? ZIPCode { get; set; }
 }

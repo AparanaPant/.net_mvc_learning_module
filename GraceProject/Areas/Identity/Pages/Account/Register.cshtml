@@ -152,41 +152,17 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Courses Teach:</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value=" Chemistry" id="courseChemistry" name="courses[]">
-                            <label class="form-check-label" for="courseChemistry">
-                                 Chemistry
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="Biology" id="courseBiology" name="courses[]">
-                            <label class="form-check-label" for="courseBiology">
-                                Biology
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="Agriculture" id="courseAgriculture" name="courses[]">
-                            <label class="form-check-label" for="courseAgriculture">
-                                Agriculture
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="EnvironmentalScience" id="courseEnvironmental Science" name="courses[]">
-                            <label class="form-check-label" for="courseEnvironmental Science">
-                                Environmental Science
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="Others" id="courseOthers" name="courses[]" onclick="document.getElementById('textOthers').disabled = !this.checked;">
-                            <label class="form-check-label" for="courseOthers">
-                                Others
-                            </label>
-                        </div>
-                        <div class="mb-3">
-                            <label for="textOthers" class="form-label">If others, please specify:</label>
-                            <input type="text" class="form-control" id="textOthers" name="otherCourses" disabled>
-                        </div>
+                        <label class="form-label">Courses Taught:</label>
+
+                        @foreach (var course in (IEnumerable<GraceProject.Models.Course>)ViewData["Courses"])
+                        {
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="@course.CourseID" id="course@course.CourseID" name="courses[]">
+                                <label class="form-check-label" for="course@course.CourseID">
+                                    @course.Title
+                                </label>
+                            </div>
+                        }
                     </div>
                    
                     <div class="form-floating mb-3">

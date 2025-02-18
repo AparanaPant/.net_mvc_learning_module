@@ -164,6 +164,10 @@ namespace GraceProject.Areas.Identity.Pages.Account
                         .ToListAsync();
 
             ViewData["Schools"] = new SelectList(schools, "Value", "Text");
+
+            // Fetch courses from the database
+            var courses = await _context.Course.ToListAsync();
+            ViewData["Courses"] = courses;
         }
 
         public async Task<IActionResult> OnPostAsync(string userType, string returnUrl = null)
