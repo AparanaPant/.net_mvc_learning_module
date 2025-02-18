@@ -31,9 +31,10 @@ namespace GraceProject.Controllers.Authentication
             return path.Equals("/Identity/Account/Login", StringComparison.OrdinalIgnoreCase) ||
                    path.Equals("/Identity/Account/Register", StringComparison.OrdinalIgnoreCase) ||
                    path.Equals("/Identity/Account/ForgotPassword", StringComparison.OrdinalIgnoreCase) ||
-                   path.Equals("/Identity/Account/ForgotPassword", StringComparison.OrdinalIgnoreCase) ||
-                  path.Equals("/Identity/Account/RegisterConfirmation", StringComparison.OrdinalIgnoreCase) ||
-                  path.Equals("/Identity/Account/ConfirmEmail", StringComparison.OrdinalIgnoreCase);
+                   path.Equals("/Identity/Account/ForgotPasswordConfirmation", StringComparison.OrdinalIgnoreCase) ||
+                   path.Equals("/Identity/Account/ResetPassword", StringComparison.OrdinalIgnoreCase) ||
+                   path.Equals("/Identity/Account/RegisterConfirmation", StringComparison.OrdinalIgnoreCase) ||
+                   path.Equals("/Identity/Account/ConfirmEmail", StringComparison.OrdinalIgnoreCase);
 
 
         }
