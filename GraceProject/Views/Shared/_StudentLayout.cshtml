@@ -15,7 +15,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>Grace - Green Reimaging Agriculture of Controlled Environments</title>
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap -->
     <link href="~/PanelsTemplate/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -253,6 +253,9 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- ChartsOnReport-->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Custome JS files -->
     <script src="~/PanelsTemplate/build/slide/Files/custome/TextToSpeech/TextToSpeech.js"></script>
@@ -261,10 +264,9 @@
     <!--<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script> -->
     @*should be added here and also in Info.cshtml*@
     <script src="~/PanelsTemplate/build/slide/Files/custome/Carousel/Carousel-JS.js"></script>
-
-
-    <!-- jQuery -->
-    <script src="~/PanelsTemplate/vendors/jquery/dist/jquery.min.js"></script>
+    <!-- jQuery --> 
+     @* The Needs to be modified , it is causing Ui changes in dashboard , but important for charts  *@
+    @* <script src="~/PanelsTemplate/vendors/jquery/dist/jquery.min.js"></script> *@
     <!-- Bootstrap -->
     <script src="~/PanelsTemplate/vendors/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <!-- FastClick -->
@@ -275,7 +277,8 @@
     <script src="~/PanelsTemplate/vendors/bootstrap-progressbar/bootstrap-progressbar.min.js"></script>
 
     <!-- Custom Theme Scripts -->
-    <script src="~/PanelsTemplate/build/js/custom.js"></script>
+    @* The Needs to be modified , it is causing Ui changes in dashboard , but important for charts  *@
+    @* <script src="~/PanelsTemplate/build/js/custom.js"></script> *@
 
     <!-- blinking -->
     <link rel="stylesheet" href="~/PanelsTemplate/build/slide/Files/custome/Blinking/Blinking-CSS.css" />
