@@ -1,5 +1,6 @@
 ﻿using GraceProject.Data;
 using GraceProject.Models;
+using Humanizer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -29,7 +30,7 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<Student> Student { get; set; }
 
-    public DbSet<SchoolInfo> SchoolInfo { get; set; }
+    public DbSet<CourseEducator> CourseEducator { get; set; }
 
     public GraceDbContext(DbContextOptions<GraceDbContext> options)
         : base(options)
@@ -40,9 +41,41 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-        // Customize the ASP.NET Identity model and override the defaults if needed.
-        // For example, you can rename the ASP.NET Identity table names and more.
-        // Add your customizations after calling base.OnModelCreating(builder);
+
+        // Many-to-Many: Educators & Courses (CourseEducator)
+        builder.Entity<CourseEducator>()
+            .HasKey(ce => new { ce.CourseID, ce.EducatorUserID });
+
+        builder.Entity<CourseEducator>()
+            .HasOne(ce => ce.Course)
+            .WithMany(c => c.CourseEducators)
+            .HasForeignKey(ce => ce.CourseID);
+
+        builder.Entity<CourseEducator>()
+            .HasOne(ce => ce.Educator)
+            .WithMany(e => e.CourseEducators) // ✅ Now referencing Educator explicitly
+            .HasForeignKey(ce => ce.EducatorUserID);
+
+        // Many-to-Many: Students & Courses (Enrollments)
+        builder.Entity<Enrollment>()
+            .HasKey(e => new { e.CourseID, e.StudentUserID });
+
+        builder.Entity<Enrollment>()
+            .HasOne(e => e.Course)
+            .WithMany(c => c.Enrollments)
+            .HasForeignKey(e => e.CourseID);
+
+        builder.Entity<Enrollment>()
+            .HasOne(e => e.StudentUser)
+            .WithMany(s => s.Enrollments) // ✅ Now referencing Student explicitly
+            .HasForeignKey(e => e.StudentUserID);
+
+        builder.Entity<ApplicationUser>()
+            .HasDiscriminator<string>("UserType")
+            .HasValue<ApplicationUser>("ApplicationUser")
+            .HasValue<Student>("Student")
+            .HasValue<Educator>("Educator");
+
         builder.Entity<Address>().ToTable("Address");
         builder.Entity<Module>().ToTable("Module");
         builder.Entity<Slide>().ToTable("Slide");
@@ -84,9 +117,9 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
             .WithMany()
             .HasForeignKey(uq => uq.UserId);
         
-        builder.Entity<SchoolInfo>().ToTable("SchoolInfo");
-        builder.Entity<SchoolInfo>(entity =>
-        {
+        //builder.Entity<SchoolInfo>().ToTable("SchoolInfo");
+        //builder.Entity<SchoolInfo>(entity =>
+        //{
             // Define primary key
             //entity.HasKey(e => e.SchoolID).HasName("PK_SchoolInfo");
 
@@ -109,20 +142,20 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
             //    .HasMaxLength(100); // You can adjust the max length as per your requirements
 
             // Define relationships
-            entity.HasMany(e => e.Course)
-                .WithOne(c => c.SchoolInfo)
-                .HasForeignKey(c => c.SchoolID)
-                .OnDelete(DeleteBehavior.Restrict);
+            //entity.HasMany(e => e.Course)
+            //    .WithOne(c => c.SchoolInfo)
+            //    .HasForeignKey(c => c.SchoolID)
+            //    .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasMany(e => e.Educator)
-                .WithOne(ed => ed.SchoolInfo)
-                .HasForeignKey(ed => ed.SchoolID)
-                .OnDelete(DeleteBehavior.Restrict);
+            //entity.HasMany(e => e.Educator)
+            //    .WithOne(ed => ed.SchoolInfo)
+            //    .HasForeignKey(ed => ed.SchoolID)
+            //    .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasMany(e => e.Student)
-                .WithOne(s => s.SchoolInfo)
-                .HasForeignKey(s => s.SchoolID)
-                .OnDelete(DeleteBehavior.Restrict);
-        });
+            //entity.HasMany(e => e.Student)
+            //    .WithOne(s => s.SchoolInfo)
+            //    .HasForeignKey(s => s.SchoolID)
+        //    //    .OnDelete(DeleteBehavior.Restrict);
+        //});
     }
 }

@@ -4,18 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GraceProject.Models;
 
-public class Educator
+public class Educator: ApplicationUser
 {
-    [Key]
-    public int EducatorID { get; set; }
-
-    public string EducatorUserID { get; set; } = null!;
-
-    public int SchoolID { get; set; }
-
-    public DateTime? JoiningDate { get; set; }
-
-    public virtual ApplicationUser EducatorUser { get; set; } = null!;
-
-    public virtual SchoolInfo SchoolInfo { get; set; } = null!;
+    public virtual ICollection<CourseEducator> CourseEducators { get; set; } = new List<CourseEducator>();
 }

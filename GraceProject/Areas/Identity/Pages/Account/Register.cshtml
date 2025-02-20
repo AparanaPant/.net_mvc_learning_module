@@ -23,7 +23,7 @@
             <div id="teacher" class="container tab-pane active">
                 <br>
                 <form asp-route-returnUrl="@Model.ReturnUrl" method="post">
-                    <input type="hidden" name="userType" value="Guest" />
+                    <input type="hidden" name="UserType" value="EDUCATOR" />
                     <hr />
                     <div asp-validation-summary="All" class="text-danger"></div>
                     <div class="row">
@@ -190,7 +190,7 @@
             <div id="learner" class="container tab-pane fade">
                 <br>
                 <form asp-route-returnUrl="@Model.ReturnUrl" method="post">
-                    <input type="hidden" name="userType" value="Guest" />
+                    <input type="hidden" name="UserType" value="STUDENT" />
                     <hr />
                     <div asp-validation-summary="All" class="text-danger"></div>
                     <div class="row">
@@ -239,31 +239,24 @@
                         <label for="learnerGradeSelect">Grade</label>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Courses</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value=" Chemistry" id="courseChemistry" name="courses[]">
-                            <label class="form-check-label" for="courseChemistry">
-                                 Chemistry
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="biology" id="courseBiology" name="courses[]">
-                            <label class="form-check-label" for="courseBiology">
-                                Biology
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="Agriculture" id="courseAgriculture" name="courses[]">
-                            <label class="form-check-label" for="courseAgriculture">
-                                Agriculture
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="EnvironmentalScience" id="courseEnvironmental Science" name="courses[]">
-                            <label class="form-check-label" for="courseEnvironmental Science">
-                                Environmental Science
-                            </label>
-                        </div>
+                        <label class="form-label">Courses Taught:</label>
+
+                        @if (ViewData["Courses"] is IEnumerable<GraceProject.Models.Course> courses)
+                        {
+                            @foreach (var course in courses)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="@course.CourseID" id="course@course.CourseID" name="SelectedCourses">
+                                    <label class="form-check-label" for="course@course.CourseID">
+                                        @course.Title
+                                    </label>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p>No courses available.</p>
+                        }
                     </div>
                     <div class="form-floating mb-3">
                         <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
@@ -283,7 +276,7 @@
             <div id="parent" class="container tab-pane fade">
                 <br>
                 <form asp-route-returnUrl="@Model.ReturnUrl" method="post">
-                    <input type="hidden" name="userType" value="Guest" />
+                    <input type="hidden" name="UserType" value="Guest" />
                     <hr />
                     <div asp-validation-summary="All" class="text-danger"></div>
                     <div class="row">

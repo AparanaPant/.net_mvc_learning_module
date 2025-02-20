@@ -161,7 +161,7 @@ namespace GraceProject.Areas.Identity.Pages.Account
             var schools = await _context.Schools
                         .Select(s => new SelectListItem
                         {
-                            Value = s.SchoolID.ToString(), 
+                            Value = s.SchoolID.ToString(),
                             Text = s.SchoolName
                         })
                         .ToListAsync();
@@ -173,127 +173,177 @@ namespace GraceProject.Areas.Identity.Pages.Account
             ViewData["Courses"] = courses;
         }
 
+
         public async Task<IActionResult> OnPostAsync(string userType, string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
             if (Request.Form["Input.SchoolID"] == "other")
             {
                 ModelState.Remove("Input.SchoolID");
             }
-            if (ModelState.IsValid)
+
+            if (!ModelState.IsValid)
             {
-                var user = CreateUser();
-                user.FirstName = Input.FirstName;
-                user.LastName = Input.LastName;
-                user.Gender = Input.Gender;
+                return Page();
+            }
 
-                await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
-                await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
-                var result = await _userManager.CreateAsync(user, Input.Password);
-                if (result.Succeeded)
-                {
-                    _logger.LogInformation("User created a new account with password.");
+            var user = CreateUser();
+            user.FirstName = Input.FirstName;
+            user.LastName = Input.LastName;
+            user.Gender = Input.Gender;
 
-                    var userId = await _userManager.GetUserIdAsync(user);
+            await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+            await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
 
-                    if (SelectedCourses != null && SelectedCourses.Any())
-                    {
-                        foreach (var courseId in SelectedCourses)
-                        {
-                            var enrollment = new Enrollment
-                            {
-                                CourseID = courseId,
-                                StudentUserID = userId
-                            };
-                            _context.Enrollment.Add(enrollment);
-                        }
-                        await _context.SaveChangesAsync();
-                    }
-
-                    var address = new Address
-                    {   Country = Input.Country ?? "USA",
-                        StreetAddress = Input.StreetAddress,
-                        City = Input.City,
-                        State = Input.State,
-                        ZIPCode = Input.ZIPCode,
-                        UserId = userId
-                    };
-
-                    // Add the address to the AuthDbContext.
-                    _context.Address.Add(address);
-                    await _context.SaveChangesAsync();
-
-                    // Add new school if 'other' is selected
-                    if (Input.SchoolID == null && !string.IsNullOrWhiteSpace(Input.NewSchoolName))
-                    {
-                        var newSchool = new School
-                        {
-                            SchoolName = Input.NewSchoolName,
-                            Country = Input.Country,
-                            SchoolAddresses = new List<SchoolAddress>()
-                        };
-
-                        if (!string.IsNullOrWhiteSpace(Input.AddressLine1))
-                        {
-                            var schoolAddress = new SchoolAddress
-                            {
-                                State = Input.State,
-                                AddressLine1 = Input.AddressLine1,
-                                AddressLine2 = Input.AddressLine2,
-                                City = Input.City,
-                                ZIPCode = Input.ZIPCode
-                            };
-
-                            newSchool.SchoolAddresses.Add(schoolAddress);
-                        }
-
-                        _context.Schools.Add(newSchool);
-                        await _context.SaveChangesAsync();
-
-                        Input.SchoolID = newSchool.SchoolID; // Set the new school ID for the user
-                    }
-
-                    if (userType == "Teacher" || userType == "Student")
-                    {
-                        var userSchool = new UserSchool
-                        {
-                            UserID = user.Id,
-                            SchoolID = Input.SchoolID.Value 
-                        };
-                        _context.UserSchools.Add(userSchool);
-                        await _context.SaveChangesAsync();
-                    }
-
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                    var callbackUrl = Url.Page(
-                        "/Account/ConfirmEmail",
-                        pageHandler: null,
-                        values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
-                        protocol: Request.Scheme);
-                   
-                    await SendEmailAsync(Input.Email, "Confirm your email",
-                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-                
-                    if (_userManager.Options.SignIn.RequireConfirmedAccount)
-                    {
-                        return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
-                    }
-                    else
-                    {
-                        await _signInManager.SignInAsync(user, isPersistent: false);
-                        return LocalRedirect(returnUrl);
-                    }
-                }
+            var result = await _userManager.CreateAsync(user, Input.Password);
+            if (!result.Succeeded)
+            {
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
+                return Page();
             }
 
-            // If we got this far, something failed, redisplay form
-            return Page();
+            _logger.LogInformation("User created a new account with password.");
+            var userId = await _userManager.GetUserIdAsync(user);
+
+            // Assign user role
+            if (!string.IsNullOrEmpty(userType))
+            {
+                await AssignUserRole(userType, user);
+            }
+
+            // Save address
+            await SaveUserAddress(userId);
+
+            // Save school information
+            if (Input.SchoolID == null && !string.IsNullOrWhiteSpace(Input.NewSchoolName))
+            {
+                await SaveNewSchool();
+            }
+            // Handle role-specific logic
+            if (userType == "STUDENT")
+            {
+                await SaveStudentEnrollments(userId);
+            }
+            else if (userType == "EDUCATOR")
+            {
+                await SaveEducatorCourses(userId);
+            }
+
+            // Send email confirmation
+            //await SendEmailConfirmation(user, userId, returnUrl);
+
+            if (_userManager.Options.SignIn.RequireConfirmedAccount)
+            {
+                return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
+            }
+            else
+            {
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                return LocalRedirect(returnUrl);
+            }
+        }
+
+        private async Task AssignUserRole(string userType, ApplicationUser user)
+        {
+            var roleExists = await _context.Roles.AnyAsync(r => r.Name == userType);
+            if (!roleExists)
+            {
+                await _context.Roles.AddAsync(new IdentityRole(userType));
+                await _context.SaveChangesAsync();
+            }
+            await _userManager.AddToRoleAsync(user, userType);
+        }
+
+        private async Task SaveUserAddress(string userId)
+        {
+            var address = new Address
+            {
+                Country = Input.Country ?? "USA",
+                StreetAddress = Input.StreetAddress,
+                City = Input.City,
+                State = Input.State,
+                ZIPCode = Input.ZIPCode,
+                UserId = userId
+            };
+            _context.Address.Add(address);
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task SaveNewSchool()
+        {
+            var newSchool = new School
+            {
+                SchoolName = Input.NewSchoolName,
+                Country = Input.Country,
+                SchoolAddresses = new List<SchoolAddress>()
+            };
+            if (!string.IsNullOrWhiteSpace(Input.AddressLine1))
+            {
+                newSchool.SchoolAddresses.Add(new SchoolAddress
+                {
+                    State = Input.State,
+                    AddressLine1 = Input.AddressLine1,
+                    AddressLine2 = Input.AddressLine2,
+                    City = Input.City,
+                    ZIPCode = Input.ZIPCode
+                });
+            }
+            _context.Schools.Add(newSchool);
+            await _context.SaveChangesAsync();
+            Input.SchoolID = newSchool.SchoolID;
+        }
+
+        private async Task SaveStudentEnrollments(string userId)
+        {
+            if (SelectedCourses != null && SelectedCourses.Any())
+            {
+                foreach (var courseId in SelectedCourses)
+                {
+                    var enrollment = new Enrollment
+                    {
+                        CourseID = courseId,
+                        StudentUserID = userId
+                    };
+                    _context.Enrollment.Add(enrollment);
+                }
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        private async Task SaveEducatorCourses(string userId)
+        {
+            if (SelectedCourses != null && SelectedCourses.Any())
+            {
+                foreach (var courseId in SelectedCourses)
+                {
+                    var courseEducator = new CourseEducator
+                    {
+                        CourseID = courseId,
+                        EducatorUserID = userId
+                    };
+                    _context.CourseEducator.Add(courseEducator);
+                }
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        private async Task SendEmailConfirmation(ApplicationUser user, string userId, string returnUrl)
+        {
+            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+            var callbackUrl = Url.Page(
+                "/Account/ConfirmEmail",
+                pageHandler: null,
+                values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
+                protocol: Request.Scheme);
+
+            await SendEmailAsync(Input.Email, "Confirm your email",
+                $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
         }
 
         //private async Task<bool> SendEmailAsync(string email, string subject, string confirmLink)
