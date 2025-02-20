@@ -59,6 +59,5 @@ public class ApplicationUser : IdentityUser
     public virtual School? School { get; set; }
 
     public ICollection<UserSchool> UserSchools { get; set; }
-    public virtual ICollection<Course> Courses { get; set; } = new List<Course>();
 
 }

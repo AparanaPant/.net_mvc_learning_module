@@ -106,29 +106,29 @@ namespace GraceProject.Controllers.Report
         //    }
         //}
 
-        [HttpPost]
-        [Route("GetSchoolList")]
-        public IActionResult GetSchoolList(SearchModel searchData)
-        {
-            try
-            {
-                string keyword = searchData.Keyword;
-                int? count = searchData.Count;
-                var Schools = _context.SchoolInfo
-                    .Where(s => s.SchoolName.Contains(keyword))
-                    .Take(count != null ? count.Value : 100)
-                    .Select(s => new {
-                        Name = s.SchoolName,
-                        id = s.SchoolID
-                    })
-                    .ToList();
-                return Ok(Schools);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest("Error on Fetching School Info: " + ex.Message);
-            }
-        }
+        //[HttpPost]
+        //[Route("GetSchoolList")]
+        //public IActionResult GetSchoolList(SearchModel searchData)
+        //{
+        //    try
+        //    {
+        //        string keyword = searchData.Keyword;
+        //        int? count = searchData.Count;
+        //        var Schools = _context.SchoolInfo
+        //            .Where(s => s.SchoolName.Contains(keyword))
+        //            .Take(count != null ? count.Value : 100)
+        //            .Select(s => new {
+        //                Name = s.SchoolName,
+        //                id = s.SchoolID
+        //            })
+        //            .ToList();
+        //        return Ok(Schools);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest("Error on Fetching School Info: " + ex.Message);
+        //    }
+        //}
 
         [HttpPost]
         [Route("GetCoursesByStudent")]
@@ -152,49 +152,49 @@ namespace GraceProject.Controllers.Report
             }
         }
 
-        [HttpPost]
-        [Route("GetCoursesByEducator")]
-        public IActionResult GetCoursesByEducator([FromBody] string dataId)
-        {
-            try
-            {
-                var CoursesByEducator = _context.Course
-                    .Where(c => c.EducatorUserID == dataId)
-                    .Select(c => new { 
-                        name = c.Title,
-                        id = c.CourseID
-                    })
-                    .ToList();
+        //[HttpPost]
+        //[Route("GetCoursesByEducator")]
+        //public IActionResult GetCoursesByEducator([FromBody] string dataId)
+        //{
+        //    try
+        //    {
+        //        var CoursesByEducator = _context.Course
+        //            .Where(c => c.EducatorUserID == dataId)
+        //            .Select(c => new { 
+        //                name = c.Title,
+        //                id = c.CourseID
+        //            })
+        //            .ToList();
 
-                return Ok(CoursesByEducator);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest("Error on Fetching Corses By EducatorID");
-            }
-        }
+        //        return Ok(CoursesByEducator);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest("Error on Fetching Corses By EducatorID");
+        //    }
+        //}
 
-        [HttpPost]
-        [Route("GetCoursesBySchool")]
-        public IActionResult GetCoursesBySchool([FromBody] int dataId)
-        {
+    //    [HttpPost]
+    //    [Route("GetCoursesBySchool")]
+    //    public IActionResult GetCoursesBySchool([FromBody] int dataId)
+    //    {
 
-            try
-            {
-                var CoursesBySchool = _context.Course
-                    .Where(c => c.SchoolID == dataId)
-                    .Select(c => new { 
-                        name = c.Title,
-                        id = c.CourseID
-                    })
-                    .ToList();
+    //        try
+    //        {
+    //            var CoursesBySchool = _context.Course
+    //                .Where(c => c.SchoolID == dataId)
+    //                .Select(c => new { 
+    //                    name = c.Title,
+    //                    id = c.CourseID
+    //                })
+    //                .ToList();
 
-                return Ok(CoursesBySchool);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest("Error on Fetching Corses By SchoolID");
-            }
-        }
+    //            return Ok(CoursesBySchool);
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            return BadRequest("Error on Fetching Corses By SchoolID");
+    //        }
+    //    }
     }
 }

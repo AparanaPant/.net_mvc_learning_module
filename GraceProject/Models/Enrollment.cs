@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GraceProject.Models;
 
@@ -14,7 +15,9 @@ public class Enrollment
 
     public DateTime? JoiningDate { get; set; }
 
+    [ForeignKey("CourseID")]
     public virtual Course Course { get; set; } = null!;
 
-    public virtual ApplicationUser StudentUser { get; set; } = null!;
+    [ForeignKey("StudentUserID")]
+    public virtual Student StudentUser { get; set; } = null!;
 }

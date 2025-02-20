@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GraceProject.Models;
 
@@ -13,13 +14,30 @@ public class Course
 
     public int? Credits { get; set; }
 
-    public string? EducatorUserID { get; set; }
+    public virtual ICollection<CourseEducator> CourseEducators { get; set; } = new List<CourseEducator>();
 
-    public int? SchoolID { get; set; }
 
     public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
 
-    public virtual ApplicationUser? EducatorUser { get; set; }
+}
 
-    public virtual SchoolInfo? SchoolInfo { get; set; }
+public class CourseEducator
+{
+    [Key]
+    public int Id { get; set; } // Primary key
+
+    public DateTime? JoiningDate { get; set; }
+
+    [Required]
+    public string CourseID { get; set; } = null!;
+
+    [Required]
+    public string EducatorUserID { get; set; } = null!;
+
+    // Navigation properties
+    [ForeignKey("CourseID")]
+    public virtual Course Course { get; set; } = null!;
+
+    [ForeignKey("EducatorUserID")]
+    public virtual Educator Educator { get; set; } = null!;
 }
