@@ -51,60 +51,60 @@ namespace GraceProject.Controllers.Report
 
 
 
-        [HttpPost]
-        [Route("GetStudentList")]
-        //public IActionResult GetStudentList([FromBody] string keyword1)
-        public IActionResult GetStudentList(SearchModel searchData)
-        {
-            try
-            {
-                string keyword = searchData.Keyword;
-                int? count = searchData.Count;
-                var Students = _context.Student
-                    .Where(s => s.StudentUser.FirstName.Contains(keyword) ||
-                        s.StudentUser.LastName.Contains(keyword) ||
-                        (s.StudentUser.UserName != null && s.StudentUser.UserName.Contains(keyword)))
-                    .Take(count != null ? count.Value : 100)
-                    .Select(s=> new {
-                        name = s.StudentUser.FirstName + " " + s.StudentUser.LastName + " (" + s.StudentUser.UserName + ") ",
-                        id = s.StudentUser.Id
-                    })
-                    .ToList();
+        //[HttpPost]
+        //[Route("GetStudentList")]
+        ////public IActionResult GetStudentList([FromBody] string keyword1)
+        //public IActionResult GetStudentList(SearchModel searchData)
+        //{
+        //    try
+        //    {
+        //        string keyword = searchData.Keyword;
+        //        int? count = searchData.Count;
+        //        var Students = _context.Student
+        //            .Where(s => s.StudentUser.FirstName.Contains(keyword) ||
+        //                s.StudentUser.LastName.Contains(keyword) ||
+        //                (s.StudentUser.UserName != null && s.StudentUser.UserName.Contains(keyword)))
+        //            .Take(count != null ? count.Value : 100)
+        //            .Select(s=> new {
+        //                name = s.StudentUser.FirstName + " " + s.StudentUser.LastName + " (" + s.StudentUser.UserName + ") ",
+        //                id = s.StudentUser.Id
+        //            })
+        //            .ToList();
                 
-                return Ok(Students);
+        //        return Ok(Students);
                 
-            }
-            catch (Exception ex)
-            {
-                return BadRequest("Error on Fetching Student Info: " + ex.Message);
-            }
-        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest("Error on Fetching Student Info: " + ex.Message);
+        //    }
+        //}
 
         [HttpPost]
         [Route("GetTeacherList")]
-        public IActionResult GetTeacherList(SearchModel searchData)
-        {
-            try
-            {
-                string keyword = searchData.Keyword;
-                int? count = searchData.Count;
-                var Teachers = _context.Educator
-                    .Where(e => e.EducatorUser.FirstName.Contains(keyword) || 
-                    e.EducatorUser.LastName.Contains(keyword) || 
-                    (e.EducatorUser.UserName != null && e.EducatorUser.UserName.Contains(keyword)))
-                    .Take(count != null ? count.Value : 100)
-                    .Select(s => new {
-                        Name = s.EducatorUser.FirstName + " " + s.EducatorUser.LastName + "(" + s.EducatorUser.UserName + ")",
-                        id = s.EducatorUser.Id
-                    })
-                    .ToList();
-                return Ok(Teachers);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest("Error on Fetching Teacher Info: "+ ex.Message);
-            }
-        }
+        //public IActionResult GetTeacherList(SearchModel searchData)
+        //{
+        //    try
+        //    {
+        //        string keyword = searchData.Keyword;
+        //        int? count = searchData.Count;
+        //        var Teachers = _context.Educator
+        //            .Where(e => e.EducatorUser.FirstName.Contains(keyword) || 
+        //            e.EducatorUser.LastName.Contains(keyword) || 
+        //            (e.EducatorUser.UserName != null && e.EducatorUser.UserName.Contains(keyword)))
+        //            .Take(count != null ? count.Value : 100)
+        //            .Select(s => new {
+        //                Name = s.EducatorUser.FirstName + " " + s.EducatorUser.LastName + "(" + s.EducatorUser.UserName + ")",
+        //                id = s.EducatorUser.Id
+        //            })
+        //            .ToList();
+        //        return Ok(Teachers);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest("Error on Fetching Teacher Info: "+ ex.Message);
+        //    }
+        //}
 
         [HttpPost]
         [Route("GetSchoolList")]

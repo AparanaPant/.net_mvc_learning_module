@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GraceProject.Migrations
 {
     [DbContext(typeof(GraceDbContext))]
-    [Migration("20250216194447_InitialCreate")]
+    [Migration("20250220012924_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -34,7 +34,6 @@ namespace GraceProject.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AddressId"));
 
                     b.Property<string>("City")
-                        .IsRequired()
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Country")
@@ -42,11 +41,9 @@ namespace GraceProject.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("State")
-                        .IsRequired()
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("StreetAddress")
-                        .IsRequired()
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("UserId")
@@ -54,7 +51,6 @@ namespace GraceProject.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ZIPCode")
-                        .IsRequired()
                         .HasColumnType("nvarchar(20)");
 
                     b.HasKey("AddressId");
@@ -76,6 +72,9 @@ namespace GraceProject.Migrations
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -119,6 +118,9 @@ namespace GraceProject.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<int?>("SchoolID")
+                        .HasColumnType("int");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -128,6 +130,10 @@ namespace GraceProject.Migrations
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("UserType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -139,7 +145,13 @@ namespace GraceProject.Migrations
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
+                    b.HasIndex("SchoolID");
+
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasDiscriminator<string>("UserType").HasValue("ApplicationUser");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("GraceProject.Models.Course", b =>
@@ -166,33 +178,6 @@ namespace GraceProject.Migrations
                     b.HasIndex("SchoolID");
 
                     b.ToTable("Course");
-                });
-
-            modelBuilder.Entity("GraceProject.Models.Educator", b =>
-                {
-                    b.Property<int>("EducatorID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EducatorID"));
-
-                    b.Property<string>("EducatorUserID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime?>("JoiningDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("SchoolID")
-                        .HasColumnType("int");
-
-                    b.HasKey("EducatorID");
-
-                    b.HasIndex("EducatorUserID");
-
-                    b.HasIndex("SchoolID");
-
-                    b.ToTable("Educator");
                 });
 
             modelBuilder.Entity("GraceProject.Models.Enrollment", b =>
@@ -551,33 +536,6 @@ namespace GraceProject.Migrations
                     b.ToTable("SlideSection", (string)null);
                 });
 
-            modelBuilder.Entity("GraceProject.Models.Student", b =>
-                {
-                    b.Property<int>("StudentID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StudentID"));
-
-                    b.Property<DateTime?>("JoiningDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("SchoolID")
-                        .HasColumnType("int");
-
-                    b.Property<string>("StudentUserID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("StudentID");
-
-                    b.HasIndex("SchoolID");
-
-                    b.HasIndex("StudentUserID");
-
-                    b.ToTable("Student");
-                });
-
             modelBuilder.Entity("GraceProject.Models.UserQuiz", b =>
                 {
                     b.Property<int>("UserQuizId")
@@ -712,12 +670,10 @@ namespace GraceProject.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProviderKey")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("nvarchar(max)");
@@ -754,12 +710,10 @@ namespace GraceProject.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("LoginProvider")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Name")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Value")
                         .HasColumnType("nvarchar(max)");
@@ -767,6 +721,36 @@ namespace GraceProject.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("GraceProject.Models.Educator", b =>
+                {
+                    b.HasBaseType("GraceProject.Models.ApplicationUser");
+
+                    b.Property<int?>("SchoolInfoSchoolID")
+                        .HasColumnType("int");
+
+                    b.HasIndex("SchoolInfoSchoolID");
+
+                    b.HasDiscriminator().HasValue("Educator");
+                });
+
+            modelBuilder.Entity("GraceProject.Models.Student", b =>
+                {
+                    b.HasBaseType("GraceProject.Models.ApplicationUser");
+
+                    b.Property<int?>("SchoolInfoSchoolID")
+                        .HasColumnType("int");
+
+                    b.HasIndex("SchoolInfoSchoolID");
+
+                    b.ToTable("AspNetUsers", t =>
+                        {
+                            t.Property("SchoolInfoSchoolID")
+                                .HasColumnName("Student_SchoolInfoSchoolID");
+                        });
+
+                    b.HasDiscriminator().HasValue("Student");
                 });
 
             modelBuilder.Entity("GraceProject.Models.Address", b =>
@@ -778,6 +762,15 @@ namespace GraceProject.Migrations
                         .IsRequired();
 
                     b.Navigation("ApplicationUser");
+                });
+
+            modelBuilder.Entity("GraceProject.Models.ApplicationUser", b =>
+                {
+                    b.HasOne("GraceProject.Models.School", "School")
+                        .WithMany("Users")
+                        .HasForeignKey("SchoolID");
+
+                    b.Navigation("School");
                 });
 
             modelBuilder.Entity("GraceProject.Models.Course", b =>
@@ -796,25 +789,6 @@ namespace GraceProject.Migrations
                     b.Navigation("SchoolInfo");
                 });
 
-            modelBuilder.Entity("GraceProject.Models.Educator", b =>
-                {
-                    b.HasOne("GraceProject.Models.ApplicationUser", "EducatorUser")
-                        .WithMany("Educators")
-                        .HasForeignKey("EducatorUserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("GraceProject.Models.SchoolInfo", "SchoolInfo")
-                        .WithMany("Educator")
-                        .HasForeignKey("SchoolID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("EducatorUser");
-
-                    b.Navigation("SchoolInfo");
-                });
-
             modelBuilder.Entity("GraceProject.Models.Enrollment", b =>
                 {
                     b.HasOne("GraceProject.Models.Course", "Course")
@@ -824,7 +798,7 @@ namespace GraceProject.Migrations
                         .IsRequired();
 
                     b.HasOne("GraceProject.Models.ApplicationUser", "StudentUser")
-                        .WithMany("Enrollments")
+                        .WithMany()
                         .HasForeignKey("StudentUserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -923,25 +897,6 @@ namespace GraceProject.Migrations
                     b.Navigation("ApplicationUser");
                 });
 
-            modelBuilder.Entity("GraceProject.Models.Student", b =>
-                {
-                    b.HasOne("GraceProject.Models.SchoolInfo", "SchoolInfo")
-                        .WithMany("Student")
-                        .HasForeignKey("SchoolID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("GraceProject.Models.ApplicationUser", "StudentUser")
-                        .WithMany("Students")
-                        .HasForeignKey("StudentUserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("SchoolInfo");
-
-                    b.Navigation("StudentUser");
-                });
-
             modelBuilder.Entity("GraceProject.Models.UserQuiz", b =>
                 {
                     b.HasOne("GraceProject.Models.Quiz", "Quiz")
@@ -1031,18 +986,26 @@ namespace GraceProject.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("GraceProject.Models.Educator", b =>
+                {
+                    b.HasOne("GraceProject.Models.SchoolInfo", null)
+                        .WithMany("Educator")
+                        .HasForeignKey("SchoolInfoSchoolID");
+                });
+
+            modelBuilder.Entity("GraceProject.Models.Student", b =>
+                {
+                    b.HasOne("GraceProject.Models.SchoolInfo", null)
+                        .WithMany("Student")
+                        .HasForeignKey("SchoolInfoSchoolID");
+                });
+
             modelBuilder.Entity("GraceProject.Models.ApplicationUser", b =>
                 {
                     b.Navigation("Address")
                         .IsRequired();
 
                     b.Navigation("Courses");
-
-                    b.Navigation("Educators");
-
-                    b.Navigation("Enrollments");
-
-                    b.Navigation("Students");
 
                     b.Navigation("UserSchools");
                 });
@@ -1076,6 +1039,8 @@ namespace GraceProject.Migrations
                     b.Navigation("SchoolAddresses");
 
                     b.Navigation("UserSchools");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("GraceProject.Models.SchoolInfo", b =>

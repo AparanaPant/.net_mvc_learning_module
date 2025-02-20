@@ -25,7 +25,8 @@ var environmentName = builder.Configuration["AppEnvironment"];
 
 bool requireConfirmedAccount = environmentName.Equals("Production", StringComparison.OrdinalIgnoreCase);
 
-builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = requireConfirmedAccount)
+builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddRoles<IdentityRole>() // Add role support
     .AddEntityFrameworkStores<GraceDbContext>();
 
 // Add services to the container.

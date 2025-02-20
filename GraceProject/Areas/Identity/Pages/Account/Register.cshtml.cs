@@ -210,6 +210,17 @@ namespace GraceProject.Areas.Identity.Pages.Account
                         }
                         await _context.SaveChangesAsync();
                     }
+                    if (!string.IsNullOrEmpty(userType))
+                    {
+                        var roleExists = await _context.Roles.AnyAsync(r => r.Name == userType);
+                        if (!roleExists)
+                        {
+                            await _context.Roles.AddAsync(new IdentityRole(userType));
+                            await _context.SaveChangesAsync();
+                        }
+
+                        await _userManager.AddToRoleAsync(user, userType);
+                    }
 
                     var address = new Address
                     {   Country = Input.Country ?? "USA",
@@ -254,17 +265,17 @@ namespace GraceProject.Areas.Identity.Pages.Account
                         Input.SchoolID = newSchool.SchoolID; // Set the new school ID for the user
                     }
 
-                    if (userType == "Teacher" || userType == "Student")
-                    {
-                        var userSchool = new UserSchool
-                        {
-                            UserID = user.Id,
-                            SchoolID = Input.SchoolID.Value 
-                        };
-                        _context.UserSchools.Add(userSchool);
-                        await _context.SaveChangesAsync();
-                    }
+                    //if (userType == "EDUCATOR" || userType == "STUDENT")
+                    //{
+                    //    var userSchool = new UserSchool
+                    //    {
+                    //        UserID = user.Id,
+                    //        SchoolID = Input.SchoolID.Value 
+                    //    };
+                    //    _context.UserSchools.Add(userSchool);
+                    //    await _context.SaveChangesAsync();
 
+                    //}
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                     var callbackUrl = Url.Page(

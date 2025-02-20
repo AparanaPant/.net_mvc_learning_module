@@ -40,9 +40,13 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-        // Customize the ASP.NET Identity model and override the defaults if needed.
-        // For example, you can rename the ASP.NET Identity table names and more.
-        // Add your customizations after calling base.OnModelCreating(builder);
+
+        builder.Entity<ApplicationUser>()
+            .HasDiscriminator<string>("UserType")
+            .HasValue<ApplicationUser>("ApplicationUser")
+            .HasValue<Student>("Student")
+            .HasValue<Educator>("Educator");
+
         builder.Entity<Address>().ToTable("Address");
         builder.Entity<Module>().ToTable("Module");
         builder.Entity<Slide>().ToTable("Slide");
@@ -114,15 +118,15 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
                 .HasForeignKey(c => c.SchoolID)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasMany(e => e.Educator)
-                .WithOne(ed => ed.SchoolInfo)
-                .HasForeignKey(ed => ed.SchoolID)
-                .OnDelete(DeleteBehavior.Restrict);
+            //entity.HasMany(e => e.Educator)
+            //    .WithOne(ed => ed.SchoolInfo)
+            //    .HasForeignKey(ed => ed.SchoolID)
+            //    .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasMany(e => e.Student)
-                .WithOne(s => s.SchoolInfo)
-                .HasForeignKey(s => s.SchoolID)
-                .OnDelete(DeleteBehavior.Restrict);
+            //entity.HasMany(e => e.Student)
+            //    .WithOne(s => s.SchoolInfo)
+            //    .HasForeignKey(s => s.SchoolID)
+            //    .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

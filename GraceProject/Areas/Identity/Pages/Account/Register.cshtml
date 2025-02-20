@@ -23,7 +23,7 @@
             <div id="teacher" class="container tab-pane active">
                 <br>
                 <form asp-route-returnUrl="@Model.ReturnUrl" method="post">
-                    <input type="hidden" name="userType" value="Guest" />
+                    <input type="hidden" name="UserType" value="EDUCATOR" />
                     <hr />
                     <div asp-validation-summary="All" class="text-danger"></div>
                     <div class="row">
@@ -190,7 +190,7 @@
             <div id="learner" class="container tab-pane fade">
                 <br>
                 <form asp-route-returnUrl="@Model.ReturnUrl" method="post">
-                    <input type="hidden" name="userType" value="Guest" />
+                    <input type="hidden" name="UserType" value="STUDENT" />
                     <hr />
                     <div asp-validation-summary="All" class="text-danger"></div>
                     <div class="row">
@@ -283,7 +283,7 @@
             <div id="parent" class="container tab-pane fade">
                 <br>
                 <form asp-route-returnUrl="@Model.ReturnUrl" method="post">
-                    <input type="hidden" name="userType" value="Guest" />
+                    <input type="hidden" name="UserType" value="Guest" />
                     <hr />
                     <div asp-validation-summary="All" class="text-danger"></div>
                     <div class="row">

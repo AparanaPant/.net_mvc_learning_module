@@ -36,6 +36,8 @@ public enum University
 // Add profile data for application users by adding properties to the ApplicationUser class
 public class ApplicationUser : IdentityUser
 {
+    public DateTime? CreatedAt { get; set; }
+
     [PersonalData]
     [Column(TypeName = "nvarchar(100)")]
     public string FirstName { get; set; }
@@ -49,12 +51,14 @@ public class ApplicationUser : IdentityUser
     public Gender Gender { get; set; }
     public virtual Address Address { get; set; }
 
+    public int? SchoolID { get; set; }  // Nullable because a user may have no school
+
+    
+
+    [ForeignKey("SchoolID")]
+    public virtual School? School { get; set; }
+
     public ICollection<UserSchool> UserSchools { get; set; }
     public virtual ICollection<Course> Courses { get; set; } = new List<Course>();
 
-    public virtual ICollection<Educator> Educators { get; set; } = new List<Educator>();
-
-    public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
-
-    public virtual ICollection<Student> Students { get; set; } = new List<Student>();
 }

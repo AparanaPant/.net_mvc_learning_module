@@ -15,6 +15,8 @@ namespace GraceProject.Models
         [StringLength(50)]
         public string Country { get; set; }
 
+        public virtual ICollection<ApplicationUser> Users { get; set; }
+
         public ICollection<SchoolAddress> SchoolAddresses { get; set; }
         public ICollection<UserSchool> UserSchools { get; set; }
     }
