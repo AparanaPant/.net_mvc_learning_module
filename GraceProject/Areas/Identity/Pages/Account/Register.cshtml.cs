@@ -193,11 +193,10 @@ namespace GraceProject.Areas.Identity.Pages.Account
             user.FirstName = Input.FirstName;
             user.LastName = Input.LastName;
             user.Gender = Input.Gender;
-
             await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
             await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
-
             var result = await _userManager.CreateAsync(user, Input.Password);
+
             if (!result.Succeeded)
             {
                 foreach (var error in result.Errors)
@@ -208,7 +207,19 @@ namespace GraceProject.Areas.Identity.Pages.Account
             }
 
             _logger.LogInformation("User created a new account with password.");
+
             var userId = await _userManager.GetUserIdAsync(user);
+
+            if ((userType == "STUDENT" || userType == "EDUCATOR") && Input.SchoolID.HasValue)
+            {
+                var userSchool = new UserSchool
+                {
+                    UserID = user.Id,
+                    SchoolID = Input.SchoolID.Value
+                };
+                _context.UserSchools.Add(userSchool);
+                await _context.SaveChangesAsync();
+            }
 
             // Assign user role
             if (!string.IsNullOrEmpty(userType))
