@@ -234,7 +234,7 @@ namespace GraceProject.Areas.Identity.Pages.Account
             // Save school information
             if (Input.SchoolID == null && !string.IsNullOrWhiteSpace(Input.NewSchoolName))
             {
-                await SaveNewSchool();
+                await SaveNewSchool(userId);
             }
             // Handle role-specific logic
             if (userType == "STUDENT")
@@ -286,7 +286,7 @@ namespace GraceProject.Areas.Identity.Pages.Account
             await _context.SaveChangesAsync();
         }
 
-        private async Task SaveNewSchool()
+        private async Task SaveNewSchool(string userId)
         {
             var newSchool = new School
             {
@@ -294,6 +294,7 @@ namespace GraceProject.Areas.Identity.Pages.Account
                 Country = Input.Country,
                 SchoolAddresses = new List<SchoolAddress>()
             };
+
             if (!string.IsNullOrWhiteSpace(Input.AddressLine1))
             {
                 newSchool.SchoolAddresses.Add(new SchoolAddress
@@ -305,9 +306,22 @@ namespace GraceProject.Areas.Identity.Pages.Account
                     ZIPCode = Input.ZIPCode
                 });
             }
+
             _context.Schools.Add(newSchool);
             await _context.SaveChangesAsync();
+
+            // Store the newly created SchoolID
             Input.SchoolID = newSchool.SchoolID;
+
+            // Retrieve the current user 
+
+            var userSchool = new UserSchool
+            {
+                UserID = userId,
+                SchoolID = Input.SchoolID.Value
+            };
+            _context.UserSchools.Add(userSchool);
+            await _context.SaveChangesAsync();
         }
 
         private async Task SaveStudentEnrollments(string userId)

@@ -24,9 +24,10 @@ public class Course
 public class CourseEducator
 {
     [Key]
-    public int Id { get; set; } // Primary key
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int Id { get; set; }  // Primary key
 
-    public DateTime? JoiningDate { get; set; }
+    public DateTime JoiningDate { get; set; } = DateTime.Now;
 
     [Required]
     public string CourseID { get; set; } = null!;

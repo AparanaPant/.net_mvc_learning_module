@@ -327,8 +327,9 @@ namespace GraceProject.Migrations
                 {
                     CourseID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     EducatorUserID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Id = table.Column<int>(type: "int", nullable: false),
-                    JoiningDate = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    JoiningDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -353,8 +354,9 @@ namespace GraceProject.Migrations
                 {
                     CourseID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     StudentUserID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    EnrollmentID = table.Column<int>(type: "int", nullable: false),
-                    JoiningDate = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    JoiningDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {

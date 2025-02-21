@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GraceProject.Migrations
 {
     [DbContext(typeof(GraceDbContext))]
-    [Migration("20250221033353_InitialCreate")]
+    [Migration("20250221141428_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -179,9 +179,12 @@ namespace GraceProject.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("JoiningDate")
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("JoiningDate")
                         .HasColumnType("datetime2");
 
                     b.HasKey("CourseID", "EducatorUserID");
@@ -199,10 +202,13 @@ namespace GraceProject.Migrations
                     b.Property<string>("StudentUserID")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("EnrollmentID")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("JoiningDate")
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("JoiningDate")
                         .HasColumnType("datetime2");
 
                     b.HasKey("CourseID", "StudentUserID");
