@@ -32,6 +32,8 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<CourseEducator> CourseEducator { get; set; }
 
+    public DbSet<UserAnswer> UserAnswers { get; set; }
+
     public GraceDbContext(DbContextOptions<GraceDbContext> options)
         : base(options)
     {
@@ -42,7 +44,33 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
     {
         base.OnModelCreating(builder);
 
-        // Many-to-Many: Educators & Courses (CourseEducator)
+        builder.Entity<UserQuiz>()
+            .HasMany(uq => uq.UserAnswers)
+            .WithOne(ua => ua.UserQuiz)
+            .HasForeignKey(ua => ua.UserQuizId)
+            .OnDelete(DeleteBehavior.Restrict); 
+
+       
+        builder.Entity<UserQuiz>()
+            .HasOne(uq => uq.Quiz)
+            .WithMany(q => q.UserQuizzes)
+            .HasForeignKey(uq => uq.QuizId)
+            .OnDelete(DeleteBehavior.Cascade); 
+
+        builder.Entity<UserAnswer>()
+            .HasOne(ua => ua.Question)
+            .WithMany()
+            .HasForeignKey(ua => ua.QuestionId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        
+        builder.Entity<UserAnswer>()
+            .HasOne(ua => ua.SelectedOption)
+            .WithMany()
+            .HasForeignKey(ua => ua.SelectedOptionId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+       
         builder.Entity<CourseEducator>()
             .HasKey(ce => new { ce.CourseID, ce.EducatorUserID });
 
@@ -53,10 +81,10 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
 
         builder.Entity<CourseEducator>()
             .HasOne(ce => ce.Educator)
-            .WithMany(e => e.CourseEducators) // ✅ Now referencing Educator explicitly
+            .WithMany(e => e.CourseEducators) 
             .HasForeignKey(ce => ce.EducatorUserID);
 
-        // Many-to-Many: Students & Courses (Enrollments)
+       
         builder.Entity<Enrollment>()
             .HasKey(e => new { e.CourseID, e.StudentUserID });
 
@@ -67,7 +95,7 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
 
         builder.Entity<Enrollment>()
             .HasOne(e => e.StudentUser)
-            .WithMany(s => s.Enrollments) // ✅ Now referencing Student explicitly
+            .WithMany(s => s.Enrollments) 
             .HasForeignKey(e => e.StudentUserID);
 
         builder.Entity<ApplicationUser>()

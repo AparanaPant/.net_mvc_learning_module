@@ -220,13 +220,12 @@
                         <span asp-validation-for="Input.Email" class="text-danger"></span>
                     </div>
                     <div class="form-floating mb-3">
-                        <select class="form-select" id="schoolSelect" name="Input.School">
+                        <select asp-for="Input.SchoolID" class="form-select" id="schoolSelect" name="Input.SchoolID" asp-items="@(ViewData["Schools"] as SelectList)">
                             <option value="">Select a school...</option>
-                            <option value="School1">School 1</option>
-                            <option value="School2">School 2</option>
-                            <option value="School3">School 3</option>
+                            <option value="other">Other (not listed)</option>
                         </select>
-                        <label for="schoolSelect">School</label>
+                        <label asp-for="Input.SchoolID" for="schoolSelect">School</label>
+                        <span asp-validation-for="Input.SchoolID" class="text-danger"></span>
                     </div>
                     <div class="form-floating mb-3">
                         <select class="form-select" id="learnerGradeSelect" name="Input.LearnerGrade">

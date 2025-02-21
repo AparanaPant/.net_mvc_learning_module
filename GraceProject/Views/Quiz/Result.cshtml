@@ -1,11 +1,91 @@
 ﻿@model GraceProject.Models.UserQuiz
 @{
-    ViewData["Title"] = "create_quiz";
+    ViewData["Title"] = "Quiz Result";
     Layout = "~/Views/Shared/_StudentLayout.cshtml";
+
+    // Calculate time taken (Ensure CreatedAt is not null)
+    TimeSpan timeTaken = Model.Quiz.CreatedAt != null
+        ? Model.CompletedAt - Model.Quiz.CreatedAt
+        : TimeSpan.Zero;
 }
 
-<h2>Quiz Result</h2>
+<h2 class="text-center">Quiz Result</h2>
 
-<p>Quiz: @Model.Quiz.Title</p>
-<p>Score: @Model.Score</p>
-<p>Completed At: @Model.CompletedAt</p>
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4>@Model.Quiz.Title</h4>
+        </div>
+        <div class="card-body">
+            <p><strong>Score:</strong> @Model.Score / @(Model.UserAnswers?.Sum(a => a.Question?.Points ?? 0) ?? 0)</p>
+            <p><strong>Completed At:</strong> @Model.CompletedAt</p>
+            <p><strong>Time Taken:</strong> @timeTaken.Minutes minutes, @timeTaken.Seconds seconds</p>
+        </div>
+    </div>
+
+    <h3 class="mt-4">Questions & Answers</h3>
+
+    @foreach (var answer in Model.UserAnswers ?? new List<UserAnswer>())
+    {
+        bool isCorrect = answer.IsCorrect;
+        string resultClass = isCorrect ? "text-success" : "text-danger"; // ✅ Green for correct, ❌ Red for incorrect
+
+        <div class="card mt-3">
+            <div class="card-header bg-light">
+                <h5>Question: @answer.Question?.Text</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Marks for this question:</strong> @answer.Question?.Points</p>
+
+                @if (answer.SelectedOptionId.HasValue)
+                {
+                    var selectedOption = answer.Question?.Options?.FirstOrDefault(o => o.OptionId == answer.SelectedOptionId);
+                    <p>
+                        <strong>Your Answer:</strong>
+                        <span class="@resultClass">
+                            @selectedOption?.Text (@(isCorrect ? "✅ Correct" : "❌ Incorrect"))
+                        </span>
+                    </p>
+                }
+                else if (!string.IsNullOrEmpty(answer.FillInTheBlankResponse))
+                {
+                    <p>
+                        <strong>Your Answer:</strong>
+                        <span class="@resultClass">
+                            @answer.FillInTheBlankResponse (@(isCorrect ? "✅ Correct" : "❌ Incorrect"))
+                        </span>
+                    </p>
+                }
+                else
+                {
+                    <p class="text-warning"><strong>Not Attempted</strong></p>
+                }
+
+                <p>
+                    <strong>Correct Answer:</strong>
+                    @if (answer.Question?.Options != null && answer.Question.Options.Any(o => o.IsCorrect))
+                    {
+                        <span class="text-success">
+                            @string.Join(", ", answer.Question.Options.Where(o => o.IsCorrect).Select(o => o.Text))
+                        </span>
+                    }
+                    else if (answer.Question?.FillInTheBlankAnswers != null && answer.Question.FillInTheBlankAnswers.Any())
+                    {
+                        <span class="text-success">
+                            @string.Join(", ", answer.Question.FillInTheBlankAnswers.Select(f => f.Answer))
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="text-muted">N/A</span>
+                    }
+                </p>
+            </div>
+        </div>
+    }
+
+    <div class="text-center mt-4">
+        <h4 class="text-primary">Total Score: @Model.Score / @(Model.UserAnswers?.Sum(a => a.Question?.Points ?? 0) ?? 0)</h4>
+        <a href="@Url.Action("Index", "Home")" class="btn btn-secondary mt-3">Return to Home</a>
+    </div>
+</div>

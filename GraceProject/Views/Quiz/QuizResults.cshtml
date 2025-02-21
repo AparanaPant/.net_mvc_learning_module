@@ -1,0 +1,116 @@
+﻿@model List<GraceProject.Models.UserQuiz>
+
+@{
+    ViewData["Title"] = "My Quiz Results";
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+}
+
+<h2 class="text-center mt-3">My Quiz Results</h2>
+
+<div class="container mt-4">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Quiz Title</th>
+                <th>Score</th>
+                <th>Completed At</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Any())
+            {
+                @foreach (var quiz in Model)
+                {
+                    <tr>
+                        <td>@quiz.Quiz.Title</td>
+                        <td>@quiz.Score / @quiz.UserAnswers.Sum(a => a.Question.Points)</td>
+                        <td>@quiz.CompletedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>
+                            <button class="btn btn-primary btn-sm toggle-quiz" data-quizid="@quiz.UserQuizId">
+                                View Details
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- Hidden Details for Each Quiz -->
+                    <tr class="quiz-details quiz-@quiz.UserQuizId" style="display:none;">
+                        <td colspan="4">
+                            <h5 class="mt-3">Questions & Answers</h5>
+                            @foreach (var answer in quiz.UserAnswers)
+                            {
+                                bool isCorrect = answer.IsCorrect;
+                                string resultClass = isCorrect ? "text-success" : "text-danger"; // ✅ Green if correct, ❌ Red if incorrect
+
+                                <div class="card mt-3">
+                                    <div class="card-header bg-light">
+                                        <h5>Question: @answer.Question.Text</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>Marks for this question:</strong> @answer.Question.Points</p>
+
+                                        @if (answer.SelectedOptionId.HasValue)
+                                        {
+                                            <p>
+                                                <strong>Your Answer:</strong>
+                                                <span class="@resultClass">
+                                                    @answer.SelectedOption.Text (@(isCorrect ? "✅ Correct" : "❌ Incorrect"))
+                                                </span>
+                                            </p>
+                                        }
+                                        else if (!string.IsNullOrEmpty(answer.FillInTheBlankResponse))
+                                        {
+                                            <p>
+                                                <strong>Your Answer:</strong>
+                                                <span class="@resultClass">
+                                                    @answer.FillInTheBlankResponse (@(isCorrect ? "✅ Correct" : "❌ Incorrect"))
+                                                </span>
+                                            </p>
+                                        }
+                                        else
+                                        {
+                                            <p class="text-warning"><strong>Not Attempted</strong></p>
+                                        }
+
+                                        <p>
+                                            <strong>Correct Answer:</strong>
+                                            @if (answer.Question.Options.Any(o => o.IsCorrect))
+                                            {
+                                                <span class="text-success">
+                                                    @string.Join(", ", answer.Question.Options.Where(o => o.IsCorrect).Select(o => o.Text))
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-success">
+                                                    @string.Join(", ", answer.Question.FillInTheBlankAnswers.Select(f => f.Answer))
+                                                </span>
+                                            }
+                                        </p>
+                                    </div>
+                                </div>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4" class="text-center text-danger">No quizzes found.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $(".toggle-quiz").click(function () {
+                var quizId = $(this).data("quizid");
+                $(".quiz-" + quizId).toggle();
+            });
+        });
+    </script>
+}
