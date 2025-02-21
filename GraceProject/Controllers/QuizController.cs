@@ -41,6 +41,7 @@ namespace GraceProject.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Educator")]
         public async Task<IActionResult> Create(QuizViewModel quizViewModel)
         {
             Console.WriteLine($"Quiz Title: {quizViewModel.Title}");
@@ -171,6 +172,7 @@ namespace GraceProject.Controllers
             return View(quizViewModel);
         }
 
+        [Authorize(Roles = "Admin,Educator")]
         public async Task<IActionResult> Edit(int id)
         {
             var quiz = await _context.Quizzes
@@ -364,7 +366,7 @@ namespace GraceProject.Controllers
             return View(model);
         }
 
-
+        [Authorize(Roles = "Admin,Educator")]
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
@@ -484,7 +486,7 @@ namespace GraceProject.Controllers
                 answer.Question.FillInTheBlankAnswers ??= new List<FillInTheBlankAnswer>();
             }
 
-            return View("Result", userQuiz); // ✅ Ensures `UserQuiz` is passed to `Result.cshtml`
+            return View("Result", userQuiz); 
         }
 
         [Authorize]
@@ -496,18 +498,18 @@ namespace GraceProject.Controllers
             var userId = user.Id;
 
             var userQuizzes = await _context.UserQuizzes
-                .Include(q => q.Quiz) // ✅ Load quiz details
+                .Include(q => q.Quiz) 
                 .Include(q => q.UserAnswers)
-                    .ThenInclude(a => a.Question) // ✅ Load all Questions
+                    .ThenInclude(a => a.Question)
                 .Include(q => q.UserAnswers)
-                    .ThenInclude(a => a.SelectedOption) // ✅ Load selected options for MCQs and True/False
+                    .ThenInclude(a => a.SelectedOption) 
                 .Include(q => q.UserAnswers)
-                    .ThenInclude(a => a.Question.FillInTheBlankAnswers) // ✅ Load correct Fill-in-the-Blank answers
+                    .ThenInclude(a => a.Question.FillInTheBlankAnswers) 
                 .Where(q => q.UserId == userId)
                 .OrderByDescending(q => q.CompletedAt)
                 .ToListAsync();
 
-            // ✅ Ensure UserAnswers are properly loaded
+           
             foreach (var quiz in userQuizzes)
             {
                 quiz.UserAnswers ??= new List<UserAnswer>();
@@ -518,7 +520,7 @@ namespace GraceProject.Controllers
                     answer.Question.Options ??= new List<Option>();
                     answer.Question.FillInTheBlankAnswers ??= new List<FillInTheBlankAnswer>();
 
-                    // ✅ Handle FIB: If the answer is a Fill-in-the-Blank response, check against all correct answers
+                    
                     if (answer.Question.Type == "Fill in the Blank" && !string.IsNullOrWhiteSpace(answer.FillInTheBlankResponse))
                     {
                         var correctAnswers = answer.Question.FillInTheBlankAnswers.Select(f => f.Answer).ToList();

@@ -55,10 +55,6 @@ namespace GraceProject.Areas.Identity.Pages.Account
             _context = context;
         }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [BindProperty]
         public InputModel Input { get; set; }
 
@@ -139,6 +135,12 @@ namespace GraceProject.Areas.Identity.Pages.Account
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
 
+            [Display(Name = "Grade")]
+            public int? StudentGradeId { get; set; } // Nullable for non-students
+
+            [Display(Name = "Grades Taught")]
+            public List<int> SelectedGrades { get; set; } = new List<int>(); // Multiple for Educators
+
             [Display(Name = "School")]
             public string SchoolName { get; set; }
             public string UserType { get; set; } // "Teacher", "Student", "Guest"
@@ -172,6 +174,16 @@ namespace GraceProject.Areas.Identity.Pages.Account
             // Fetch courses from the database
             var courses = await _context.Course.ToListAsync();
             ViewData["Courses"] = courses;
+            var grades = await _context.Grade 
+             .Select(g => new SelectListItem
+                {
+                    Value = g.GradeId.ToString(),
+                    Text = g.GradeName
+                })
+                .ToListAsync();
+
+            ViewData["Grades"] = new SelectList(grades, "Value", "Text");
+
         }
 
 
@@ -239,10 +251,12 @@ namespace GraceProject.Areas.Identity.Pages.Account
             // Handle role-specific logic
             if (userType == "STUDENT")
             {
+                await SaveStudentGrade(userId);
                 await SaveStudentEnrollments(userId);
             }
             else if (userType == "EDUCATOR")
             {
+                await SaveEducatorGrades(userId);
                 await SaveEducatorCourses(userId);
             }
 
@@ -284,6 +298,38 @@ namespace GraceProject.Areas.Identity.Pages.Account
             };
             _context.Address.Add(address);
             await _context.SaveChangesAsync();
+        }
+
+        private async Task SaveStudentGrade(string userId)
+        {
+            if (Input.StudentGradeId.HasValue)
+            {
+                var student = await _context.Users.OfType<Student>()
+                                 .FirstOrDefaultAsync(u => u.Id == userId);
+
+                if (student != null)
+                {
+                    student.GradeId = Input.StudentGradeId.Value; // ✅ Use `GradeId`, not `StudentGradeId`
+                    await _context.SaveChangesAsync();
+                }
+            }
+        }
+
+        private async Task SaveEducatorGrades(string userId)
+        {
+            if (Input.SelectedGrades != null && Input.SelectedGrades.Any())
+            {
+                foreach (var gradeId in Input.SelectedGrades)
+                {
+                    var educatorGrade = new EducatorGrade
+                    {
+                        EducatorId = userId,
+                        GradeId = gradeId
+                    };
+                    _context.EducatorGrades.Add(educatorGrade);
+                }
+                await _context.SaveChangesAsync();
+            }
         }
 
         private async Task SaveNewSchool(string userId)

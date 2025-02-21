@@ -125,31 +125,23 @@
                         <div id="savedInfo" style="margin-top: 20px;"></div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">High School Grades You Teach:</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="9" id="grade9" name="grades[]">
-                            <label class="form-check-label" for="grade9">
-                                Grade 9
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="10" id="grade10" name="grades[]">
-                            <label class="form-check-label" for="grade10">
-                                Grade 10
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="11" id="grade11" name="grades[]">
-                            <label class="form-check-label" for="grade11">
-                                Grade 11
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="12" id="grade12" name="grades[]">
-                            <label class="form-check-label" for="grade12">
-                                Grade 12
-                            </label>
-                        </div>
+                        <label class="form-label">Select Grades You Teach:</label>
+                        @if (ViewData["Grades"] is IEnumerable<SelectListItem> grades)
+                        {
+                            @foreach (var grade in grades)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="@grade.Value" id="grade@grade.Value" name="SelectedGrades">
+                                    <label class="form-check-label" for="grade@grade.Value">
+                                        @grade.Text
+                                    </label>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p>No grades available.</p>
+                        }
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Courses Taught:</label>
@@ -228,12 +220,8 @@
                         <span asp-validation-for="Input.SchoolID" class="text-danger"></span>
                     </div>
                     <div class="form-floating mb-3">
-                        <select class="form-select" id="learnerGradeSelect" name="Input.LearnerGrade">
+                        <select class="form-select" id="learnerGradeSelect" name="Input.StudentGradeId" asp-items="@(ViewData["Grades"] as SelectList)">
                             <option value="">Select your grade...</option>
-                            <option value="9">Grade 9</option>
-                            <option value="10">Grade 10</option>
-                            <option value="11">Grade 11</option>
-                            <option value="12">Grade 12</option>
                         </select>
                         <label for="learnerGradeSelect">Grade</label>
                     </div>

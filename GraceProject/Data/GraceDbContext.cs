@@ -33,6 +33,8 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<CourseEducator> CourseEducator { get; set; }
 
     public DbSet<UserAnswer> UserAnswers { get; set; }
+    public DbSet<Grade> Grade { get; set; }
+    public DbSet<EducatorGrade> EducatorGrades { get; set; }
 
     public GraceDbContext(DbContextOptions<GraceDbContext> options)
         : base(options)
@@ -43,6 +45,12 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+
+        builder.Entity<Student>()
+           .HasOne(s => s.Grade)
+           .WithMany(g => g.Students)
+           .HasForeignKey(s => s.GradeId)
+           .OnDelete(DeleteBehavior.Restrict);
 
         builder.Entity<UserQuiz>()
             .HasMany(uq => uq.UserAnswers)

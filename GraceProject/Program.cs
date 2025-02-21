@@ -84,7 +84,7 @@ async Task CreateRolesAndAdmin(IServiceProvider serviceProvider)
     var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-    string[] roleNames = { "Admin", "Educator", "Student", "Guest","vip" };
+    string[] roleNames = { "Admin", "Educator", "Student", "Guest"};
 
     foreach (var roleName in roleNames)
     {
@@ -93,8 +93,7 @@ async Task CreateRolesAndAdmin(IServiceProvider serviceProvider)
             await roleManager.CreateAsync(new IdentityRole(roleName));
         }
     }
-
-    // Create default admin user (Modify Email/Password as needed)
+    // Create default admin user
     string adminEmail = "admin@example.com";
     string adminPassword = "Admin@123";
 

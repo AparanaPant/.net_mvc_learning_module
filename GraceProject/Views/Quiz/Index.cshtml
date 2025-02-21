@@ -2,11 +2,16 @@
 @{
     ViewData["Title"] = "Quizzes";
     Layout = "~/Views/Shared/_StudentLayout.cshtml";
+
+    bool isAdminOrEducator = User.IsInRole("Admin") || User.IsInRole("Educator"); // ✅ Check role in view
 }
 
 <h2>Quizzes</h2>
 
-<a href="@Url.Action("Create", "Quiz")" class="btn btn-primary">Create Quiz</a>
+@if (isAdminOrEducator) // ✅ Only Admins & Educators can see "Create Quiz"
+{
+    <a href="@Url.Action("Create", "Quiz")" class="btn btn-primary">Create Quiz</a>
+}
 
 <table class="table">
     <thead>
@@ -24,8 +29,12 @@
                 <td>@quiz.CreatedAt</td>
                 <td>
                     <a href="@Url.Action("Take", "Quiz", new { id = quiz.QuizId })" class="btn btn-primary">Take Quiz</a>
-                    <a href="@Url.Action("Edit", "Quiz", new { id = quiz.QuizId })" class="btn btn-secondary">Edit</a>
-                    <button type="button" class="btn btn-danger" onclick="confirmDelete('@quiz.QuizId')">Delete</button>
+
+                    @if (isAdminOrEducator) // ✅ Only Admins & Educators can see "Edit" & "Delete"
+                    {
+                        <a href="@Url.Action("Edit", "Quiz", new { id = quiz.QuizId })" class="btn btn-secondary">Edit</a>
+                        <button type="button" class="btn btn-danger" onclick="confirmDelete('@quiz.QuizId')">Delete</button>
+                    }
                 </td>
             </tr>
         }
