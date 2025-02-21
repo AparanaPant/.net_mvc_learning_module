@@ -61,7 +61,10 @@
                                     </div>
                                     <div>
                                         <label>Points</label>
-                                        <input type="number" class="form-control question-points" value="1" style="width: auto;" name="Questions[${questionIndex}].Points" />
+                                        <input type="number" class="form-control question-points" value="1" style="width: auto;"
+                                            name="Questions[${questionIndex}].Points"
+                                            onchange="updateQuestionPoints(this, ${questionIndex})" />
+
                                     </div>
                                 </div>
                                 <div class="question-attributes">
@@ -85,6 +88,10 @@
             document.getElementById('questions-container').appendChild(questionDiv);
             changeAnswerSection(questionDiv.querySelector(".question-type"));
         }
+                function updateQuestionPoints(input, questionIndex) {
+            questions[questionIndex].Points = parseInt(input.value, 10);
+        }
+
 
         function changeAnswerSection(select) {
             const questionDiv = select.closest('.question-div');
