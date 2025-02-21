@@ -32,6 +32,8 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<CourseEducator> CourseEducator { get; set; }
 
+    public DbSet<UserAnswer> UserAnswers { get; set; }
+
     public GraceDbContext(DbContextOptions<GraceDbContext> options)
         : base(options)
     {
@@ -41,6 +43,34 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+
+        // ✅ **Fix: Ensure UserQuiz has a one-to-many relationship with UserAnswer**
+        builder.Entity<UserQuiz>()
+            .HasMany(uq => uq.UserAnswers)
+            .WithOne(ua => ua.UserQuiz)
+            .HasForeignKey(ua => ua.UserQuizId)
+            .OnDelete(DeleteBehavior.Restrict); 
+
+        // ✅ Configure UserQuiz -> Quiz
+        builder.Entity<UserQuiz>()
+            .HasOne(uq => uq.Quiz)
+            .WithMany(q => q.UserQuizzes)
+            .HasForeignKey(uq => uq.QuizId)
+            .OnDelete(DeleteBehavior.Cascade); 
+
+        // ✅ Configure UserAnswer -> Question
+        builder.Entity<UserAnswer>()
+            .HasOne(ua => ua.Question)
+            .WithMany()
+            .HasForeignKey(ua => ua.QuestionId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // ✅ Configure UserAnswer -> Option
+        builder.Entity<UserAnswer>()
+            .HasOne(ua => ua.SelectedOption)
+            .WithMany()
+            .HasForeignKey(ua => ua.SelectedOptionId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Many-to-Many: Educators & Courses (CourseEducator)
         builder.Entity<CourseEducator>()

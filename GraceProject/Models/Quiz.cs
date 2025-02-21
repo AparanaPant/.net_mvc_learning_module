@@ -77,5 +77,29 @@ namespace GraceProject.Models
         public DateTime CompletedAt { get; set; }
 
         public int Score { get; set; }
+        public virtual ICollection<UserAnswer> UserAnswers { get; set; } = new List<UserAnswer>();
     }
+
+    public class UserAnswer
+    {
+        [Key] 
+        public int UserAnswerId { get; set; }
+
+        public int UserQuizId { get; set; }  // Link to the quiz attempt
+        public virtual UserQuiz UserQuiz { get; set; }  // Navigation property
+
+        public int QuestionId { get; set; }  // The question being answered
+        public virtual Question Question { get; set; }  // Navigation property
+
+        public int? SelectedOptionId { get; set; }  // MCQ: Chosen option (nullable for non-MCQ)
+        public virtual Option SelectedOption { get; set; }  // Navigation property for MCQ
+
+        public string? FillInTheBlankResponse { get; set; }  // Text input (nullable for MCQ)
+
+        public bool IsCorrect { get; set; }  // Was the answer correct?
+        public int PointsAwarded { get; set; }  // Points given for this question
+
+        public DateTime SubmittedAt { get; set; } = DateTime.Now;  // Time of submission
+    }
+
 }

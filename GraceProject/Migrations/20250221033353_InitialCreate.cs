@@ -327,7 +327,8 @@ namespace GraceProject.Migrations
                 {
                     CourseID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     EducatorUserID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    JoiningDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -517,6 +518,43 @@ namespace GraceProject.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "UserAnswers",
+                columns: table => new
+                {
+                    UserAnswerId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserQuizId = table.Column<int>(type: "int", nullable: false),
+                    QuestionId = table.Column<int>(type: "int", nullable: false),
+                    SelectedOptionId = table.Column<int>(type: "int", nullable: false),
+                    FillInTheBlankResponse = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsCorrect = table.Column<bool>(type: "bit", nullable: false),
+                    PointsAwarded = table.Column<int>(type: "int", nullable: false),
+                    SubmittedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserAnswers", x => x.UserAnswerId);
+                    table.ForeignKey(
+                        name: "FK_UserAnswers_Options_SelectedOptionId",
+                        column: x => x.SelectedOptionId,
+                        principalTable: "Options",
+                        principalColumn: "OptionId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_UserAnswers_Questions_QuestionId",
+                        column: x => x.QuestionId,
+                        principalTable: "Questions",
+                        principalColumn: "QuestionId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_UserAnswers_UserQuizzes_UserQuizId",
+                        column: x => x.UserQuizId,
+                        principalTable: "UserQuizzes",
+                        principalColumn: "UserQuizId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Address_UserId",
                 table: "Address",
@@ -623,6 +661,21 @@ namespace GraceProject.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_UserAnswers_QuestionId",
+                table: "UserAnswers",
+                column: "QuestionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserAnswers_SelectedOptionId",
+                table: "UserAnswers",
+                column: "SelectedOptionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserAnswers_UserQuizId",
+                table: "UserAnswers",
+                column: "UserQuizId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserQuizzes_QuizId",
                 table: "UserQuizzes",
                 column: "QuizId");
@@ -677,16 +730,13 @@ namespace GraceProject.Migrations
                 name: "Module");
 
             migrationBuilder.DropTable(
-                name: "Options");
-
-            migrationBuilder.DropTable(
                 name: "SchoolAddresses");
 
             migrationBuilder.DropTable(
                 name: "SlideSection");
 
             migrationBuilder.DropTable(
-                name: "UserQuizzes");
+                name: "UserAnswers");
 
             migrationBuilder.DropTable(
                 name: "UserSchools");
@@ -698,16 +748,22 @@ namespace GraceProject.Migrations
                 name: "Course");
 
             migrationBuilder.DropTable(
-                name: "Questions");
-
-            migrationBuilder.DropTable(
                 name: "Slide");
 
             migrationBuilder.DropTable(
-                name: "Quizzes");
+                name: "Options");
+
+            migrationBuilder.DropTable(
+                name: "UserQuizzes");
+
+            migrationBuilder.DropTable(
+                name: "Questions");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Quizzes");
 
             migrationBuilder.DropTable(
                 name: "Schools");

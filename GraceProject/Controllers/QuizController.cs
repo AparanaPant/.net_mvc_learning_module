@@ -10,6 +10,7 @@ using System.Security.Claims;
 using GraceProject.Data;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Microsoft.AspNetCore.Identity;
 
 namespace GraceProject.Controllers
 {
@@ -17,10 +18,12 @@ namespace GraceProject.Controllers
     public class QuizController : Controller
     {
         private readonly GraceDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public QuizController(GraceDbContext context)
+        public QuizController(GraceDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // List all quizzes
@@ -166,42 +169,6 @@ namespace GraceProject.Controllers
             };
 
             return View(quizViewModel);
-        }
-
-
-
-        [HttpPost]
-        public async Task<IActionResult> Submit(QuizViewModel quizViewModel)
-        {
-            if (ModelState.IsValid)
-            {
-                // Calculate score
-                int score = 0;
-                foreach (var question in quizViewModel.Questions)
-                {
-                    var correctOption = question.Options.FirstOrDefault(o => o.IsCorrect);
-                    var selectedOption = question.Options.FirstOrDefault(o => o.Selected);
-                    if (correctOption != null && selectedOption != null && correctOption.OptionId == selectedOption.OptionId)
-                    {
-                        score++;
-                    }
-                }
-
-                // Save user quiz result
-                var userQuiz = new UserQuiz
-                {
-                    UserId = User.FindFirstValue(ClaimTypes.NameIdentifier),
-                    QuizId = quizViewModel.QuizId,
-                    CompletedAt = DateTime.Now,
-                    Score = score
-                };
-
-                _context.UserQuizzes.Add(userQuiz);
-                await _context.SaveChangesAsync();
-
-                return RedirectToAction(nameof(Result), new { id = userQuiz.UserQuizId });
-            }
-            return View(nameof(Take), quizViewModel);
         }
 
         public async Task<IActionResult> Edit(int id)
@@ -412,6 +379,83 @@ namespace GraceProject.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+        public async Task<IActionResult> Submit(QuizViewModel submitQuizViewModel)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var quiz = await _context.Quizzes
+                .Include(q => q.Questions)
+                    .ThenInclude(q => q.Options)
+                .Include(q => q.Questions)
+                .FirstOrDefaultAsync(q => q.QuizId == submitQuizViewModel.QuizId);
+
+            if (quiz == null) return NotFound("Quiz not found");
+
+            int totalScore = 0;
+            List<UserAnswer> userAnswers = new List<UserAnswer>();
+
+            var userQuiz = new UserQuiz
+            {
+                UserId = user.Id,
+                QuizId = quiz.QuizId,
+                CompletedAt = DateTime.Now,
+                Score = 0
+            };
+            _context.UserQuizzes.Add(userQuiz);
+            await _context.SaveChangesAsync();
+
+            int userQuizId = userQuiz.UserQuizId;
+
+            // Process each submitted answer
+            foreach (var questionAnswer in submitQuizViewModel.QuestionAnswers)
+            {
+                var question = quiz.Questions.FirstOrDefault(q => q.QuestionId == questionAnswer.QuestionId);
+                if (question == null) continue;
+
+                bool isCorrect = false;
+                int pointsAwarded = 0;
+
+                if ((question.Type == "Multiple Choice" || question.Type == "True/False") && questionAnswer.SelectedOptionId.HasValue)
+                {
+                    var selectedOption = question.Options.FirstOrDefault(o => o.OptionId == questionAnswer.SelectedOptionId.Value);
+                    isCorrect = selectedOption?.IsCorrect ?? false;
+                }
+                if (question.Type == "Fill in the Blank" && !string.IsNullOrWhiteSpace(questionAnswer.FillInTheBlankResponse))
+                {
+                    isCorrect = (question.FillInTheBlankAnswers ?? new List<FillInTheBlankAnswer>())
+                        .Any(a => a.Answer.Equals(questionAnswer.FillInTheBlankResponse, StringComparison.OrdinalIgnoreCase));
+                }
+
+                if (isCorrect)
+                {
+                    pointsAwarded = question.Points;
+                    totalScore += pointsAwarded;
+                }
+
+                userAnswers.Add(new UserAnswer
+                {
+                    UserQuizId = userQuizId,
+                    QuestionId = question.QuestionId,
+                    SelectedOptionId = question.Type == "Fill in the Blank" ? null : questionAnswer.SelectedOptionId,
+                    FillInTheBlankResponse = questionAnswer.FillInTheBlankResponse,
+                    IsCorrect = isCorrect,
+                    PointsAwarded = pointsAwarded,
+                    SubmittedAt = DateTime.Now
+                });
+            }
+
+            _context.UserAnswers.AddRange(userAnswers);
+            await _context.SaveChangesAsync();
+
+            userQuiz.Score = totalScore;
+            _context.UserQuizzes.Update(userQuiz);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("ReviewQuiz", new { userQuizId = userQuizId });
+        }
+
         // Display quiz result
         public async Task<IActionResult> Result(int id)
         {
@@ -426,5 +470,8 @@ namespace GraceProject.Controllers
 
             return View(userQuiz);
         }
+
+
+
     }
 }

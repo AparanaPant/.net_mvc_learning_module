@@ -516,6 +516,47 @@ namespace GraceProject.Migrations
                     b.ToTable("SlideSection", (string)null);
                 });
 
+            modelBuilder.Entity("GraceProject.Models.UserAnswer", b =>
+                {
+                    b.Property<int>("UserAnswerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserAnswerId"));
+
+                    b.Property<string>("FillInTheBlankResponse")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsCorrect")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("PointsAwarded")
+                        .HasColumnType("int");
+
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SelectedOptionId")
+                        .IsRequired()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserQuizId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserAnswerId");
+
+                    b.HasIndex("QuestionId");
+
+                    b.HasIndex("SelectedOptionId");
+
+                    b.HasIndex("UserQuizId");
+
+                    b.ToTable("UserAnswers");
+                });
+
             modelBuilder.Entity("GraceProject.Models.UserQuiz", b =>
                 {
                     b.Property<int>("UserQuizId")
@@ -868,6 +909,33 @@ namespace GraceProject.Migrations
                     b.Navigation("ApplicationUser");
                 });
 
+            modelBuilder.Entity("GraceProject.Models.UserAnswer", b =>
+                {
+                    b.HasOne("GraceProject.Models.Question", "Question")
+                        .WithMany()
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GraceProject.Models.Option", "SelectedOption")
+                        .WithMany()
+                        .HasForeignKey("SelectedOptionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GraceProject.Models.UserQuiz", "UserQuiz")
+                        .WithMany("UserAnswers")
+                        .HasForeignKey("UserQuizId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Question");
+
+                    b.Navigation("SelectedOption");
+
+                    b.Navigation("UserQuiz");
+                });
+
             modelBuilder.Entity("GraceProject.Models.UserQuiz", b =>
                 {
                     b.HasOne("GraceProject.Models.Quiz", "Quiz")
@@ -1003,6 +1071,11 @@ namespace GraceProject.Migrations
             modelBuilder.Entity("GraceProject.Models.Slide", b =>
                 {
                     b.Navigation("SlideSections");
+                });
+
+            modelBuilder.Entity("GraceProject.Models.UserQuiz", b =>
+                {
+                    b.Navigation("UserAnswers");
                 });
 
             modelBuilder.Entity("GraceProject.Models.Educator", b =>
