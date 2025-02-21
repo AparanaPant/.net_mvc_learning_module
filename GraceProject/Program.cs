@@ -26,7 +26,7 @@ var environmentName = builder.Configuration["AppEnvironment"];
 bool requireConfirmedAccount = environmentName.Equals("Production", StringComparison.OrdinalIgnoreCase);
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddRoles<IdentityRole>() // Add role support
+    .AddRoles<IdentityRole>() 
     .AddEntityFrameworkStores<GraceDbContext>();
 
 // Add services to the container.
@@ -39,6 +39,11 @@ builder.Services.Configure<IdentityOptions>(options =>
 });
 
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await CreateRolesAndAdmin(services);
+}
 
 using (var scope = app.Services.CreateScope())
 {
@@ -73,6 +78,46 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapRazorPages();
+
+async Task CreateRolesAndAdmin(IServiceProvider serviceProvider)
+{
+    var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+    string[] roleNames = { "Admin", "Educator", "Student", "Guest","vip" };
+
+    foreach (var roleName in roleNames)
+    {
+        if (!await roleManager.RoleExistsAsync(roleName))
+        {
+            await roleManager.CreateAsync(new IdentityRole(roleName));
+        }
+    }
+
+    // Create default admin user (Modify Email/Password as needed)
+    string adminEmail = "admin@example.com";
+    string adminPassword = "Admin@123";
+
+    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+    if (adminUser == null)
+    {
+        var newAdmin = new ApplicationUser
+        {
+            UserName = adminEmail,
+            Email = adminEmail,
+            EmailConfirmed = true,
+            FirstName = "Admin",  
+            LastName = "User"    
+        };
+
+        var createAdmin = await userManager.CreateAsync(newAdmin, adminPassword);
+
+        if (createAdmin.Succeeded)
+        {
+            await userManager.AddToRoleAsync(newAdmin, "Admin");
+        }
+    }
+}
 
 try
 {
