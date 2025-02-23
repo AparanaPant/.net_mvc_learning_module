@@ -31,10 +31,10 @@ namespace GraceProject.Models
         public string State { get; set; }
 
         [StringLength(100)]
-        public string AddressLine1 { get; set; }
+        public string? AddressLine1 { get; set; }
 
         [StringLength(100)]
-        public string AddressLine2 { get; set; }
+        public string? AddressLine2 { get; set; }
 
         [StringLength(50)]
         public string City { get; set; }
