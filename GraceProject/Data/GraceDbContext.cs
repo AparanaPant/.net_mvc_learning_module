@@ -30,9 +30,13 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
 
     public DbSet<Student> Student { get; set; }
 
-    public DbSet<CourseEducator> CourseEducator { get; set; }
-
     public DbSet<UserAnswer> UserAnswers { get; set; }
+
+    public DbSet<Session> Session { get; set; }
+
+    public DbSet<EducatorSession> EducatorSession { get; set; }
+    public DbSet<StudentSession> StudentSessions { get; set; }
+
 
     public GraceDbContext(DbContextOptions<GraceDbContext> options)
         : base(options)
@@ -70,33 +74,6 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
             .HasForeignKey(ua => ua.SelectedOptionId)
             .OnDelete(DeleteBehavior.Restrict);
 
-       
-        builder.Entity<CourseEducator>()
-            .HasKey(ce => new { ce.CourseID, ce.EducatorUserID });
-
-        builder.Entity<CourseEducator>()
-            .HasOne(ce => ce.Course)
-            .WithMany(c => c.CourseEducators)
-            .HasForeignKey(ce => ce.CourseID);
-
-        builder.Entity<CourseEducator>()
-            .HasOne(ce => ce.Educator)
-            .WithMany(e => e.CourseEducators) 
-            .HasForeignKey(ce => ce.EducatorUserID);
-
-       
-        builder.Entity<Enrollment>()
-            .HasKey(e => new { e.CourseID, e.StudentUserID });
-
-        builder.Entity<Enrollment>()
-            .HasOne(e => e.Course)
-            .WithMany(c => c.Enrollments)
-            .HasForeignKey(e => e.CourseID);
-
-        builder.Entity<Enrollment>()
-            .HasOne(e => e.StudentUser)
-            .WithMany(s => s.Enrollments) 
-            .HasForeignKey(e => e.StudentUserID);
 
         builder.Entity<ApplicationUser>()
             .HasDiscriminator<string>("UserType")

@@ -2,12 +2,16 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GraceProject.Models
 {
     public class Quiz
     {
         public int QuizId { get; set; }
+
+        [ForeignKey("Course")]
+        public string CourseID { get; set; } = null!;
 
         [Required]
         public string Title { get; set; }
@@ -19,6 +23,10 @@ namespace GraceProject.Models
         public virtual ICollection<Question> Questions { get; set; }
 
         public virtual ICollection<UserQuiz> UserQuizzes { get; set; }
+
+        public Course? Course { get; set; }
+
+
     }
 
     public class Question

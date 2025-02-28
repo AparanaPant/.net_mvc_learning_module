@@ -80,8 +80,8 @@ namespace GraceProject.Controllers.Report
         //    }
         //}
 
-        [HttpPost]
-        [Route("GetTeacherList")]
+        //[HttpPost]
+        //[Route("GetTeacherList")]
         //public IActionResult GetTeacherList(SearchModel searchData)
         //{
         //    try
@@ -130,27 +130,27 @@ namespace GraceProject.Controllers.Report
         //    }
         //}
 
-        [HttpPost]
-        [Route("GetCoursesByStudent")]
-        public IActionResult GetCoursesByStudent([FromBody] string dataId)
-        {
-            try
-            {
-                var CoursesByStudent = _context.Enrollment
-                    .Where(e => e.StudentUser.Id == dataId)
-                    .Select(e => new { 
-                        name = e.Course.Title,
-                        id = e.Course.CourseID
-                    })
-                    .ToList();
+        //[HttpPost]
+        //[Route("GetCoursesByStudent")]
+        //public IActionResult GetCoursesByStudent([FromBody] string dataId)
+        //{
+        //    try
+        //    {
+        //        var CoursesByStudent = _context.Enrollment
+        //            .Where(e => e.StudentUser.Id == dataId)
+        //            .Select(e => new { 
+        //                name = e.Course.Title,
+        //                id = e.Course.CourseID
+        //            })
+        //            .ToList();
 
-                return Ok(CoursesByStudent);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest("Error on Fetching Corses By StudentID");
-            }
-        }
+        //        return Ok(CoursesByStudent);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest("Error on Fetching Corses By StudentID");
+        //    }
+        //}
 
         //[HttpPost]
         //[Route("GetCoursesByEducator")]

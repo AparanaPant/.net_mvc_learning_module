@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using NuGet.DependencyResolver;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -13,32 +15,59 @@ public class Course
     public string? Title { get; set; }
 
     public int? Credits { get; set; }
+    public ICollection<Module>? Modules { get; set; }
+    public ICollection<Quiz>? Quizzes { get; set; }
+    public ICollection<Session>? Sessions { get; set; }
 
-    public virtual ICollection<CourseEducator> CourseEducators { get; set; } = new List<CourseEducator>();
-
-
-    public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
 
 }
 
-public class CourseEducator
+public class Session
 {
     [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int Id { get; set; }  // Primary key
+    public int SessionID { get; set; }
 
-    public DateTime JoiningDate { get; set; } = DateTime.Now;
-
-    [Required]
+    [ForeignKey("Course")]
     public string CourseID { get; set; } = null!;
 
-    [Required]
-    public string EducatorUserID { get; set; } = null!;
+    public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
 
     // Navigation properties
-    [ForeignKey("CourseID")]
-    public virtual Course Course { get; set; } = null!;
-
-    [ForeignKey("EducatorUserID")]
-    public virtual Educator Educator { get; set; } = null!;
+    public Course? Course { get; set; }
+    public ICollection<StudentSession>? StudentSessions { get; set; }
+    public ICollection<EducatorSession>? EducatorSessions { get; set; }
 }
+
+public class StudentSession
+{
+    [Key]
+    public int StudentSessionID { get; set; }
+
+    [ForeignKey("Student")]
+    public string StudentID { get; set; }
+
+    [ForeignKey("Session")]
+    public int SessionID { get; set; }
+
+    // Navigation properties
+    public Student? Student { get; set; }
+    public Session? Session { get; set; }
+    public DateTime RegistrationDate { get; internal set; }
+}
+
+public class EducatorSession
+{
+    [Key]
+    public int EducatorSessionID { get; set; }
+
+    [ForeignKey("Educator")]
+    public string EducatorID { get; set; } = null!;  
+
+    [ForeignKey("Session")]
+    public int SessionID { get; set; }
+
+    public Educator? Educator { get; set; }
+    public Session? Session { get; set; }
+}
+

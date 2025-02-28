@@ -27,7 +27,6 @@ namespace GraceProject.Controllers.Authentication
 
         private bool IsLoginOrSignUpPage(string path)
         {
-            // Adjust these paths to match your actual login and sign-up page routes
             return path.Equals("/Identity/Account/Login", StringComparison.OrdinalIgnoreCase) ||
                    path.Equals("/Identity/Account/Register", StringComparison.OrdinalIgnoreCase) ||
                    path.Equals("/Identity/Account/ForgotPassword", StringComparison.OrdinalIgnoreCase) ||

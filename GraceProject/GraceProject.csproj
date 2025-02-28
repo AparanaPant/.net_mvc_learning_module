@@ -7,13 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Controllers\Educator\**" />
-    <Content Remove="Controllers\Educator\**" />
-    <EmbeddedResource Remove="Controllers\Educator\**" />
-    <None Remove="Controllers\Educator\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Remove="Views\Student\Index1.cshtml" />
   </ItemGroup>
 

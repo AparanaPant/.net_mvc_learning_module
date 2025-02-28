@@ -6,6 +6,5 @@ namespace GraceProject.Models;
 
 public class Student: ApplicationUser
 {
-    public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
-
+    public ICollection<StudentSession>? StudentSessions { get; set; }
 }

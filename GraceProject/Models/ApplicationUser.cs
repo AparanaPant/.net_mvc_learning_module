@@ -33,7 +33,6 @@ public enum University
     AuburnUniversity
 }
 
-// Add profile data for application users by adding properties to the ApplicationUser class
 public class ApplicationUser : IdentityUser
 {
     public DateTime? CreatedAt { get; set; }
@@ -51,9 +50,7 @@ public class ApplicationUser : IdentityUser
     public Gender Gender { get; set; }
     public virtual Address Address { get; set; }
 
-    public int? SchoolID { get; set; }  // Nullable because a user may have no school
-
-    
+    public int? SchoolID { get; set; }    
 
     [ForeignKey("SchoolID")]
     public virtual School? School { get; set; }

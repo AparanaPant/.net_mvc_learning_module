@@ -6,5 +6,5 @@ namespace GraceProject.Models;
 
 public class Educator: ApplicationUser
 {
-    public virtual ICollection<CourseEducator> CourseEducators { get; set; } = new List<CourseEducator>();
+    public ICollection<EducatorSession>? EducatorSessions { get; set; }
 }

@@ -33,6 +33,8 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
+builder.Services.AddScoped<StudentService>();
+
 builder.Services.Configure<IdentityOptions>(options =>
 {
     options.Password.RequireUppercase = false;
@@ -84,7 +86,7 @@ async Task CreateRolesAndAdmin(IServiceProvider serviceProvider)
     var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-    string[] roleNames = { "Admin", "Educator", "Student", "Guest","vip" };
+    string[] roleNames = { "Admin", "Educator", "Student", "Guest" };
 
     foreach (var roleName in roleNames)
     {

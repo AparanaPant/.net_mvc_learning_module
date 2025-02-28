@@ -13,17 +13,82 @@
             <h2>Join as</h2>
         </div>
         <div class="nav nav-tabs justify-content-center nav-green">
-            <a class="nav-link active" data-bs-toggle="tab" href="#teacher">Teacher</a>
-            <a class="nav-link" data-bs-toggle="tab" href="#learner">Learner</a>
+            <a class="nav-link active" data-bs-toggle="tab" href="#learner">Learner</a>
+            <a class="nav-link" data-bs-toggle="tab" href="#teacher">Teacher</a> 
             <a class="nav-link" data-bs-toggle="tab" href="#parent">Guest</a>
         </div>
 
         <div class="tab-content">
+
+            <!-- Learner Tab Pane -->
+            <div id="learner" class="container tab-pane fade">
+                <br>
+                <form asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                    <input type="hidden" name="Input.UserType" value="STUDENT" />
+                    <hr />
+                    <div asp-validation-summary="All" class="text-danger"></div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-floating mb-3">
+                                <input asp-for="Input.FirstName" class="form-control" autocomplete="firstname" aria-required="true" placeholder="first name" />
+                                <label asp-for="Input.FirstName">First Name</label>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-floating mb-3">
+                                <input asp-for="Input.LastName" class="form-control" autocomplete="lastname" aria-required="true" placeholder="last name" />
+                                <label asp-for="Input.LastName">Last Name</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <select asp-for="Input.Gender" asp-items="Html.GetEnumSelectList<Gender>()" class="form-control">
+                            <option value="">Select</option>
+                        </select>
+                        <label asp-for="Input.Gender">Gender</label>
+                        <span asp-validation-for="Input.Gender" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                        <label asp-for="Input.Email">Email</label>
+                        <span asp-validation-for="Input.Email" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <select asp-for="Input.SchoolID" class="form-select" id="schoolSelect" name="Input.SchoolID" asp-items="@(ViewData["Schools"] as SelectList)">
+                            <option value="">Select a school...</option>
+                            <option value="other">Other (not listed)</option>
+                        </select>
+                        <label asp-for="Input.SchoolID" for="schoolSelect">School</label>
+                        <span asp-validation-for="Input.SchoolID" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <select class="form-select" id="learnerGradeSelect" name="Input.LearnerGrade">
+                            <option value="">Select your grade...</option>
+                            <option value="9">Grade 9</option>
+                            <option value="10">Grade 10</option>
+                            <option value="11">Grade 11</option>
+                            <option value="12">Grade 12</option>
+                        </select>
+                        <label for="learnerGradeSelect">Grade</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                        <label asp-for="Input.Password">Password</label>
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                        <label asp-for="Input.ConfirmPassword">Confirm Password</label>
+                        <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn btn-custom">Register</button>
+                </form>
+            </div>
             <!-- Teacher Tab Pane -->
             <div id="teacher" class="container tab-pane active">
                 <br>
                 <form asp-route-returnUrl="@Model.ReturnUrl" method="post">
-                    <input type="hidden" name="UserType" value="EDUCATOR" />
+                    <input type="hidden" name="Input.UserType" value="EDUCATOR" />
                     <hr />
                     <div asp-validation-summary="All" class="text-danger"></div>
                     <div class="row">
@@ -58,7 +123,7 @@
                     <div class="form-floating mb-3">
                         <select asp-for="Input.SchoolID" class="form-select" id="schoolSelect" name="Input.SchoolID" asp-items="@(ViewData["Schools"] as SelectList)">
                             <option value="">Select a school...</option>
-                            <option value="other">Other (not listed)</option>
+           
                         </select>
                         <label asp-for="Input.SchoolID" for="schoolSelect">School</label>
                         <span asp-validation-for="Input.SchoolID" class="text-danger"></span>
@@ -152,14 +217,20 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Courses Taught:</label>
+                        <label class="form-label">Select Courses:</label>
 
-                        @if (ViewData["Courses"] is IEnumerable<GraceProject.Models.Course> courses)
+                        @if (ViewData["Courses"] is List<GraceProject.Models.Course> courses && courses.Any())
                         {
                             @foreach (var course in courses)
                             {
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="@course.CourseID" id="course@course.CourseID" name="SelectedCourses">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           value="@course.CourseID"
+                                           id="course@course.CourseID"
+                                           name="Input.SelectedCourses"
+                                    @(Model?.Input?.SelectedCourses?.Contains(course.CourseID) == true ? "checked" : "") />
+
                                     <label class="form-check-label" for="course@course.CourseID">
                                         @course.Title
                                     </label>
@@ -168,95 +239,14 @@
                         }
                         else
                         {
-                            <p>No courses available.</p>
+                            <p class="text-warning">⚠ No courses found. Please contact support.</p>
                         }
                     </div>
+
+                    <span asp-validation-for="Input.SelectedCourses" class="text-danger"></span>
+
+
                    
-                    <div class="form-floating mb-3">
-                        <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                        <label asp-for="Input.Password">Password</label>
-                        <span asp-validation-for="Input.Password" class="text-danger"></span>
-                    </div>
-                    <div class="form-floating mb-3">
-                        <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                        <label asp-for="Input.ConfirmPassword">Confirm Password</label>
-                        <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-                    </div>
-                    <button type="submit" class="btn btn-custom">Register</button>
-                </form>
-            </div>
-
-            <!-- Learner Tab Pane -->
-            <div id="learner" class="container tab-pane fade">
-                <br>
-                <form asp-route-returnUrl="@Model.ReturnUrl" method="post">
-                    <input type="hidden" name="UserType" value="STUDENT" />
-                    <hr />
-                    <div asp-validation-summary="All" class="text-danger"></div>
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="form-floating mb-3">
-                                <input asp-for="Input.FirstName" class="form-control" autocomplete="firstname" aria-required="true" placeholder="first name" />
-                                <label asp-for="Input.FirstName">First Name</label>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="form-floating mb-3">
-                                <input asp-for="Input.LastName" class="form-control" autocomplete="lastname" aria-required="true" placeholder="last name" />
-                                <label asp-for="Input.LastName">Last Name</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-floating mb-3">
-                        <select asp-for="Input.Gender" asp-items="Html.GetEnumSelectList<Gender>()" class="form-control">
-                            <option value="">Select</option>
-                        </select>
-                        <label asp-for="Input.Gender">Gender</label>
-                        <span asp-validation-for="Input.Gender" class="text-danger"></span>
-                    </div>
-                    <div class="form-floating mb-3">
-                        <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                        <label asp-for="Input.Email">Email</label>
-                        <span asp-validation-for="Input.Email" class="text-danger"></span>
-                    </div>
-                    <div class="form-floating mb-3">
-                        <select asp-for="Input.SchoolID" class="form-select" id="schoolSelect" name="Input.SchoolID" asp-items="@(ViewData["Schools"] as SelectList)">
-                            <option value="">Select a school...</option>
-                            <option value="other">Other (not listed)</option>
-                        </select>
-                        <label asp-for="Input.SchoolID" for="schoolSelect">School</label>
-                        <span asp-validation-for="Input.SchoolID" class="text-danger"></span>
-                    </div>
-                    <div class="form-floating mb-3">
-                        <select class="form-select" id="learnerGradeSelect" name="Input.LearnerGrade">
-                            <option value="">Select your grade...</option>
-                            <option value="9">Grade 9</option>
-                            <option value="10">Grade 10</option>
-                            <option value="11">Grade 11</option>
-                            <option value="12">Grade 12</option>
-                        </select>
-                        <label for="learnerGradeSelect">Grade</label>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Courses Taught:</label>
-
-                        @if (ViewData["Courses"] is IEnumerable<GraceProject.Models.Course> courses)
-                        {
-                            @foreach (var course in courses)
-                            {
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="@course.CourseID" id="course@course.CourseID" name="SelectedCourses">
-                                    <label class="form-check-label" for="course@course.CourseID">
-                                        @course.Title
-                                    </label>
-                                </div>
-                            }
-                        }
-                        else
-                        {
-                            <p>No courses available.</p>
-                        }
-                    </div>
                     <div class="form-floating mb-3">
                         <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
                         <label asp-for="Input.Password">Password</label>
@@ -275,7 +265,7 @@
             <div id="parent" class="container tab-pane fade">
                 <br>
                 <form asp-route-returnUrl="@Model.ReturnUrl" method="post">
-                    <input type="hidden" name="UserType" value="Guest" />
+                    <input type="hidden" name="Input.UserType" value="GUEST" />
                     <hr />
                     <div asp-validation-summary="All" class="text-danger"></div>
                     <div class="row">
