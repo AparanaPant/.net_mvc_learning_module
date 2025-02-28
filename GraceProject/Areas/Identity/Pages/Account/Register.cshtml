@@ -21,7 +21,7 @@
         <div class="tab-content">
 
             <!-- Learner Tab Pane -->
-            <div id="learner" class="container tab-pane fade">
+            <div id="learner" class="container tab-pane fade show active">
                 <br>
                 <form asp-route-returnUrl="@Model.ReturnUrl" method="post">
                     <input type="hidden" name="Input.UserType" value="STUDENT" />
@@ -85,7 +85,7 @@
                 </form>
             </div>
             <!-- Teacher Tab Pane -->
-            <div id="teacher" class="container tab-pane active">
+            <div id="teacher" class="container tab-pane">
                 <br>
                 <form asp-route-returnUrl="@Model.ReturnUrl" method="post">
                     <input type="hidden" name="Input.UserType" value="EDUCATOR" />
