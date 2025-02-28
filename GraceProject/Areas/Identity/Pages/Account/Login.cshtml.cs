@@ -109,22 +109,32 @@ namespace GraceProject.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("User logged in.");
 
-                    // Check if sessionId is in the returnUrl
-                    var uri = new Uri($"{Request.Scheme}://{Request.Host}{returnUrl}");
-                    var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
-
-                    if (query.ContainsKey("sessionId"))
+                    var user = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
+                    if (user != null)
                     {
-                        int sessionId;
-                        if (int.TryParse(query["sessionId"], out sessionId))
+                        var roles = await _signInManager.UserManager.GetRolesAsync(user);
+                        var uri = new Uri($"{Request.Scheme}://{Request.Host}{returnUrl}");
+                        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+
+                        if (query.ContainsKey("sessionId") && int.TryParse(query["sessionId"], out int sessionId))
                         {
-                            var user = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
-                            if (user != null)
-                            {
-                                return Redirect($"/Student/RegisterCourse?sessionId={sessionId}");
-                            }
+                            return Redirect($"/Student/RegisterCourse?sessionId={sessionId}");
+                        }
+                       
+                        if (roles.Contains("Admin"))
+                        {
+                            return RedirectToAction("Dashboard", "Admin");
+                        }
+                        else if (roles.Contains("Educator"))
+                        {
+                            return RedirectToAction("Dashboard", "Educator");
+                        }
+                        else if (roles.Contains("Student"))
+                        {
+                            return RedirectToAction("Dashboard", "Student");
                         }
                     }
+
                     return LocalRedirect(returnUrl);
                 }
 
@@ -146,6 +156,7 @@ namespace GraceProject.Areas.Identity.Pages.Account
 
             return Page();
         }
+
 
     }
 }

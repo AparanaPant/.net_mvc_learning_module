@@ -4,25 +4,6 @@
 @inject SignInManager<GraceProject.Models.ApplicationUser> SignInManager
 @inject UserManager<GraceProject.Models.ApplicationUser> UserManager
 
-@{
-    var user = await UserManager.GetUserAsync(User);
-    var roles = user != null ? await UserManager.GetRolesAsync(user) : new List<string>();
-    string dashboardUrl = "/"; // Default home
-
-    if (roles.Contains("Admin"))
-    {
-        dashboardUrl = "/Admin/Dashboard";
-    }
-    else if (roles.Contains("Educator"))
-    {
-        dashboardUrl = "/Educator/Dashboard";
-    }
-    else if (roles.Contains("Student"))
-    {
-        dashboardUrl = "/Student/Home/Dashboard";
-    }
-}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -204,34 +185,33 @@
 
                             <br />
 
-                            <!-- Sidebar Menu -->
+                            <!-- sidebar menu -->
                             <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
                                 <div class="menu_section">
                                     <ul class="nav side-menu">
                                         <li>
-                                            <a href="@dashboardUrl"><i class="fa fa-home"></i> Home </a>
+                                            <a href="~/Student/Home/Dashboard"><i class="fa fa-home"></i> Home </a>
+                                        </li>
+                                        <li>
+                                            <a href="calendar.html"><i class="fa fa-calendar"></i> Calendar </a>
+                                        </li>
+                                        <li>
+                                            <a href="~/Student/Modules/Index"><i class="fa fa-book"></i> Courses</a>
                                         </li>
 
-                                        @if (roles.Contains("Student"))
-                                        {
-                                            <li><a href="~/Student/Modules/Index"><i class="fa fa-book"></i> Courses</a></li>
-                                            <li><a asp-controller="Quiz" asp-action="Index"><i class="fa fa-question-circle"></i> Quizzes </a></li>
-                                            <li><a asp-controller="Quiz" asp-action="QuizResults"><i class="fa fa-bar-chart-o"></i> Grades</a></li>
-                                            <li><a href="~/Student/Profile/profile"><i class="fa fa-user"></i> Profile</a></li>
-                                        }
-                                        else if (roles.Contains("Educator"))
-                                        {
-                                            <li><a href="~/Educator/Courses"><i class="fa fa-book"></i> Manage Courses</a></li>
-                                            <li><a asp-controller="Quiz" asp-action="Index"><i class="fa fa-question-circle"></i> Quizzes </a></li>
-                                            <li><a asp-controller="Quiz" asp-action="QuizResults"><i class="fa fa-bar-chart-o"></i> Grades</a></li>
-                                        }
-                                        else if (roles.Contains("Admin"))
-                                        {
-                                            <li><a href="~/Admin/ManageUsers"><i class="fa fa-users"></i> Manage Users</a></li>
-                                            <li><a href="~/Admin/Reports"><i class="fa fa-chart-bar"></i> Reports</a></li>
-                                        }
-
-                                        <li><a href="contactus.html"><i class="fa fa-phone"></i> Contact Us</a></li>
+                                        <li>
+                                            <a asp-controller="Quiz" asp-action="Index"><i class="fa fa-question-circle"></i> Quizzes </a>
+                                        </li>
+                                        <li>
+                                        <li>
+                                            <a asp-controller="Quiz" asp-action="QuizResults"><i class="fa fa-bar-chart-o"></i> Grades</a>
+                                        </li>
+                                        <li>
+                                            <a href="~/Student/Profile/profile"><i class="fa fa-user"></i>Profile</a>
+                                        </li>
+                                        <li>
+                                            <a href="contactus.html"><i class="fa fa-phone"></i>Contact Us</a>
+                                        </li>
                                     </ul>
                                 </div>
                             </div>
