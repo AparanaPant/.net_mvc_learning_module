@@ -5,12 +5,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 [Route("educator/courses")]
-public class DashboardController : Controller
+public class CourseController : Controller
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly GraceDbContext _context;
 
-    public DashboardController(UserManager<ApplicationUser> userManager, GraceDbContext context)
+    public CourseController(UserManager<ApplicationUser> userManager, GraceDbContext context)
     {
         _userManager = userManager;
         _context = context;
@@ -88,30 +88,25 @@ public class DashboardController : Controller
             return RedirectToAction("Login", "Account");
         }
 
-        // ✅ Ensure CourseID is valid
         if (string.IsNullOrEmpty(courseId))
         {
             return NotFound("Invalid Course ID.");
         }
 
-        // ✅ Fetch the course with its sessions
         var course = await _context.Course
             .Include(c => c.Sessions)  // Include sessions related to the course
             .FirstOrDefaultAsync(c => c.CourseID == courseId);
 
-        // ✅ If no course is found, return NotFound
         if (course == null)
         {
             return NotFound("Course not found.");
         }
 
-        // ✅ Fetch the educator's session(s) for this course
         var educatorSessions = await _context.EducatorSession
             .Where(es => es.EducatorID == user.Id && es.Session.CourseID == courseId)
             .Include(es => es.Session)
             .ToListAsync();
 
-        // ✅ Get the first available session for the educator (for sharing)
         var firstSession = educatorSessions.FirstOrDefault()?.Session;
 
         ViewData["Course"] = course;
@@ -119,7 +114,5 @@ public class DashboardController : Controller
 
         return View("~/Views/Educator/Courses/Details.cshtml", course);
     }
-
-
 
 }

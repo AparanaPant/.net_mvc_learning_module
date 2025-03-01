@@ -50,7 +50,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Educator\Home\" />
     <Folder Include="wwwroot\UploadedFiles\Slides\Images\" />
   </ItemGroup>
 

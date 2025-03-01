@@ -249,26 +249,11 @@ namespace GraceProject.Areas.Identity.Pages.Account
 
             if (Input.SelectedCourses != null && Input.SelectedCourses.Any())
             {
+                var educatorService = new EducatorService(_context);
+
                 foreach (var courseId in Input.SelectedCourses)
                 {
-                    var newSession = new Session
-                    {
-                        CourseID = courseId,
-                        StartDate = DateTime.UtcNow,
-                        EndDate = DateTime.UtcNow.AddMonths(6),
-                    };
-
-                    _context.Session.Add(newSession);
-                    await _context.SaveChangesAsync();
-
-
-                    var educatorSession = new EducatorSession
-                    {
-                        EducatorID = user.Id,
-                        SessionID = newSession.SessionID
-                    };
-
-                    _context.EducatorSession.Add(educatorSession);
+                    await educatorService.RegisterEducatorToCourse(user.Id, courseId);
                 }
             }
 
