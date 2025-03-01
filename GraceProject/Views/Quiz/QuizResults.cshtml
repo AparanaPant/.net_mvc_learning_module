@@ -25,7 +25,7 @@
                     <tr>
                         <td>@quiz.Quiz.Title</td>
                         <td>@quiz.Score / @quiz.UserAnswers.Sum(a => a.Question.Points)</td>
-                        <td>@quiz.CompletedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@(quiz.CompletedAt.HasValue ? quiz.CompletedAt.Value.ToString("yyyy-MM-dd HH:mm") : "Not Completed")</td>
                         <td>
                             <button class="btn btn-primary btn-sm toggle-quiz" data-quizid="@quiz.UserQuizId">
                                 View Details

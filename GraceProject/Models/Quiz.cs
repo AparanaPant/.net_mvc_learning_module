@@ -8,10 +8,9 @@ namespace GraceProject.Models
 {
     public class Quiz
     {
-        public int QuizId { get; set; }
 
-        [ForeignKey("Course")]
-        public string CourseID { get; set; } = null!;
+        [Key] 
+        public int QuizId { get; set; }
 
         [Required]
         public string Title { get; set; }
@@ -20,12 +19,17 @@ namespace GraceProject.Models
 
         public DateTime CreatedAt { get; set; }
 
+        [ForeignKey("Course")]
+        public string? CourseID { get; set; }
+
+        [ForeignKey("Session")]
+        public int? SessionID { get; set; }
+
         public virtual ICollection<Question> Questions { get; set; }
 
         public virtual ICollection<UserQuiz> UserQuizzes { get; set; }
-
-        public Course? Course { get; set; }
-
+        public virtual Course? Course { get; set; }
+        public virtual Session? Session { get; set; }
 
     }
 
@@ -72,21 +76,30 @@ namespace GraceProject.Models
 
     public class UserQuiz
     {
+        [Key]
         public int UserQuizId { get; set; }
 
+        [ForeignKey("User")]
         public string UserId { get; set; }
 
         public virtual ApplicationUser User { get; set; }
 
+        [ForeignKey("Quiz")]
         public int QuizId { get; set; }
 
         public virtual Quiz Quiz { get; set; }
 
-        public DateTime CompletedAt { get; set; }
+        public DateTime StartedAt { get; set; } = DateTime.UtcNow;
 
-        public int Score { get; set; }
+        public DateTime? CompletedAt { get; set; }
+
+        public bool IsCompleted { get; set; } = false;
+
+        public int? Score { get; set; }
+
         public virtual ICollection<UserAnswer> UserAnswers { get; set; } = new List<UserAnswer>();
     }
+
 
     public class UserAnswer
     {

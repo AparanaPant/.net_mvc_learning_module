@@ -50,6 +50,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Views\Admin\NewFolder\" />
     <Folder Include="wwwroot\UploadedFiles\Slides\Images\" />
   </ItemGroup>
 

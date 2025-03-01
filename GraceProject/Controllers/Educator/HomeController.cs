@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace GraceProject.Controllers.Educator
 {
-    [Route("Educator/Home")]
+    [Route("Educator")]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

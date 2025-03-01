@@ -1,0 +1,38 @@
+﻿@model GraceProject.ViewModels.StudentCourseDetailsViewModel
+
+@{
+    ViewData["Title"] = "Course Details";
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+}
+
+<div class="container">
+    <h1 class="display-4 text-center">📚 @Model.Course.Title</h1>
+    <p class="text-center"><strong>Course ID:</strong> @Model.Course.CourseID</p>
+
+    @if (Model.Sessions.Count > 1)
+    {
+        <h2>Available Sessions</h2>
+        <div class="list-group">
+            @foreach (var session in Model.Sessions)
+            {
+                <a href="~/Student/Sessions/Details/@session.SessionID" class="list-group-item list-group-item-action">
+                    👨‍🏫 Instructor: @session.EducatorName
+                </a>
+            }
+        </div>
+    }
+    else if (Model.Sessions.Count == 1)
+    {
+        var session = Model.Sessions.First();
+        <h2>Course Actions</h2>
+        <div class="list-group">
+            <a href="~/Student/Quizzes/@session.SessionID" class="list-group-item list-group-item-action">📖 Quizzes</a>
+            <a href="~/Student/Modules/@session.SessionID" class="list-group-item list-group-item-action">📚 Modules</a>
+            <a href="~/Student/Gradebook/@session.SessionID" class="list-group-item list-group-item-action">📊 Grade Book</a>
+        </div>
+    }
+    else
+    {
+        <p class="text-danger text-center">⚠ You are not registered for any sessions of this course.</p>
+    }
+</div>

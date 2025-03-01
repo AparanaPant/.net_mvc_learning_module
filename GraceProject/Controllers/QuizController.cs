@@ -35,9 +35,22 @@ namespace GraceProject.Controllers
 
         // Create a new quiz
         [HttpGet]
-        public IActionResult Create()
+        public IActionResult Create(string? courseId, int? sessionId)
         {
-            return View(new QuizViewModel { Questions = new List<QuestionViewModel>() });
+            // Ensure that at least one of them is provided
+            if (string.IsNullOrEmpty(courseId) && !sessionId.HasValue)
+            {
+                return BadRequest("A valid Course ID or Session ID is required.");
+            }
+
+            var model = new QuizViewModel
+            {
+                CourseID = courseId ?? string.Empty,  // Default to empty string if null
+                SessionID = sessionId,
+                Questions = new List<QuestionViewModel>()
+            };
+
+            return View(model);
         }
 
         [HttpPost]
@@ -70,6 +83,8 @@ namespace GraceProject.Controllers
                     Title = quizViewModel.Title,
                     Duration = quizViewModel.Duration,
                     CreatedAt = DateTime.Now,
+                    CourseID = quizViewModel.CourseID,
+                    SessionID = quizViewModel.SessionID,
                     Questions = quizViewModel.Questions.Select(q => new Question
                     {
                         Text = q.Text,
@@ -456,6 +471,24 @@ namespace GraceProject.Controllers
             await _context.SaveChangesAsync();
 
             return View("Result", userQuiz);
+        }
+
+        [Route("Quiz/Details/{quizId}")]
+        public async Task<IActionResult> Details(int quizId)
+        {
+            var quiz = await _context.Quizzes
+                .Include(q => q.Questions)
+                .ThenInclude(q => q.Options) // Include multiple-choice options
+                .Include(q => q.Questions)
+                .ThenInclude(q => q.FillInTheBlankAnswers) // Include fill-in-the-blank answers
+                .FirstOrDefaultAsync(q => q.QuizId == quizId);
+
+            if (quiz == null)
+            {
+                return NotFound("Quiz not found.");
+            }
+
+            return View("~/Views/Quiz/Details.cshtml", quiz);
         }
 
         // Display quiz result

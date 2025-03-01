@@ -5,12 +5,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 [Route("educator/courses")]
-public class CourseController : Controller
+public class StudentCoursesController : Controller
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly GraceDbContext _context;
 
-    public CourseController(UserManager<ApplicationUser> userManager, GraceDbContext context)
+    public StudentCoursesController(UserManager<ApplicationUser> userManager, GraceDbContext context)
     {
         _userManager = userManager;
         _context = context;

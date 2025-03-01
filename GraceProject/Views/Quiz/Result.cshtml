@@ -4,9 +4,9 @@
     Layout = "~/Views/Shared/_StudentLayout.cshtml";
 
     // Calculate time taken (Ensure CreatedAt is not null)
-    TimeSpan timeTaken = Model.Quiz.CreatedAt != null
-        ? Model.CompletedAt - Model.Quiz.CreatedAt
-        : TimeSpan.Zero;
+    TimeSpan? timeTaken = Model.CompletedAt.HasValue
+    ? Model.CompletedAt.Value - Model.Quiz.CreatedAt
+    : (TimeSpan?)null;
 }
 
 <h2 class="text-center">Quiz Result</h2>
@@ -19,7 +19,11 @@
         <div class="card-body">
             <p><strong>Score:</strong> @Model.Score / @(Model.UserAnswers?.Sum(a => a.Question?.Points ?? 0) ?? 0)</p>
             <p><strong>Completed At:</strong> @Model.CompletedAt</p>
-            <p><strong>Time Taken:</strong> @timeTaken.Minutes minutes, @timeTaken.Seconds seconds</p>
+            <p>
+                <strong>Time Taken:</strong>
+                @(timeTaken.HasValue ? $"{timeTaken.Value.TotalMinutes} Minutes {timeTaken.Value.Seconds} Seconds" : "Not Completed")
+            </p>
+
         </div>
     </div>
 

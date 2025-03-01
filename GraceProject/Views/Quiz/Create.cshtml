@@ -8,7 +8,9 @@
 <h2>Create Quiz</h2>
 
 <div class="quiz-creation-section">
-    <form asp-action="Create" enctype="multipart/form-data">
+    <form asp-action="Create" method="post"  enctype="multipart/form-data">
+        <input type="hidden" asp-for="CourseID" />
+        <input type="hidden" asp-for="SessionID" />
         <div class="form-group">
             <label for="Title">Title</label>
             <input type="text" asp-for="Title" class="form-control" style="width: 50%;" />

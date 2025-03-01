@@ -214,7 +214,8 @@
 
                                         @if (roles.Contains("Student"))
                                         {
-                                            <li><a href="~/Student/Modules/Index"><i class="fa fa-book"></i> Courses</a></li>
+                                            <li><a href="~/Student/Modules/Index"><i class="fa fa-book"></i> Modules</a></li>
+                                            <li><a href="~/Student/Courses"><i class="fa fa-book"></i> Courses</a></li>
                                             <li><a asp-controller="Quiz" asp-action="Index"><i class="fa fa-question-circle"></i> Quizzes </a></li>
                                             <li><a asp-controller="Quiz" asp-action="QuizResults"><i class="fa fa-bar-chart-o"></i> Grades</a></li>
                                             <li><a href="~/Student/Profile/profile"><i class="fa fa-user"></i> Profile</a></li>
