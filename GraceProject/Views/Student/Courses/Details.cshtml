@@ -9,30 +9,49 @@
     <h1 class="display-4 text-center">📚 @Model.Course.Title</h1>
     <p class="text-center"><strong>Course ID:</strong> @Model.Course.CourseID</p>
 
-    @if (Model.Sessions.Count > 1)
+    @if (Model.Sessions != null && Model.Sessions.Any())
     {
-        <h2>Available Sessions</h2>
+        <h2 class="mt-4">Available Sessions</h2>
         <div class="list-group">
             @foreach (var session in Model.Sessions)
             {
-                <a href="~/Student/Sessions/Details/@session.SessionID" class="list-group-item list-group-item-action">
+                <a href="javascript:void(0);" class="list-group-item list-group-item-action session-link"
+                   data-sessionid="@session.SessionID">
                     👨‍🏫 Instructor: @session.EducatorName
                 </a>
             }
         </div>
-    }
-    else if (Model.Sessions.Count == 1)
-    {
-        var session = Model.Sessions.First();
-        <h2>Course Actions</h2>
-        <div class="list-group">
-            <a href="~/Student/Quizzes/@session.SessionID" class="list-group-item list-group-item-action">📖 Quizzes</a>
-            <a href="~/Student/Modules/@session.SessionID" class="list-group-item list-group-item-action">📚 Modules</a>
-            <a href="~/Student/Gradebook/@session.SessionID" class="list-group-item list-group-item-action">📊 Grade Book</a>
+
+        <div id="session-details" class="mt-4" style="display: none;">
+            <h2>Course Actions</h2>
+            <div class="list-group">
+                <a id="quizzes-link" href="#" class="list-group-item list-group-item-action">📖 Quizzes</a>
+                <a id="modules-link" href="#" class="list-group-item list-group-item-action">📚 Modules</a>
+                <a id="gradebook-link" href="#" class="list-group-item list-group-item-action">📊 Grade Book</a>
+            </div>
         </div>
     }
     else
     {
+        <h2 class="mt-4">Course Details</h2>
         <p class="text-danger text-center">⚠ You are not registered for any sessions of this course.</p>
     }
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let sessionLinks = document.querySelectorAll(".session-link");
+        let sessionDetails = document.getElementById("session-details");
+
+        sessionLinks.forEach(link => {
+            link.addEventListener("click", function () {
+                let sessionId = this.getAttribute("data-sessionid");
+                sessionDetails.style.display = "block";
+
+                document.getElementById("quizzes-link").href = `/Student/Quizzes/${sessionId}`;
+                document.getElementById("modules-link").href = `/Student/Modules/${sessionId}`;
+                document.getElementById("gradebook-link").href = `/Student/Gradebook/${sessionId}`;
+            });
+        });
+    });
+</script>

@@ -48,7 +48,7 @@ namespace GraceProject.Controllers.Student
             return View("~/Views/Student/Courses/Index.cshtml", studentCourses);
         }
 
-        [Route("Details/{courseId}")]
+        [Route("Details/{courseId}", Name = "CourseDetails")]
         public async Task<IActionResult> Details(string courseId)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -63,19 +63,27 @@ namespace GraceProject.Controllers.Student
                 return NotFound("Course not found.");
             }
 
-            // ✅ Get sessions the student is registered for
+            // ✅ Get sessions the student is registered for with Educator details using explicit joins
             var studentSessions = await _context.StudentSessions
                 .Where(ss => ss.StudentID == user.Id && ss.Session.CourseID == courseId)
                 .Include(ss => ss.Session)
-                .ThenInclude(s => s.EducatorSessions) // Include EducatorSessions
-                .ThenInclude(es => es.Educator) // Include Educator details
+                .ThenInclude(s => s.EducatorSessions)
+                .ThenInclude(es => es.Educator) // Explicitly fetch Educator (ApplicationUser)
+                .Select(ss => new
+                {
+                    ss.Session.SessionID,
+                    EducatorName = _context.Users
+                        .Where(u => ss.Session.EducatorSessions.Any(es => es.EducatorID == u.Id))
+                        .Select(u => u.FirstName + " " + u.LastName)
+                        .FirstOrDefault()
+                })
                 .ToListAsync();
 
-            // ✅ Extract session list
+            // ✅ Extract session list and ensure educator name is properly retrieved
             var sessionList = studentSessions.Select(ss => new StudentSessionViewModel
             {
-                SessionID = ss.Session.SessionID,
-                EducatorName = ss.Session.EducatorSessions.FirstOrDefault()?.Educator?.UserName ?? "Unknown Instructor"
+                SessionID = ss.SessionID,
+                EducatorName = !string.IsNullOrEmpty(ss.EducatorName) ? ss.EducatorName : "Instructor Not Assigned"
             }).ToList();
 
             var model = new StudentCourseDetailsViewModel
@@ -86,5 +94,6 @@ namespace GraceProject.Controllers.Student
 
             return View("~/Views/Student/Courses/Details.cshtml", model);
         }
+
     }
-    }
+}
