@@ -39,18 +39,18 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
+       document.addEventListener("DOMContentLoaded", function () {
         let sessionLinks = document.querySelectorAll(".session-link");
         let sessionDetails = document.getElementById("session-details");
+        let courseId = "@Model.Course.CourseID"; // Get CourseID from Razor Model
 
         sessionLinks.forEach(link => {
             link.addEventListener("click", function () {
-                let sessionId = this.getAttribute("data-sessionid");
                 sessionDetails.style.display = "block";
 
-                document.getElementById("quizzes-link").href = `/Student/Quizzes/${sessionId}`;
-                document.getElementById("modules-link").href = `/Student/Modules/${sessionId}`;
-                document.getElementById("gradebook-link").href = `/Student/Gradebook/${sessionId}`;
+                document.getElementById("quizzes-link").href = `/Student/Quizzes/${courseId}`;
+                document.getElementById("modules-link").href = `/Student/Modules/Index`;
+                document.getElementById("gradebook-link").href = `/Student/Gradebook/${courseId}`;
             });
         });
     });

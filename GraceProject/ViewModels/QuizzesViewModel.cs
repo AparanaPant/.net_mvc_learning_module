@@ -6,7 +6,11 @@ namespace GraceProject.ViewModels
     public class QuizzesViewModel
     {
         public Course Course { get; set; }
+
+        public DateTime? CurrentTimeCST { get; set; }
+
         public List<Quiz> DefaultQuizzes { get; set; } = new List<Quiz>();
         public List<Quiz> SessionQuizzes { get; set; } = new List<Quiz>();
+
     }
 }

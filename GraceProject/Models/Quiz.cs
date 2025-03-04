@@ -17,6 +17,8 @@ namespace GraceProject.Models
 
         public int Duration { get; set; }
 
+        public DateTime StartTimeCST { get; set; } 
+
         public DateTime CreatedAt { get; set; }
 
         [ForeignKey("Course")]
