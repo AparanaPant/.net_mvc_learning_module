@@ -79,7 +79,8 @@ ____________________________________________________
  *  v0.2   added fill option (thanks to monemihir) and multi axis support (thanks to soewono effendi)
  *  v0.3   improved saddle handling and added basic handling of Dates
  *  v0.4   rewritten fill option (thomas ritou) mostly from original flot code (now fill between points rather than to graph bottom), corrected fill Opacity bug
- *  v0.5   rewritten instead of implementing a own draw function CurvedLines is now based on the processDatapoints flot hook (credits go to thomas ritou).
+ *  v0.5   rewritten instead of implementing a own draw function CurvedLines is now based on the processDatapoints flot hook (
+ *  go to thomas ritou).
  * 		   This change breakes existing code however CurvedLines are now just many tiny straight lines to flot and therefore all flot lines options (like gradient fill,
  * 	       shadow) are now supported out of the box
  *  v0.6   flot 0.8 compatibility and some bug fixes

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GraceProject.Controllers.Student
 {
-    [Route("Student/Home")]
+    [Route("Admin")]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
