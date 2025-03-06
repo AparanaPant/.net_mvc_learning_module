@@ -16,6 +16,7 @@
 <h2>Edit Quiz</h2>
 
 <form asp-action="Edit" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="userType" value="@Context.Request.Query["userType"]" />
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <input type="hidden" asp-for="QuizId" />
 

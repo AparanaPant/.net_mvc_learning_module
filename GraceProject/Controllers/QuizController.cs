@@ -11,6 +11,7 @@ using GraceProject.Data;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 
 namespace GraceProject.Controllers
 {
@@ -109,7 +110,20 @@ namespace GraceProject.Controllers
 
                 _context.Add(quiz);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+
+                // Conditional redirects based on SessionID or CourseID
+                if (quiz.SessionID.HasValue)
+                {
+                    return Redirect($"/Educator/Quizzes/{quiz.SessionID}");
+                }
+                else if (!string.IsNullOrEmpty(quiz.CourseID))
+                {
+                    return Redirect($"/Admin/Courses/Quizzes/List/{quiz.CourseID}");
+                }
+                else
+                {
+                    return RedirectToAction(nameof(Index));
+                }
             }
 
             Console.WriteLine("Model state is invalid.");
@@ -228,7 +242,7 @@ namespace GraceProject.Controllers
         // POST: Quiz/Edit/5
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public async Task<IActionResult> Edit(QuizViewModel model)
+        public async Task<IActionResult> Edit(QuizViewModel model, string userType=null)
         {
             if (ModelState.IsValid)
             {
@@ -362,7 +376,18 @@ namespace GraceProject.Controllers
                 _context.Quizzes.Update(quiz);
                 await _context.SaveChangesAsync();
 
-                return RedirectToAction(nameof(Index));
+                if (userType == "educator")
+                {
+                    return Redirect($"/Educator/Quizzes/{quiz.SessionID}");
+                }
+                else if (userType == "admin")
+                {
+                    return Redirect($"/Admin/Courses/Quizzes/List/{quiz.CourseID}");
+                }
+                else
+                {
+                    return RedirectToAction(nameof(Index));
+                }
             }
 
             // Print out model state errors
