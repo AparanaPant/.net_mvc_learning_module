@@ -378,7 +378,7 @@ namespace GraceProject.Controllers
 
                 if (userType == "educator")
                 {
-                    return Redirect($"/Educator/Quizzes/{quiz.SessionID}");
+                    return Redirect($"/Educator/Quizzes/{quiz.CourseID}");
                 }
                 else if (userType == "admin")
                 {

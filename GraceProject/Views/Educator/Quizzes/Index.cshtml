@@ -70,7 +70,6 @@
                         <td>@quiz.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
                         <td>
                             <a href="~/Quiz/Details/@quiz.QuizId" class="btn btn-info">🔍 View</a>
-                            <a href="~/Quiz/Edit/@quiz.QuizId" class="btn btn-warning">✏ Edit</a>
                             <a href="@Url.Action("Edit", "Quiz", new { id = quiz.QuizId, userType = "educator" })" class="btn btn-secondary">✏ Edit</a>
                             <form method="post" action="~/Quiz/Delete" class="d-inline">
                                 <input type="hidden" name="quizId" value="@quiz.QuizId" />
