@@ -1,0 +1,28 @@
+﻿@model IEnumerable<GraceProject.Models.Module>
+@{
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+    ViewBag.Title = "Modules";
+}
+
+<h2>Modules</h2>
+<a href="~/Admin/Modules/Create" class="btn btn-primary mb-3">Add Module</a>
+
+@if (!Model.Any())
+{
+    <p>No modules available.</p>
+}
+else
+{
+    <ul class="list-group">
+        @foreach (var module in Model)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <a href="~/Admin/Modules/Details/@module.Id">@module.ModuleName</a>
+                <div>
+                    <a href="~/Admin/Modules/Edit/@module.Id" class="btn btn-sm btn-warning">Edit</a>
+                    <a href="~/Admin/Modules/Delete/@module.Id" class="btn btn-sm btn-danger">Delete</a>
+                </div>
+            </li>
+        }
+    </ul>
+}

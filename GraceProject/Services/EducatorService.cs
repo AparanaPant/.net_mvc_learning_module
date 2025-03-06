@@ -1,6 +1,9 @@
 ﻿using GraceProject.Data;
 using GraceProject.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 public class EducatorService
 {
@@ -28,25 +31,26 @@ public class EducatorService
             return false; // Already assigned to this course
         }
 
-       
+        // Create a new session for the course
         var newSession = new Session
         {
             CourseID = courseId,
             StartDate = DateTime.UtcNow,
             EndDate = DateTime.UtcNow.AddMonths(6),
+            IsActive = true // Mark session as active
         };
 
-        _context.Session.Add(newSession);
+        await _context.Session.AddAsync(newSession);
         await _context.SaveChangesAsync(); // Save new session
 
-      
+        // Create a link between the educator and the session
         var educatorSession = new EducatorSession
         {
             EducatorID = educatorId,
             SessionID = newSession.SessionID
         };
 
-        _context.EducatorSession.Add(educatorSession);
+        await _context.EducatorSession.AddAsync(educatorSession);
         await _context.SaveChangesAsync(); // Save educator assignment
 
         return true; // Success

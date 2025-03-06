@@ -1,0 +1,149 @@
+﻿@model IEnumerable<GraceProject.Models.ViewModels.SessionViewModel>
+@{
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+    ViewBag.Title = "Sessions";
+}
+
+<h2>All Sessions</h2>
+
+<ul class="list-group">
+    @foreach (var session in Model)
+    {
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+                <a href="~/Admin/Sessions/Details/@session.SessionID">
+                    <strong>Session ID:</strong> @session.SessionID - <strong>Start:</strong> @session.StartDate?.ToString("MM/dd/yyyy")
+                </a>
+                <br />
+                <small><strong>Educator:</strong> @session.EducatorName</small>
+            </div>
+            <div class="d-flex align-items-center">
+                <label class="switch mr-2">
+                    <input type="checkbox" class="toggle-switch" data-session-id="@session.SessionID"
+                    @(session.IsActive ? "checked" : "")>
+                    <span class="slider round"></span>
+                </label>
+                <span id="status-@session.SessionID" class="badge @(session.IsActive ? "badge-success" : "badge-danger")">
+                    @(session.IsActive ? "Active" : "Inactive")
+                </span>
+            </div>
+        </li>
+    }
+</ul>
+
+
+
+<div class="text-center mt-4">
+    <h4>Create a Session for Educator</h4>
+    <form asp-action="CreateSessionForEducator" method="post" class="form-inline justify-content-center">
+        <input type="hidden" name="courseId" value="@ViewBag.CourseID" />
+        <div class="form-group mr-2">
+            <select id="educatorId" name="educatorId" class="form-control selectpicker" data-live-search="true">
+                <option value="">-- Select Educator --</option>
+                @if (ViewBag.Educators != null)
+                {
+                    @foreach (var educator in ViewBag.Educators)
+                    {
+                        <option value="@educator.Id">@educator.FirstName @educator.LastName (@educator.Email)</option>
+                    }
+                }
+                else
+                {
+                    <option value="">No Educators Available</option>
+                }
+
+            </select>
+        </div>
+        <button type="submit" class="btn btn-success">
+            <i class="fa fa-plus"></i> Create Session
+        </button>
+    </form>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-select/dist/css/bootstrap-select.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-select/dist/js/bootstrap-select.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('.selectpicker').selectpicker();
+    });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $(".toggle-switch").change(function () {
+            var sessionId = $(this).data("session-id");
+            var isActive = $(this).is(":checked");
+
+            $.ajax({
+                url: "@Url.Action("ToggleStatus", "Course")",
+                type: "POST",
+                data: {
+                    sessionId: sessionId,
+                    isActive: isActive
+                },
+                success: function () {
+                    var statusBadge = $("#status-" + sessionId);
+                    if (isActive) {
+                        statusBadge.removeClass("badge-danger").addClass("badge-success").text("Active");
+                    } else {
+                        statusBadge.removeClass("badge-success").addClass("badge-danger").text("Inactive");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log(xhr.responseText);  // Log error for debugging
+                    alert("Failed to update status. Please try again.");
+                }
+            });
+        });
+    });
+</script>
+
+
+
+<!-- Styles for the slider -->
+<style>
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+    }
+
+        .switch input {
+            display: none;
+        }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 24px;
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+    input:checked + .slider {
+        background-color: #28a745;
+    }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+</style>

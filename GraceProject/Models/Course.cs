@@ -33,6 +33,8 @@ public class Session
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
 
+    public bool IsActive { get; set; } = true;
+
     // Navigation properties
     public Course? Course { get; set; }
     public ICollection<StudentSession>? StudentSessions { get; set; }

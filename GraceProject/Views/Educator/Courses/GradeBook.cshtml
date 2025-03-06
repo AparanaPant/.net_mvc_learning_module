@@ -1,0 +1,45 @@
+﻿@model List<GraceProject.Models.ViewModels.GradeBookViewModel>
+@{
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+    ViewBag.Title = "Grade Book";
+}
+
+<h2 class="text-center mt-4">Grade Book</h2>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-hover">
+        <thead class="thead-light">
+            <tr>
+                <th>Student Name</th>
+                @if (Model.FirstOrDefault()?.QuizScores != null)
+                {
+                    @foreach (var quiz in Model.First().QuizScores)
+                    {
+                                <th>@quiz.QuizTitle</th>
+                    }
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var student in Model)
+            {
+                    <tr>
+                        <td>@student.StudentName</td>
+                    @foreach (var quizScore in student.QuizScores)
+                    {
+                                <td class="text-center">
+                            @if (quizScore.Score.HasValue)
+                            {
+                                            <span class="badge badge-success">@quizScore.Score</span>
+                            }
+                            else
+                            {
+                                            <span class="badge badge-secondary">N/A</span>
+                            }
+                                </td>
+                    }
+                    </tr>
+            }
+        </tbody>
+    </table>
+</div>

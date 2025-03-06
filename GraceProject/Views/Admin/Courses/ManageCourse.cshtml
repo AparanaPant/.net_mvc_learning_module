@@ -1,60 +1,28 @@
 ﻿@model GraceProject.Models.Course
 @{
     Layout = "~/Views/Shared/_StudentLayout.cshtml";
-}
-@{
     ViewBag.Title = "Manage Course";
     var educators = ViewBag.Educators as List<GraceProject.Models.ApplicationUser> ?? new List<GraceProject.Models.ApplicationUser>();
 }
 
-<h2>Manage Course: @(string.IsNullOrWhiteSpace(Model.Title) ? "No Title" : Model.Title)</h2>
+<h2 class="text-center">@Model.Title</h2>
+<p class="text-center text-muted">Course ID: @Model.CourseID</p>
 
-<h3>Modules</h3>
-@if (Model.Modules == null || !Model.Modules.Any())
-{
-    <p>No modules available.</p>
-}
-else
-{
-    <ul>
-        @foreach (var module in Model.Modules)
-        {
-            <li>@module.ModuleName</li>
-        }
-    </ul>
-}
-
-<!-- Add Module Button -->
-<a href="~/Student/Modules/Index" class="btn btn-primary mb-3">Add Module</a>
-
-<h3>Quizzes</h3>
-@if (Model.Quizzes == null || !Model.Quizzes.Any())
-{
-    <p>No quizzes available.</p>
-}
-else
-{
-    <ul>
-        @foreach (var quiz in Model.Quizzes)
-        {
-            <li>@quiz.Title</li>
-        }
-    </ul>
-}
-
-<h3>Add Educator</h3>
-<form asp-action="AddEducatorToCourse" method="post">
-    <input type="hidden" name="courseId" value="@Model.CourseID" />
-    <div class="form-group">
-        <label for="educatorId">Select Educator:</label>
-        <select id="educatorId" name="educatorId" class="form-control">
-            <option value="">-- Select Educator --</option>
-            @foreach (var educator in educators)
-            {
-                <option value="@educator.Id">@educator.FirstName @educator.LastName (@educator.Email)</option>
-
-            }
-        </select>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="list-group">
+                <a href="~/Admin/Courses/Quizzes/List/@Model.CourseID" class="list-group-item list-group-item-action">
+                    <i class="fa fa-book"></i> Quizzes
+                </a>
+                <a href="~/Admin/Courses/Modules/List/@Model.CourseID" class="list-group-item list-group-item-action">
+                    <i class="fa fa-file-alt"></i> Modules
+                </a>
+                <a href="~/Admin/Courses/Sessions/List/@Model.CourseID" class="list-group-item list-group-item-action">
+                    <i class="fa fa-calendar-alt"></i> Sessions
+                </a>
+            </div>
+        </div>
     </div>
-    <button type="submit" class="btn btn-success">Add Educator</button>
-</form>
+
+    

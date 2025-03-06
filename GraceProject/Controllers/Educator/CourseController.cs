@@ -115,4 +115,60 @@ public class StudentCoursesController : Controller
         return View("~/Views/Educator/Courses/Details.cshtml", course);
     }
 
+    [HttpGet("Gradebook/{courseId}")]
+    public async Task<IActionResult> GradeBook(string courseId)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        var students = await _context.StudentSessions
+            .Where(ss => ss.Session.CourseID == courseId)
+            .Select(ss => ss.Student)
+            .Distinct()
+            .ToListAsync();
+
+        var quizzes = await _context.Quizzes
+            .Where(q => q.CourseID == courseId)
+            .ToListAsync();
+
+        var gradeBook = new List<GraceProject.Models.ViewModels.GradeBookViewModel>();
+
+        foreach (var student in students)
+        {
+            var studentScores = await _context.UserQuizzes
+                .Where(uq => uq.UserId == student.Id && uq.Quiz.CourseID == courseId)
+                .Select(uq => new GraceProject.Models.ViewModels.QuizScoreViewModel
+                {
+                    QuizId = uq.QuizId,
+                    QuizTitle = uq.Quiz.Title,
+                    Score = uq.Score,
+                    CompletedAt = uq.CompletedAt
+                })
+                .ToListAsync();
+
+            // Include quizzes with no scores yet (default to null)
+            var allScores = quizzes.Select(quiz => studentScores.FirstOrDefault(s => s.QuizId == quiz.QuizId) ??
+                new GraceProject.Models.ViewModels.QuizScoreViewModel
+                {
+                    QuizId = quiz.QuizId,
+                    QuizTitle = quiz.Title,
+                    Score = null
+                }).ToList();
+
+            gradeBook.Add(new GraceProject.Models.ViewModels.GradeBookViewModel
+            {
+                StudentId = student.Id,
+                StudentName = $"{student.FirstName} {student.LastName}",
+                QuizScores = allScores
+            });
+        }
+
+        ViewBag.CourseID = courseId;
+        return View("~/Views/Educator/Courses/GradeBook.cshtml", gradeBook);
+    }
+
+
 }
