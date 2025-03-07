@@ -17,6 +17,7 @@
             <select id="searchType" class="form-control">
                 <option value="student">Student Name</option>
                 <option value="course">Course Name</option>
+                <option value="educator">Educator Name</option> <!-- New Option for Educator -->
             </select>
         </div>
 
@@ -25,6 +26,14 @@
             <label for="searchValue" class="form-label">Value</label>
             <input type="text" id="searchValue" class="form-control" placeholder="Type to search..." />
             <input type="hidden" id="selectedId">
+        </div>
+
+        <!-- Search For Dropdown -->
+        <div class="col-md-3">
+            <label for="searchFor" class="form-label">Search For</label>
+            <select id="searchFor" class="form-control">
+                <option value="">Please select</option>
+            </select>
         </div>
 
         <!-- Dynamic Dropdown for Sessions -->
@@ -36,8 +45,7 @@
         </div>
 
         <!-- Search Button -->
-        <div class="col-md-3">
-            <br />
+        <div class="col-md-3 mt-2">
             <button id="searchBtn" class="btn btn-primary w-100">Search</button>
         </div>
     </div>
@@ -49,6 +57,7 @@
     </div>
 </div>
 
+
 <!-- Load jQuery, jQuery UI, and Bootstrap Select -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
@@ -56,11 +65,12 @@
 
 <!-- JavaScript for Autocomplete and AJAX -->
 <script>
-    $(document).ready(function () {
+        $(document).ready(function () {
         console.log("Document Ready!");
 
         // Initial setup
         setupAutocomplete();
+        setupSearchForOptions();  // New function for Search For options
 
         // Handle search type change
         $('#searchType').change(function () {
@@ -68,12 +78,32 @@
             $('#searchValue').val('');
             $('#dynamicDropdown').empty().append('<option value="">Please select</option>');
             setupAutocomplete();
+            setupSearchForOptions();  // Update Search For options based on type
         });
 
+        // Setup Search For options based on Search Type
+        function setupSearchForOptions() {
+            let searchType = $('#searchType').val();
+            let searchForDropdown = $('#searchFor');
+            searchForDropdown.empty();
+
+            if (searchType === 'student') {
+                searchForDropdown.append(new Option("Grades", "grades"));
+                searchForDropdown.append(new Option("Time Spent on Slides", "timeSpent"));
+                searchForDropdown.append(new Option("Number of Slides Viewed", "slidesViewed"));
+            } else if (searchType === 'course' || searchType === 'educator') {
+                searchForDropdown.append(new Option("Grades", "grades"));
+            } else {
+                searchForDropdown.append(new Option("Please select", ""));
+            }
+        }
+
         // Setup autocomplete based on search type
-               function setupAutocomplete() {
+            function setupAutocomplete() {
         let searchType = $('#searchType').val();
-        let url = searchType === 'student' ? '/Report/Report/GetStudentList' : '/Report/Report/GetCourseList';
+        let url = searchType === 'student' ? '/Report/Report/GetStudentList' :
+                  searchType === 'course' ? '/Report/Report/GetCourseList' :
+                  '/Report/Report/GetEducatorList';  // New URL for Educator
 
         $('#searchValue').autocomplete({
             source: function (request, response) {
@@ -85,9 +115,13 @@
                     data: JSON.stringify({ keyword: request.term }),
                     success: function (data) {
                         response($.map(data, function (item) {
-                            // Show name without email in brackets for cleaner UI
+                            // Show name with email for students, only name for courses and educators
+                            let labelText = searchType === 'student'
+                                ? `${item.name} (${item.email})`  // Show email for students
+                                : item.name;  // Only show name for courses and educators
+
                             return {
-                                label: item.name,  // Only show name (no email)
+                                label: labelText,
                                 value: item.id
                             };
                         }));
@@ -108,45 +142,42 @@
         });
     }
 
-        // Load sessions for selected student or course
-           function loadSessions(selectedId) {
-        let searchType = $('#searchType').val();
-        let url = searchType === 'student' ? '/Report/Report/GetSessionsByStudent' : '/Report/Report/GetSessionsByCourse';
+        // Load sessions for selected student, course, or educator
+        function loadSessions(selectedId) {
+            let searchType = $('#searchType').val();
+            let url = searchType === 'student' ? '/Report/Report/GetSessionsByStudent' :
+                      searchType === 'course' ? '/Report/Report/GetSessionsByCourse' :
+                      '/Report/Report/GetSessionsByEducator';  // New URL for Educator
 
-        $.ajax({
-            url: url,
-            type: 'POST',
-            contentType: 'application/json; charset=utf-8',
-            dataType: 'json',
-            data: JSON.stringify({ id: selectedId }),
-            success: function (data) {
-                console.log("Sessions received:", data);
-                $('#dynamicDropdown').empty().append('<option value="">Please select</option>');
-
-                // Populate the dropdown based on search type
-                $.each(data, function (index, item) {
-                    let optionText = searchType === 'student'
-                        ? `${item.name}`  // Show "Course Name - Instructor Name" for students
-                        : `${item.name}`;  // Show "Instructor Name" for courses
-
-                    $('#dynamicDropdown').append('<option value="' + item.id + '">' + optionText + '</option>');
-                });
-            },
-            error: function (xhr, status, error) {
-                console.error("Failed to load sessions:", error);
-            }
-        });
-    }
-
+            $.ajax({
+                url: url,
+                type: 'POST',
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                data: JSON.stringify({ id: selectedId }),
+                success: function (data) {
+                    console.log("Sessions received:", data);
+                    $('#dynamicDropdown').empty().append('<option value="">Please select</option>');
+                    $.each(data, function (index, item) {
+                        $('#dynamicDropdown').append(new Option(item.name, item.id));
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.error("Failed to load sessions:", error);
+                }
+            });
+        }
 
         // Trigger search button
         $('#searchBtn').click(function () {
             let selectedSession = $('#dynamicDropdown').val();
-            if (selectedSession) {
-                $('#resultsContent').text('Report for Session ID: ' + selectedSession);
+            let searchFor = $('#searchFor').val();
+            if (selectedSession && searchFor) {
+                $('#resultsContent').text('Report for Session ID: ' + selectedSession + ', Search For: ' + searchFor);
             } else {
-                $('#resultsContent').text('Please select a session.');
+                $('#resultsContent').text('Please select a session and search type.');
             }
         });
     });
+
 </script>

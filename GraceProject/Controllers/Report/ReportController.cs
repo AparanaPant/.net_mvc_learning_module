@@ -105,8 +105,6 @@ namespace GraceProject.Controllers.Report
             return Ok(sessions);
         }
 
-
-        // Get Sessions By Course
         // Get Sessions By Course
         [HttpPost("GetSessionsByCourse")]
         public IActionResult GetSessionsByCourse([FromBody] IdModel idModel)
@@ -125,6 +123,52 @@ namespace GraceProject.Controllers.Report
 
             return Ok(sessions);
         }
+
+        [HttpPost("GetEducatorList")]
+        public async Task<IActionResult> GetEducatorList([FromBody] SearchModel searchData)
+        {
+            // Fetch educator role ID
+            var educatorRoleId = await _context.Roles
+                .Where(r => r.Name == "Educator")
+                .Select(r => r.Id)
+                .FirstOrDefaultAsync();
+
+            // If educator role is not found, return empty list
+            if (string.IsNullOrEmpty(educatorRoleId))
+            {
+                return Ok(new List<object>());
+            }
+
+            // Fetch educators based on role ID and search keyword
+            var educators = await _context.Users
+                .Where(u => _context.UserRoles.Any(ur => ur.UserId == u.Id && ur.RoleId == educatorRoleId))
+                .Where(u => u.FirstName.Contains(searchData.Keyword) || u.LastName.Contains(searchData.Keyword) || u.Email.Contains(searchData.Keyword))
+                .Select(u => new
+                {
+                    name = u.FirstName + " " + u.LastName,
+                    email = u.Email,
+                    id = u.Id
+                })
+                .ToListAsync();
+
+            // Log result for debugging
+            Console.WriteLine("Educators Found: " + educators.Count);
+
+            return Ok(educators);
+        }
+
+
+        [HttpPost("GetSessionsByEducator")]
+        public IActionResult GetSessionsByEducator([FromBody] IdModel idModel)
+        {
+            var sessions = _context.EducatorSession
+                .Where(es => es.EducatorID == idModel.Id)
+                .Select(es => new { name = es.Session.Course.Title, id = es.SessionID })
+                .ToList();
+
+            return Ok(sessions);
+        }
+
 
     }
 
