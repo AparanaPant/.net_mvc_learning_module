@@ -1,7 +1,7 @@
 ﻿@model GradebookViewModel
-
 @{
-    ViewData["Title"] = "Gradebook";
+    ViewData["Title"] = "My gradebook";
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
 }
 
 <h2>@Model.CourseTitle - Gradebook</h2>
@@ -23,7 +23,7 @@
                 <td>@quiz.Percentage %</td>
             </tr>
         }
-        <tr>
+        <tr>a
             <td><strong>Total</strong></td>
             <td><strong>@Model.ObtainedScore / @Model.TotalScore</strong></td>
             <td><strong>@Model.Percentage %</strong></td>

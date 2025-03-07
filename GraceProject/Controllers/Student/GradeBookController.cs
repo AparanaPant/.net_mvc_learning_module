@@ -47,7 +47,8 @@ namespace GraceProject.Controllers.Student
                 ObtainedScore = quizzes.Sum(q => q.ObtainedScore)
             };
 
-            return View("~/Views/Student/Courses/gradebook.cshtml");
+            return View("~/Views/Student/Courses/gradebook.cshtml", model);
+
         }
 
 
