@@ -5,7 +5,6 @@
     Layout = "~/Views/Shared/_StudentLayout.cshtml";
 }
 
-<!-- Bootstrap Container -->
 <div class="container mt-5">
     <h2 class="mb-4 text-center">Admin Report</h2>
 
@@ -17,7 +16,7 @@
             <select id="searchType" class="form-control">
                 <option value="student">Student Name</option>
                 <option value="course">Course Name</option>
-                <option value="educator">Educator Name</option> <!-- New Option for Educator -->
+                <option value="educator">Educator Name</option>
             </select>
         </div>
 
@@ -57,20 +56,18 @@
     </div>
 </div>
 
-
 <!-- Load jQuery, jQuery UI, and Bootstrap Select -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 
-<!-- JavaScript for Autocomplete and AJAX -->
 <script>
-        $(document).ready(function () {
+    $(document).ready(function () {
         console.log("Document Ready!");
 
         // Initial setup
         setupAutocomplete();
-        setupSearchForOptions();  // New function for Search For options
+        setupSearchForOptions();
 
         // Handle search type change
         $('#searchType').change(function () {
@@ -78,7 +75,7 @@
             $('#searchValue').val('');
             $('#dynamicDropdown').empty().append('<option value="">Please select</option>');
             setupAutocomplete();
-            setupSearchForOptions();  // Update Search For options based on type
+            setupSearchForOptions();
         });
 
         // Setup Search For options based on Search Type
@@ -99,55 +96,52 @@
         }
 
         // Setup autocomplete based on search type
-            function setupAutocomplete() {
-        let searchType = $('#searchType').val();
-        let url = searchType === 'student' ? '/Report/Report/GetStudentList' :
-                  searchType === 'course' ? '/Report/Report/GetCourseList' :
-                  '/Report/Report/GetEducatorList';  // New URL for Educator
+        function setupAutocomplete() {
+            let searchType = $('#searchType').val();
+            let url = searchType === 'student' ? '/Report/Report/GetStudentList' :
+                      searchType === 'course' ? '/Report/Report/GetCourseList' :
+                      '/Report/Report/GetEducatorList';
 
-        $('#searchValue').autocomplete({
-            source: function (request, response) {
-                $.ajax({
-                    url: url,
-                    type: 'POST',
-                    contentType: 'application/json; charset=utf-8',
-                    dataType: 'json',
-                    data: JSON.stringify({ keyword: request.term }),
-                    success: function (data) {
-                        response($.map(data, function (item) {
-                            // Show name with email for students, only name for courses and educators
-                            let labelText = searchType === 'student'
-                                ? `${item.name} (${item.email})`  // Show email for students
-                                : item.name;  // Only show name for courses and educators
+            $('#searchValue').autocomplete({
+                source: function (request, response) {
+                    $.ajax({
+                        url: url,
+                        type: 'POST',
+                        contentType: 'application/json; charset=utf-8',
+                        dataType: 'json',
+                        data: JSON.stringify({ keyword: request.term }),
+                        success: function (data) {
+                                response($.map(data, function (item) {
+                                let labelText = searchType === 'student'
+                                    ? `${item.name} (${item.email})`  
+                                    : item.name;  
+                                return {
+                                    label: labelText,
+                                    value: item.id
+                                };
+                            }));
 
-                            return {
-                                label: labelText,
-                                value: item.id
-                            };
-                        }));
-                    },
-                    error: function (xhr, status, error) {
-                        console.log("AJAX Error:", error);
-                        console.log("Status:", status);
-                        console.log("Response:", xhr.responseText);
-                    }
-                });
-            },
-            select: function (event, ui) {
-                $('#searchValue').val(ui.item.label);
-                $('#selectedId').val(ui.item.value);
-                loadSessions(ui.item.value);
-                return false;
-            }
-        });
-    }
+                        },
+                        error: function (xhr, status, error) {
+                            console.log("AJAX Error:", error);
+                        }
+                    });
+                },
+                select: function (event, ui) {
+                    $('#searchValue').val(ui.item.label);
+                    $('#selectedId').val(ui.item.value);
+                    loadSessions(ui.item.value);
+                    return false;
+                }
+            });
+        }
 
-        // Load sessions for selected student, course, or educator
+        // Load sessions based on selected type
         function loadSessions(selectedId) {
             let searchType = $('#searchType').val();
             let url = searchType === 'student' ? '/Report/Report/GetSessionsByStudent' :
                       searchType === 'course' ? '/Report/Report/GetSessionsByCourse' :
-                      '/Report/Report/GetSessionsByEducator';  // New URL for Educator
+                      '/Report/Report/GetSessionsByEducator';
 
             $.ajax({
                 url: url,
@@ -156,7 +150,6 @@
                 dataType: 'json',
                 data: JSON.stringify({ id: selectedId }),
                 success: function (data) {
-                    console.log("Sessions received:", data);
                     $('#dynamicDropdown').empty().append('<option value="">Please select</option>');
                     $.each(data, function (index, item) {
                         $('#dynamicDropdown').append(new Option(item.name, item.id));
@@ -168,16 +161,47 @@
             });
         }
 
-        // Trigger search button
+        // Handle Search Button Click
         $('#searchBtn').click(function () {
             let selectedSession = $('#dynamicDropdown').val();
+            let searchType = $('#searchType').val();
             let searchFor = $('#searchFor').val();
-            if (selectedSession && searchFor) {
-                $('#resultsContent').text('Report for Session ID: ' + selectedSession + ', Search For: ' + searchFor);
+            let studentId = $('#selectedId').val();
+
+            if (searchType === 'student' && searchFor === 'grades' && selectedSession) {
+                fetchGrades(studentId, selectedSession);
             } else {
-                $('#resultsContent').text('Please select a session and search type.');
+                $('#resultsContent').text('Please select a session.');
             }
         });
-    });
 
+        // Fetch Grades Function
+        function fetchGrades(studentId, sessionId) {
+            $.ajax({
+                url: '/Report/Report/GetStudentGrades',
+                type: 'POST',
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                data: JSON.stringify({ Id: sessionId, Keyword: studentId }),
+                success: function (data) {
+                    let resultsContent = $('#resultsContent');
+                    resultsContent.empty();
+
+                    if (data && data.QuizResults && data.QuizResults.length > 0) {
+                        let gradeTable = `<table class="table table-bordered"><thead><tr><th>Quiz Title</th><th>Score</th><th>Full Marks</th></tr></thead><tbody>`;
+                        data.QuizResults.forEach(function (quiz) {
+                            gradeTable += `<tr><td>${quiz.QuizTitle}</td><td>${quiz.Score}</td><td>${quiz.FullMarks}</td></tr>`;
+                        });
+                        gradeTable += `<tr class="font-weight-bold"><td>Total</td><td>${data.TotalScore}</td><td>${data.TotalFullMarks}</td></tr></tbody></table>`;
+                        resultsContent.html(gradeTable);
+                    } else {
+                        resultsContent.text("No grades available for this session.");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Failed to fetch grades:", error);
+                }
+            });
+        }
+    });
 </script>

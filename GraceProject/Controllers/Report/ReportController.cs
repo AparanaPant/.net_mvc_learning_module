@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using GraceProject.Models;
+
 
 namespace GraceProject.Controllers.Report
 {
@@ -167,6 +169,35 @@ namespace GraceProject.Controllers.Report
                 .ToList();
 
             return Ok(sessions);
+        }
+
+        [HttpPost("GetStudentGrades")]
+        public async Task<IActionResult> GetStudentGrades([FromBody] StudentSessionModel model)
+        {
+            // model.Id -> Session ID
+            // model.Keyword -> Student ID
+
+            var quizResults = await _context.UserQuizzes
+                .Where(uq => uq.UserId == model.Keyword && uq.Quiz.SessionID == model.Id)
+                .Select(uq => new
+                {
+                    QuizTitle = uq.Quiz.Title,
+                    Score = uq.Score ?? 0,
+                    FullMarks = uq.Quiz.TotalScore ?? 0
+                })
+                .ToListAsync();
+
+            int totalScore = quizResults.Sum(q => q.Score);
+            int totalFullMarks = quizResults.Sum(q => q.FullMarks);
+
+            var result = new
+            {
+                QuizResults = quizResults,
+                TotalScore = totalScore,
+                TotalFullMarks = totalFullMarks
+            };
+
+            return Ok(result);
         }
 
 
