@@ -1,44 +1,47 @@
-﻿@model List<GraceProject.Models.ViewModels.GradeBookViewModel>
-@{
-    Layout = "~/Views/Shared/_StudentLayout.cshtml";
-    ViewBag.Title = "Grade Book";
-}
+﻿@model GraceProject.ViewModels.TeacherGradebookViewModel
 
-<h2 class="text-center mt-4">Grade Book</h2>
-
-<div class="table-responsive">
-    <table class="table table-bordered table-hover">
-        <thead class="thead-light">
+<div class="container">
+    <h2 class="text-center">Gradebook for @Model.CourseTitle - @Model.SessionTitle</h2>
+    <table class="table table-bordered table-hover mt-4">
+        <thead>
             <tr>
                 <th>Student Name</th>
-                @if (Model.FirstOrDefault()?.QuizScores != null)
+                @if (Model.Students.Any() && Model.Students.First().Quizzes.Any())
                 {
-                    @foreach (var quiz in Model.First().QuizScores)
+                    @foreach (var quiz in Model.Students.First().Quizzes)
                     {
-                                <th>@quiz.QuizTitle</th>
+                        <th>@quiz.QuizTitle</th>
                     }
                 }
+                <th>Total Score</th>
+                <th>Obtained Score</th>
+                <th>Percentage</th>
+                <th>Grade</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var student in Model)
+            @foreach (var student in Model.Students)
             {
-                    <tr>
-                        <td>@student.StudentName</td>
-                    @foreach (var quizScore in student.QuizScores)
+                <tr>
+                    <td>@student.StudentName</td>
+                    @foreach (var quiz in student.Quizzes)
                     {
-                                <td class="text-center">
-                            @if (quizScore.Score.HasValue)
+                        <td>
+                            @if (quiz.TotalScore > 0)
                             {
-                                            <span class="badge badge-success">@quizScore.Score</span>
+                                @($"{quiz.ObtainedScore}/{quiz.TotalScore}")
                             }
                             else
                             {
-                                            <span class="badge badge-secondary">N/A</span>
+                                <text>N / A</text>
                             }
-                                </td>
+                        </td>
                     }
-                    </tr>
+                    <td>@student.TotalScore</td>
+                    <td>@student.ObtainedScore</td>
+                    <td>@($"{student.Percentage:F2}%")</td>
+                    <td>@student.Grade</td>
+                </tr>
             }
         </tbody>
     </table>
