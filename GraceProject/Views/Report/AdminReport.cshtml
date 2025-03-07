@@ -170,6 +170,8 @@
 
             if (searchType === 'student' && searchFor === 'grades' && selectedSession) {
                 fetchGrades(studentId, selectedSession);
+            } else if (searchType === 'course' && searchFor === 'grades' && selectedSession) {
+                fetchCourseGrades(selectedSession); 
             } else {
                 $('#resultsContent').text('Please select a session.');
             }
@@ -177,9 +179,6 @@
 
         // Fetch Grades Function
         function fetchGrades(studentId, sessionId) {
-            console.log("Grades received:", data);  // Log received data
-            console.log("QuizResults:", data.QuizResults);  // Log QuizResults array
-
             $.ajax({
                 url: '/Report/Report/GetStudentGrades',
                 type: 'POST',
@@ -189,13 +188,26 @@
                 success: function (data) {
                     let resultsContent = $('#resultsContent');
                     resultsContent.empty();
+                     console.log("Grades received:", data);  // Log received data
+                       console.log("QuizResults:", data.QuizResults);  // Log QuizResults array
 
-                    if (data && Array.isArray(data.QuizResults) && data.QuizResults.length > 0) {
+                    if (data && Array.isArray(data.quizResults) && data.quizResults.length > 0) {  
+
                         let gradeTable = `<table class="table table-bordered"><thead><tr><th>Quiz Title</th><th>Score</th><th>Full Marks</th></tr></thead><tbody>`;
-                        data.QuizResults.forEach(function (quiz) {
-                            gradeTable += `<tr><td>${quiz.QuizTitle}</td><td>${quiz.Score}</td><td>${quiz.FullMarks}</td></tr>`;
-                        });
-                        gradeTable += `<tr class="font-weight-bold"><td>Total</td><td>${data.TotalScore}</td><td>${data.TotalFullMarks}</td></tr></tbody></table>`;
+                               console.log("Received Data:", data);  // Add this to debug
+
+                                    data.quizResults.forEach(function (quiz) {
+                                        console.log("Quiz Data:", quiz);  // Log each quiz item to debug
+
+                                        gradeTable += `
+                                            <tr>
+                                                <td>${quiz.quizTitle}</td>    <!-- Use lowercase properties -->
+                                                <td>${quiz.score}</td>
+                                                <td>${quiz.fullMarks}</td>
+                                            </tr>`;
+                                    });
+
+                        gradeTable += `<tr class="font-weight-bold"><td>Total</td><td>${data.totalScore}</td><td>${data.totalFullMarks}</td></tr></tbody></table>`;
                         resultsContent.html(gradeTable);
                     } else {
                         resultsContent.text("No grades available for this session.");
@@ -206,5 +218,50 @@
                 }
             });
         }
+
+           function fetchCourseGrades(sessionId) {
+        $('#resultsContent').html("<div class='text-center'><span class='spinner-border'></span> Loading grades...</div>");
+
+        $.ajax({
+            url: '/Report/Report/GetCourseGrades',
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            data: JSON.stringify({ Id: sessionId }),
+            success: function (data) {
+                let resultsContent = $('#resultsContent');
+                resultsContent.empty();
+
+                if (data && data.students && data.students.length > 0) {
+                    let gradeTable = `<table class="table table-bordered">
+                        <thead>
+                            <tr><th>Student Name</th><th>Quiz Title</th><th>Score</th><th>Full Marks</th></tr>
+                        </thead><tbody>`;
+
+                    data.students.forEach(function (student) {
+                        student.quizzes.forEach(function (quiz) {
+                            gradeTable += `<tr>
+                                <td>${student.studentName}</td>
+                                <td>${quiz.quizTitle}</td>
+                                <td>${quiz.obtainedScore}</td>
+                                <td>${quiz.totalScore}</td>
+                            </tr>`;
+                        });
+                    });
+
+                    gradeTable += `</tbody></table>`;
+                    resultsContent.html(gradeTable);
+                } else {
+                    resultsContent.html("<div class='alert alert-warning'>No grades available for this session.</div>");
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Failed to fetch grades:", error);
+                $('#resultsContent').html("<div class='alert alert-danger'>Failed to load grades. Please try again later.</div>");
+            }
+        });
+    }
+
+
     });
 </script>

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using GraceProject.Models;
+using GraceProject.ViewModels;
 
 
 namespace GraceProject.Controllers.Report
@@ -200,6 +201,91 @@ namespace GraceProject.Controllers.Report
             return Ok(result);
         }
 
+        [HttpPost("GetCourseGrades")]
+        public async Task<IActionResult> GetCourseGrades([FromBody] IdModel model)
+        {
+            if (_context.Course == null || _context.Session == null)
+            {
+                return NotFound("Courses or Sessions table is not available.");
+            }
+
+            // Get session information
+            var session = await _context.Session.FirstOrDefaultAsync(s => s.SessionID == Convert.ToInt32(model.Id));
+            if (session == null)
+            {
+                return NotFound("Session not found.");
+            }
+
+            // Get course information
+            var course = await _context.Course.FirstOrDefaultAsync(c => c.CourseID == session.CourseID);
+            if (course == null)
+            {
+                return NotFound("Course not found.");
+            }
+
+            // Fetch student sessions and switch to in-memory processing
+            var studentSessions = await _context.StudentSessions
+                .Where(ss => ss.SessionID == session.SessionID)
+                .ToListAsync();
+
+            // Fetch users and quizzes
+            var users = await _context.Users.ToListAsync();
+            var quizzes = await _context.Quizzes
+                .Where(q => q.CourseID == course.CourseID || q.SessionID == session.SessionID)
+                .ToListAsync();
+            var userQuizzes = await _context.UserQuizzes.ToListAsync();
+
+            // Process in-memory using AsEnumerable()
+            var students = studentSessions
+                .AsEnumerable()
+                .Select(ss => new StudentQuizResultViewModel
+                {
+                    StudentId = ss.StudentID,
+                    StudentName = users
+                        .Where(u => u.Id.ToString() == ss.StudentID)
+                        .Select(u => u.FirstName + " " + u.LastName)
+                        .FirstOrDefault() ?? "Unknown Student",
+                    Quizzes = quizzes
+                        .Select(q => new EducatorQuizResultViewModel
+                        {
+                            QuizTitle = q.Title,
+                            TotalScore = q.TotalScore ?? 0,
+                            ObtainedScore = userQuizzes
+                                .Where(uq => uq.UserId == ss.StudentID && uq.QuizId == q.QuizId)
+                                .Sum(uq => uq.Score) ?? 0
+                        }).ToList()
+                }).ToList();
+
+            // Calculate total and grade for each student
+            foreach (var student in students)
+            {
+                student.TotalScore = student.Quizzes.Sum(q => q.TotalScore);
+                student.ObtainedScore = student.Quizzes.Sum(q => q.ObtainedScore);
+                student.Percentage = student.TotalScore > 0 ? (student.ObtainedScore / (double)student.TotalScore) * 100 : 0;
+                student.Grade = GetGrade(student.Percentage);
+            }
+
+            // Prepare the result model
+            var result = new TeacherGradebookViewModel
+            {
+                CourseTitle = course.Title ?? "Unknown Course",
+                SessionTitle = session.IsActive ? "Active Session" : "Inactive Session",
+                Students = students
+            };
+
+            return Ok(result);
+        }
+
+
+        // Helper method to determine grade
+        private string GetGrade(double percentage)
+        {
+            if (percentage >= 90) return "A";
+            else if (percentage >= 80) return "B";
+            else if (percentage >= 70) return "C";
+            else if (percentage >= 60) return "D";
+            else return "F";
+        }
 
     }
 
