@@ -1,29 +1,27 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace GraceProject.Migrations
 {
     /// <inheritdoc />
-    public partial class AddDate : Migration
+    public partial class AddQuizScore : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<DateTime>(
-                name: "StartTimeCST",
+            migrationBuilder.AddColumn<int>(
+                name: "TotalScore",
                 table: "Quizzes",
-                type: "datetime2",
-                nullable: false,
-                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
+                type: "int",
+                nullable: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "StartTimeCST",
+                name: "TotalScore",
                 table: "Quizzes");
         }
     }

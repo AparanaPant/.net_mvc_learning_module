@@ -86,6 +86,7 @@ namespace GraceProject.Controllers
                     CreatedAt = DateTime.Now,
                     CourseID = quizViewModel.CourseID,
                     SessionID = quizViewModel.SessionID,
+                    TotalScore = quizViewModel.TotalScore,
                     Questions = quizViewModel.Questions.Select(q => new Question
                     {
                         Text = q.Text,

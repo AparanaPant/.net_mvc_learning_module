@@ -290,41 +290,41 @@
         // Initializing autocomplete with default
         valueAutoComplete("/Report/Report/GetStudentList", "student");
 
-        // function courseAutoComplete(url, data) {
-        //     // debugger;
-        //     // console.log(url);
-        //     $("#Course").autocomplete({
-        //         source: function (request, response) {
-        //             $.ajax({
-        //                 url: url,
-        //                 type: 'POST',
-        //                 contentType: 'application/json',
-        //                 data: JSON.stringify(request.term),
-        //                 success: function (data) {
-        //                     debugger;
-        //                     response($.map(data, function (item) {
-        //                         return {
-        //                             value: item.id,
-        //                             label: item.name
-        //                         };
-        //                     }));
-        //                 },
-        //                 error: function () {
-        //                     console.log("Error fetching data");
-        //                 }
-        //             });
-        //         },
-        //         minLength: 0,
-        //         select: function (event, ui) {
-        //             //debugger;
-        //             $("#Course").val(ui.item.label);
-        //             // Set the selected item's value to the hidden input
-        //             $("#hidden-course-value").val(ui.item.value);
+        function courseAutoComplete(url, data) {
+            // debugger;
+            // console.log(url);
+            $("#Course").autocomplete({
+                source: function (request, response) {
+                    $.ajax({
+                        url: url,
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(request.term),
+                        success: function (data) {
+                            debugger;
+                            response($.map(data, function (item) {
+                                return {
+                                    value: item.id,
+                                    label: item.name
+                                };
+                            }));
+                        },
+                        error: function () {
+                            console.log("Error fetching data");
+                        }
+                    });
+                },
+                minLength: 0,
+                select: function (event, ui) {
+                    //debugger;
+                    $("#Course").val(ui.item.label);
+                    // Set the selected item's value to the hidden input
+                    $("#hidden-course-value").val(ui.item.value);
 
-        //             return false;
-        //         }
-        //     });
-        // }
+                    return false;
+                }
+            });
+        }
 
 
         //GetSchoolList("Aubur", 1000);
@@ -492,20 +492,20 @@
         });
     }
 
-    // function fetchData(url, data){
-    //     $.ajax({
-    //         url: url,
-    //         type: 'POST',
-    //         contentType: 'application/json',
-    //         data: JSON.stringify(data),
-    //         success: function (response) {
-    //             console.log("Success");
-    //         },
-    //         error: function (xhr, status, error) {
-    //             console.log('Error: '+ xhr.responseText)
-    //         }
-    //     });
-    // }
+    function fetchData(url, data){
+        $.ajax({
+            url: url,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function (response) {
+                console.log("Success");
+            },
+            error: function (xhr, status, error) {
+                console.log('Error: '+ xhr.responseText)
+            }
+        });
+    }
 </script>
 
 

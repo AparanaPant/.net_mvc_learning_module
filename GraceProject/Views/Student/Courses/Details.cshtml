@@ -43,14 +43,16 @@
         let sessionLinks = document.querySelectorAll(".session-link");
         let sessionDetails = document.getElementById("session-details");
         let courseId = "@Model.Course.CourseID"; // Get CourseID from Razor Model
+        let studentId = "@User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value";
 
         sessionLinks.forEach(link => {
             link.addEventListener("click", function () {
+                let sessionId = link.getAttribute("data-sessionid");
                 sessionDetails.style.display = "block";
-
                 document.getElementById("quizzes-link").href = `/Student/Quizzes/${courseId}`;
                 document.getElementById("modules-link").href = `/Student/Modules/Index`;
-                document.getElementById("gradebook-link").href = `/Student/Gradebook/${courseId}`;
+               document.getElementById("gradebook-link").href = `/Student/Gradebook/${courseId}/${sessionId}/${studentId}`;
+
             });
         });
     });

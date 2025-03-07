@@ -11,6 +11,12 @@
     <form asp-action="Create" method="post"  enctype="multipart/form-data">
         <input type="hidden" asp-for="CourseID" />
         <input type="hidden" asp-for="SessionID" />
+        <div class="total-score-section">
+            <label><strong>Total Score:</strong></label>
+            <span id="displayTotalScore">0</span>
+        </div>
+        <input type="hidden" id="TotalScore" name="TotalScore" value="0" />
+
         <div class="form-group">
             <label for="Title">Title</label>
             <input type="text" asp-for="Title" class="form-control" style="width: 50%;" />
@@ -44,8 +50,7 @@
 
         function addQuestion() {
             const questionIndex = questions.length;
-            questions.push({ Type: "Multiple Choice", Points: 1, Text: "", ImageUrl: "", Options: [], FillInTheBlankAnswers: [] });
-
+            questions.push({ Type: "Multiple Choice", Points: 0, Text: "", ImageUrl: "", Options: [], FillInTheBlankAnswers: [] });
             const questionDiv = document.createElement('div');
             questionDiv.classList.add('question-div');
             questionDiv.dataset.index = questionIndex;
@@ -63,10 +68,9 @@
                                     </div>
                                     <div>
                                         <label>Points</label>
-                                        <input type="number" class="form-control question-points" value="1" style="width: auto;"
+                                           <input type="number" class="form-control question-points" value="0" style="width: auto;"
                                             name="Questions[${questionIndex}].Points"
                                             onchange="updateQuestionPoints(this, ${questionIndex})" />
-
                                     </div>
                                 </div>
                                 <div class="question-attributes">
@@ -89,10 +93,14 @@
 
             document.getElementById('questions-container').appendChild(questionDiv);
             changeAnswerSection(questionDiv.querySelector(".question-type"));
+            updateTotalScore();
         }
-                function updateQuestionPoints(input, questionIndex) {
-            questions[questionIndex].Points = parseInt(input.value, 10);
-        }
+
+            function updateQuestionPoints(input, questionIndex) {
+                    const newPoints = parseInt(input.value, 10) || 0; 
+                    questions[questionIndex].Points = newPoints;
+                    updateTotalScore();
+                        }
 
 
         function changeAnswerSection(select) {
@@ -338,6 +346,14 @@
 
             this.submit();
         });
+         function updateTotalScore() {
+            let totalScore = 0;
+            questions.forEach(question => {
+                totalScore += parseInt(question.Points, 10) || 0;
+            });
+            document.getElementById("TotalScore").value = totalScore;
+            document.getElementById("displayTotalScore").innerText = totalScore;  // Update displayed score
+        }
 
     </script>
     @{
@@ -348,6 +364,12 @@
     .quiz-creation-section {
         max-width: 90%;
         margin: 0 auto;
+    }
+
+    .total-score-section {
+        margin-bottom: 20px;
+        font-size: 18px;
+        color: #333;
     }
 
     .question-div {

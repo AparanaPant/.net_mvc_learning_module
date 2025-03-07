@@ -27,6 +27,8 @@ namespace GraceProject.Models
         [ForeignKey("Session")]
         public int? SessionID { get; set; }
 
+        public int? TotalScore { get; set; }
+
         public virtual ICollection<Question> Questions { get; set; }
 
         public virtual ICollection<UserQuiz> UserQuizzes { get; set; }

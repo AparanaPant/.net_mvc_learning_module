@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GraceProject.Migrations
 {
     [DbContext(typeof(GraceDbContext))]
-    [Migration("20250301014845_AddSessionToquiz")]
-    partial class AddSessionToquiz
+    [Migration("20250306232613_AddQuizScore")]
+    partial class AddQuizScore
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -346,7 +346,6 @@ namespace GraceProject.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("QuizId"));
 
                     b.Property<string>("CourseID")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
@@ -358,9 +357,15 @@ namespace GraceProject.Migrations
                     b.Property<int?>("SessionID")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("StartTimeCST")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("TotalScore")
+                        .HasColumnType("int");
 
                     b.HasKey("QuizId");
 
@@ -449,6 +454,9 @@ namespace GraceProject.Migrations
 
                     b.Property<DateTime?>("EndDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("StartDate")
                         .HasColumnType("datetime2");
@@ -963,9 +971,7 @@ namespace GraceProject.Migrations
                 {
                     b.HasOne("GraceProject.Models.Course", "Course")
                         .WithMany("Quizzes")
-                        .HasForeignKey("CourseID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CourseID");
 
                     b.HasOne("GraceProject.Models.Session", "Session")
                         .WithMany()

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GraceProject.Migrations
 {
     [DbContext(typeof(GraceDbContext))]
-    [Migration("20250303171037_AddDate")]
-    partial class AddDate
+    [Migration("20250306223925_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -451,6 +451,9 @@ namespace GraceProject.Migrations
 
                     b.Property<DateTime?>("EndDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("StartDate")
                         .HasColumnType("datetime2");

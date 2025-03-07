@@ -1,0 +1,49 @@
+﻿@model GradebookViewModel
+
+@{
+    ViewData["Title"] = "Gradebook";
+}
+
+<h2>@Model.CourseTitle - Gradebook</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Quiz</th>
+            <th>Obtained / Total Score</th>
+            <th>Percentage</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var quiz in Model.Quizzes)
+        {
+            <tr>
+                <td>@quiz.QuizTitle</td>
+                <td>@quiz.ObtainedScore / @quiz.TotalScore</td>
+                <td>@quiz.Percentage %</td>
+            </tr>
+        }
+        <tr>
+            <td><strong>Total</strong></td>
+            <td><strong>@Model.ObtainedScore / @Model.TotalScore</strong></td>
+            <td><strong>@Model.Percentage %</strong></td>
+        </tr>
+    </tbody>
+</table>
+<style>
+    .table {
+        width: 80%;
+        margin: 20px auto;
+        border-collapse: collapse;
+    }
+
+    .table th, .table td {
+        padding: 8px;
+        text-align: center;
+        border: 1px solid #ddd;
+    }
+
+    .table th {
+        background-color: #f2f2f2;
+    }
+</style>

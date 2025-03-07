@@ -74,28 +74,6 @@ namespace GraceProject.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Quizzes",
-                columns: table => new
-                {
-                    QuizId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    CourseID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Duration = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Quizzes", x => x.QuizId);
-                    table.ForeignKey(
-                        name: "FK_Quizzes_Course_CourseID",
-                        column: x => x.CourseID,
-                        principalTable: "Course",
-                        principalColumn: "CourseID",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Session",
                 columns: table => new
                 {
@@ -103,7 +81,8 @@ namespace GraceProject.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CourseID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -177,26 +156,31 @@ namespace GraceProject.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Questions",
+                name: "Quizzes",
                 columns: table => new
                 {
-                    QuestionId = table.Column<int>(type: "int", nullable: false)
+                    QuizId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Points = table.Column<int>(type: "int", nullable: false),
-                    Text = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    QuizId = table.Column<int>(type: "int", nullable: false),
-                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Duration = table.Column<int>(type: "int", nullable: false),
+                    StartTimeCST = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CourseID = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    SessionID = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Questions", x => x.QuestionId);
+                    table.PrimaryKey("PK_Quizzes", x => x.QuizId);
                     table.ForeignKey(
-                        name: "FK_Questions_Quizzes_QuizId",
-                        column: x => x.QuizId,
-                        principalTable: "Quizzes",
-                        principalColumn: "QuizId",
-                        onDelete: ReferentialAction.Cascade);
+                        name: "FK_Quizzes_Course_CourseID",
+                        column: x => x.CourseID,
+                        principalTable: "Course",
+                        principalColumn: "CourseID");
+                    table.ForeignKey(
+                        name: "FK_Quizzes_Session_SessionID",
+                        column: x => x.SessionID,
+                        principalTable: "Session",
+                        principalColumn: "SessionID");
                 });
 
             migrationBuilder.CreateTable(
@@ -426,56 +410,29 @@ namespace GraceProject.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "StudentSession",
+                name: "StudentSessions",
                 columns: table => new
                 {
                     StudentSessionID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     StudentID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    SessionID = table.Column<int>(type: "int", nullable: false)
+                    SessionID = table.Column<int>(type: "int", nullable: false),
+                    RegistrationDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_StudentSession", x => x.StudentSessionID);
+                    table.PrimaryKey("PK_StudentSessions", x => x.StudentSessionID);
                     table.ForeignKey(
-                        name: "FK_StudentSession_AspNetUsers_StudentID",
+                        name: "FK_StudentSessions_AspNetUsers_StudentID",
                         column: x => x.StudentID,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_StudentSession_Session_SessionID",
+                        name: "FK_StudentSessions_Session_SessionID",
                         column: x => x.SessionID,
                         principalTable: "Session",
                         principalColumn: "SessionID",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "UserQuizzes",
-                columns: table => new
-                {
-                    UserQuizId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    QuizId = table.Column<int>(type: "int", nullable: false),
-                    CompletedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Score = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserQuizzes", x => x.UserQuizId);
-                    table.ForeignKey(
-                        name: "FK_UserQuizzes_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_UserQuizzes_Quizzes_QuizId",
-                        column: x => x.QuizId,
-                        principalTable: "Quizzes",
-                        principalColumn: "QuizId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -503,6 +460,92 @@ namespace GraceProject.Migrations
                         principalTable: "Schools",
                         principalColumn: "SchoolID",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Questions",
+                columns: table => new
+                {
+                    QuestionId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Points = table.Column<int>(type: "int", nullable: false),
+                    Text = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    QuizId = table.Column<int>(type: "int", nullable: false),
+                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Questions", x => x.QuestionId);
+                    table.ForeignKey(
+                        name: "FK_Questions_Quizzes_QuizId",
+                        column: x => x.QuizId,
+                        principalTable: "Quizzes",
+                        principalColumn: "QuizId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserQuizzes",
+                columns: table => new
+                {
+                    UserQuizId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    QuizId = table.Column<int>(type: "int", nullable: false),
+                    StartedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CompletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsCompleted = table.Column<bool>(type: "bit", nullable: false),
+                    Score = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserQuizzes", x => x.UserQuizId);
+                    table.ForeignKey(
+                        name: "FK_UserQuizzes_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserQuizzes_Quizzes_QuizId",
+                        column: x => x.QuizId,
+                        principalTable: "Quizzes",
+                        principalColumn: "QuizId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SlideSection",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    SlideId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(1000)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SavedDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ControllerName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ControllerParameters = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TextToVoice = table.Column<bool>(type: "bit", nullable: false),
+                    SlideSectionOrder = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SlideSection", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SlideSection_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_SlideSection_Slide_SlideId",
+                        column: x => x.SlideId,
+                        principalTable: "Slide",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -544,39 +587,6 @@ namespace GraceProject.Migrations
                         principalTable: "Questions",
                         principalColumn: "QuestionId",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "SlideSection",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    SlideId = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(1000)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SavedDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ControllerName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ControllerParameters = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TextToVoice = table.Column<bool>(type: "bit", nullable: false),
-                    SlideSectionOrder = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SlideSection", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_SlideSection_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_SlideSection_Slide_SlideId",
-                        column: x => x.SlideId,
-                        principalTable: "Slide",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -722,6 +732,11 @@ namespace GraceProject.Migrations
                 column: "CourseID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Quizzes_SessionID",
+                table: "Quizzes",
+                column: "SessionID");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SchoolAddresses_SchoolID",
                 table: "SchoolAddresses",
                 column: "SchoolID");
@@ -747,13 +762,13 @@ namespace GraceProject.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_StudentSession_SessionID",
-                table: "StudentSession",
+                name: "IX_StudentSessions_SessionID",
+                table: "StudentSessions",
                 column: "SessionID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_StudentSession_StudentID",
-                table: "StudentSession",
+                name: "IX_StudentSessions_StudentID",
+                table: "StudentSessions",
                 column: "StudentID");
 
             migrationBuilder.CreateIndex(
@@ -832,7 +847,7 @@ namespace GraceProject.Migrations
                 name: "SlideSection");
 
             migrationBuilder.DropTable(
-                name: "StudentSession");
+                name: "StudentSessions");
 
             migrationBuilder.DropTable(
                 name: "UserAnswers");
@@ -845,9 +860,6 @@ namespace GraceProject.Migrations
 
             migrationBuilder.DropTable(
                 name: "Slide");
-
-            migrationBuilder.DropTable(
-                name: "Session");
 
             migrationBuilder.DropTable(
                 name: "Options");
@@ -866,6 +878,9 @@ namespace GraceProject.Migrations
 
             migrationBuilder.DropTable(
                 name: "Schools");
+
+            migrationBuilder.DropTable(
+                name: "Session");
 
             migrationBuilder.DropTable(
                 name: "Course");

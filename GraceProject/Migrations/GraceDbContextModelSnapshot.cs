@@ -361,6 +361,9 @@ namespace GraceProject.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("TotalScore")
+                        .HasColumnType("int");
+
                     b.HasKey("QuizId");
 
                     b.HasIndex("CourseID");

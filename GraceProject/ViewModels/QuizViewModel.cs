@@ -18,6 +18,8 @@ namespace GraceProject.ViewModels
 
         public int Duration { get; set; }
 
+        public int? TotalScore { get; set; }
+
         public List<QuestionAnswerViewModel> QuestionAnswers { get; set; } = new List<QuestionAnswerViewModel>();
 
         public List<QuestionViewModel> Questions { get; set; } = new List<QuestionViewModel>();
