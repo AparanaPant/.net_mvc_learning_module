@@ -177,6 +177,9 @@
 
         // Fetch Grades Function
         function fetchGrades(studentId, sessionId) {
+            console.log("Grades received:", data);  // Log received data
+            console.log("QuizResults:", data.QuizResults);  // Log QuizResults array
+
             $.ajax({
                 url: '/Report/Report/GetStudentGrades',
                 type: 'POST',
@@ -187,7 +190,7 @@
                     let resultsContent = $('#resultsContent');
                     resultsContent.empty();
 
-                    if (data && data.QuizResults && data.QuizResults.length > 0) {
+                    if (data && Array.isArray(data.QuizResults) && data.QuizResults.length > 0) {
                         let gradeTable = `<table class="table table-bordered"><thead><tr><th>Quiz Title</th><th>Score</th><th>Full Marks</th></tr></thead><tbody>`;
                         data.QuizResults.forEach(function (quiz) {
                             gradeTable += `<tr><td>${quiz.QuizTitle}</td><td>${quiz.Score}</td><td>${quiz.FullMarks}</td></tr>`;
