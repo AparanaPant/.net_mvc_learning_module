@@ -79,7 +79,12 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-app.MapRazorPages();
+//app.MapRazorPages();
+//services.AddControllers().AddJsonOptions(options =>
+//{
+//    options.JsonSerializerOptions.PropertyNamingPolicy = null;
+//});
+
 
 async Task CreateRolesAndAdmin(IServiceProvider serviceProvider)
 {
