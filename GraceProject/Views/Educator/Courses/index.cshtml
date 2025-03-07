@@ -1,0 +1,72 @@
+﻿@{
+    ViewData["Title"] = "Educator Courses";
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success text-center">
+        @TempData["SuccessMessage"]
+        TempData.Remove("SuccessMessage");
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger text-center">
+        @TempData["ErrorMessage"]
+        TempData.Remove("ErrorMessage");
+    </div>
+}
+
+<div class="container">
+    <h1 class="display-4 text-center">Educator Courses</h1>
+    <p class="text-center">Welcome, Educator ID: @ViewData["UserID"]</p>
+
+    <h2>Your Courses</h2>
+    @if (ViewData["EducatorCourses"] is List<dynamic> educatorCourses && educatorCourses.Any())
+    {
+        <div class="row">
+            @foreach (var courseData in educatorCourses)
+            {
+                var course = courseData.Course;
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">@course.Title</h5>
+                            <p class="card-text">Credits: @course.Credits</p>
+                            <a href="~/Educator/Courses/Details/@course.CourseID" class="btn btn-primary">Manage Course</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-warning text-center">⚠ You are not assigned to any courses.</p>
+    }
+
+    <h2 class="mt-5">All Available Courses</h2>
+    @if (ViewData["AllCourses"] is List<GraceProject.Models.Course> allCourses && allCourses.Any())
+    {
+        <div class="row">
+            @foreach (var course in allCourses)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">@course.Title</h5>
+                            <p class="card-text">Credits: @course.Credits</p>
+                            <a href="~/Courses/Details/@course.CourseID" class="btn btn-outline-primary">View Course</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-warning text-center">⚠ No courses available.</p>
+    }
+</div>

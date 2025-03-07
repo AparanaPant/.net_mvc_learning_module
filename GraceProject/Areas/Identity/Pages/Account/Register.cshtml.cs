@@ -1,4 +1,5 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation
+// one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
@@ -54,26 +55,19 @@ namespace GraceProject.Areas.Identity.Pages.Account
             _context = context;
         }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
+       
         [BindProperty]
         public InputModel Input { get; set; }
 
+        [BindProperty]
+        public List<string> SelectedCourses { get; set; } = new List<string>();
+
         public string ReturnUrl { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
+       
         public IList<AuthenticationScheme> ExternalLogins { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        /// 
+        
 
         public class InputModel
         {
@@ -107,29 +101,21 @@ namespace GraceProject.Areas.Identity.Pages.Account
             [Display(Name = "ZIP Code")]
             public string ZIPCode { get; set; }
 
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
             [Required]
             [EmailAddress]
             [Display(Name = "Email")]
             public string Email { get; set; }
 
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
+            [Display(Name = "Selected Courses")]
+            public List<string> SelectedCourses { get; set; } = new List<string>();
+
+
             [Required]
             [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
             [DataType(DataType.Password)]
             [Display(Name = "Password")]
             public string Password { get; set; }
 
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
             [DataType(DataType.Password)]
             [Display(Name = "Confirm password")]
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
@@ -137,7 +123,7 @@ namespace GraceProject.Areas.Identity.Pages.Account
 
             [Display(Name = "School")]
             public string SchoolName { get; set; }
-            public string UserType { get; set; } // "Teacher", "Student", "Guest"
+            public string UserType { get; set; } 
             public int? SchoolID { get; set; }
 
             public string NewSchoolName { get; set; }
@@ -158,194 +144,245 @@ namespace GraceProject.Areas.Identity.Pages.Account
             var schools = await _context.Schools
                         .Select(s => new SelectListItem
                         {
-                            Value = s.SchoolID.ToString(), 
+                            Value = s.SchoolID.ToString(),
                             Text = s.SchoolName
                         })
                         .ToListAsync();
 
             ViewData["Schools"] = new SelectList(schools, "Value", "Text");
+
+            // Fetch courses from the database
+            var courses = await _context.Course.ToListAsync();
+            ViewData["Courses"] = courses ?? new List<Course>();
         }
 
-        public async Task<IActionResult> OnPostAsync(string userType, string returnUrl = null)
+        public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
-            if (Request.Form["Input.SchoolID"] == "other")
-            {
-                ModelState.Remove("Input.SchoolID");
-            }
-            if (ModelState.IsValid)
+
+            if (!ModelState.IsValid) return Page();
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
                 var user = CreateUser();
                 user.FirstName = Input.FirstName;
                 user.LastName = Input.LastName;
-                user.Gender = Input.Gender;
-
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+
                 var result = await _userManager.CreateAsync(user, Input.Password);
-                if (result.Succeeded)
+                if (!result.Succeeded)
                 {
-                    _logger.LogInformation("User created a new account with password.");
-
-                    var userId = await _userManager.GetUserIdAsync(user);
-
-                    var address = new Address
-                    {   Country = Input.Country ?? "USA",
-                        StreetAddress = Input.StreetAddress,
-                        City = Input.City,
-                        State = Input.State,
-                        ZIPCode = Input.ZIPCode,
-                        UserId = userId
-                    };
-
-                    // Add the address to the AuthDbContext.
-                    _context.Address.Add(address);
-                    await _context.SaveChangesAsync();
-
-                    // Add new school if 'other' is selected
-                    if (Input.SchoolID == null && !string.IsNullOrWhiteSpace(Input.NewSchoolName))
+                    foreach (var error in result.Errors)
                     {
-                        var newSchool = new School
-                        {
-                            SchoolName = Input.NewSchoolName,
-                            Country = Input.Country,
-                            SchoolAddresses = new List<SchoolAddress>()
-                        };
-
-                        if (!string.IsNullOrWhiteSpace(Input.AddressLine1))
-                        {
-                            var schoolAddress = new SchoolAddress
-                            {
-                                State = Input.State,
-                                AddressLine1 = Input.AddressLine1,
-                                AddressLine2 = Input.AddressLine2,
-                                City = Input.City,
-                                ZIPCode = Input.ZIPCode
-                            };
-
-                            newSchool.SchoolAddresses.Add(schoolAddress);
-                        }
-
-                        _context.Schools.Add(newSchool);
-                        await _context.SaveChangesAsync();
-
-                        Input.SchoolID = newSchool.SchoolID; // Set the new school ID for the user
+                        ModelState.AddModelError(string.Empty, error.Description);
                     }
-
-                    if (userType == "Teacher" || userType == "Student")
-                    {
-                        var userSchool = new UserSchool
-                        {
-                            UserID = user.Id,
-                            SchoolID = Input.SchoolID.Value 
-                        };
-                        _context.UserSchools.Add(userSchool);
-                        await _context.SaveChangesAsync();
-                    }
-
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                    var callbackUrl = Url.Page(
-                        "/Account/ConfirmEmail",
-                        pageHandler: null,
-                        values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
-                        protocol: Request.Scheme);
-                   
-                    await SendEmailAsync(Input.Email, "Confirm your email",
-                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-
-                    if (_userManager.Options.SignIn.RequireConfirmedAccount)
-                    {
-                        return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
-                    }
-                    else
-                    {
-                        await _signInManager.SignInAsync(user, isPersistent: false);
-                        return LocalRedirect(returnUrl);
-                    }
+                    return Page();
                 }
-                foreach (var error in result.Errors)
+
+                _logger.LogInformation("User created successfully.");
+
+                // Send email confirmation
+                //await SendEmailConfirmation(user, userId, returnUrl);
+
+                if (Input.SchoolID == null && !string.IsNullOrWhiteSpace(Input.NewSchoolName))
                 {
-                    ModelState.AddModelError(string.Empty, error.Description);
+                    Input.SchoolID = await SaveNewSchool();
+                }
+
+                switch (Input.UserType.ToUpper())
+                {
+                    case "STUDENT":
+                        await HandleStudentRegistration(user);
+                        break;
+                    case "EDUCATOR":
+                        await HandleEducatorRegistration(user);
+                        break;
+                    case "ADMIN":
+                        await HandleAdminRegistration(user);
+                        break;
+                }
+
+                await AssignUserRole(Input.UserType, user);
+                await SaveUserAddress(user.Id);
+
+                await transaction.CommitAsync(); // Commit transaction if everything succeeds
+                _logger.LogInformation("Transaction committed.");
+
+                if (_userManager.Options.SignIn.RequireConfirmedAccount)
+                {
+                    return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl });
+                }
+                else
+                {
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    return LocalRedirect(returnUrl);
+                }
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync(); // Rollback transaction on failure
+                _logger.LogError($"Transaction rolled back: {ex.Message}");
+                ModelState.AddModelError(string.Empty, "An error occurred while processing your registration.");
+                return Page();
+            }
+        }
+
+        private async Task HandleStudentRegistration(ApplicationUser user)
+        {
+            if (Input.SchoolID.HasValue)
+            {
+                _context.UserSchools.Add(new UserSchool { UserID = user.Id, SchoolID = Input.SchoolID.Value });
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        private async Task HandleEducatorRegistration(ApplicationUser user)
+        {
+            if (Input.SchoolID.HasValue)
+            {
+                _context.UserSchools.Add(new UserSchool { UserID = user.Id, SchoolID = Input.SchoolID.Value });
+            }
+
+            if (Input.SelectedCourses != null && Input.SelectedCourses.Any())
+            {
+                var educatorService = new EducatorService(_context);
+
+                foreach (var courseId in Input.SelectedCourses)
+                {
+                    await educatorService.RegisterEducatorToCourse(user.Id, courseId);
                 }
             }
 
-            // If we got this far, something failed, redisplay form
-            return Page();
+            await _context.SaveChangesAsync();
         }
 
-        //private async Task<bool> SendEmailAsync(string email, string subject, string confirmLink)
-        //{
+        private async Task HandleAdminRegistration(ApplicationUser user)
+        {
+            _logger.LogInformation($"Admin user {user.Email} registered.");
+        }
 
-        //    //TODO
-        //    //INSERT YOUR OWN MAIL SERVER CREDENTIALS
-        //    // message.From = ?
-        //    // message.Port = ?
-        //    // message.Host = ?
-        //    // smtpClient.Credentials = new NetworkCredential(?Username,?Password);
-        //    try
-        //    {
+        private async Task<int?> SaveNewSchool()
+        {
+            if (string.IsNullOrWhiteSpace(Input.NewSchoolName))
+                return null; // No new school was provided
 
-        //        MailMessage message = new MailMessage();
-        //        SmtpClient smtpClient = new SmtpClient();
-        //        message.From = new MailAddress("noreplygrace7@gmail.com");
-        //        message.To.Add(email);
-        //        message.Subject = subject;
-        //        message.IsBodyHtml = true;
-        //        message.Body = confirmLink;
+            var newSchool = new School
+            {
+                SchoolName = Input.NewSchoolName,
+                Country = Input.Country,
+                SchoolAddresses = new List<SchoolAddress>()
+            };
 
-        //        smtpClient.Port = 587;
-        //        smtpClient.Host = "smtp.gmail.com";
+            if (!string.IsNullOrWhiteSpace(Input.AddressLine1))
+            {
+                newSchool.SchoolAddresses.Add(new SchoolAddress
+                {
+                    State = Input.State,
+                    AddressLine1 = Input.AddressLine1,
+                    AddressLine2 = Input.AddressLine2,
+                    City = Input.City,
+                    ZIPCode = Input.ZIPCode
+                });
+            }
 
-        //        Console.WriteLine("this is working #########################");
-        //        smtpClient.EnableSsl = true;
-        //        smtpClient.UseDefaultCredentials = false;
-        //        smtpClient.Credentials = new NetworkCredential("noreplygrace7@gmail.com", "wmgj cbrc ryhs wjmw");
-        //        smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
-        //        smtpClient.Send(message);
-        //        return true;
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        Console.WriteLine("this is expetion******" + e);
-        //        return false;
-        //    }
-        //}
+            _context.Schools.Add(newSchool);
+            await _context.SaveChangesAsync();
+
+            return newSchool.SchoolID; 
+        }
+
+
+
+        private async Task AssignUserRole(string userType, ApplicationUser user)
+        {
+            var roleExists = await _context.Roles.AnyAsync(r => r.Name == userType);
+            if (!roleExists)
+            {
+                await _context.Roles.AddAsync(new IdentityRole(userType));
+                await _context.SaveChangesAsync();
+            }
+            await _userManager.AddToRoleAsync(user, userType);
+        }
+
+        private async Task SaveUserAddress(string userId)
+        {
+            var address = new Address
+            {
+                Country = Input.Country ?? "USA",
+                StreetAddress = Input.StreetAddress,
+                City = Input.City,
+                State = Input.State,
+                ZIPCode = Input.ZIPCode,
+                UserId = userId
+            };
+            _context.Address.Add(address);
+            await _context.SaveChangesAsync();
+        }
 
         private async Task<bool> SendEmailAsync(string email, string subject, string confirmLink)
         {
-            SmtpClient smtpClient = new SmtpClient("mailrelay.auburn.edu");
-            smtpClient.Port = 25;
-            smtpClient.EnableSsl = false;
-
-
-            string senderEmail = "grace@auburn.edu";
-
-            // Configure the email message
-            MailMessage message = new MailMessage
-            {
-                From = new MailAddress(senderEmail),
-                Subject = subject,
-                Body = confirmLink,
-                IsBodyHtml = true
-            };
-            message.To.Add(new MailAddress(email));
-
             try
             {
-                // Send the email
-                await smtpClient.SendMailAsync(message);
-                Console.WriteLine("Email sent successfully");
+
+                MailMessage message = new MailMessage();
+                SmtpClient smtpClient = new SmtpClient();
+                message.From = new MailAddress("noreplygrace7@gmail.com");
+                message.To.Add(email);
+                message.Subject = subject;
+                message.IsBodyHtml = true;
+                message.Body = confirmLink;
+
+                smtpClient.Port = 587;
+                smtpClient.Host = "smtp.gmail.com";
+                smtpClient.EnableSsl = true;
+                smtpClient.UseDefaultCredentials = false;
+                smtpClient.Credentials = new NetworkCredential("noreplygrace7@gmail.com", "wmgj cbrc ryhs wjmw");
+                smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
+                smtpClient.Send(message);
                 return true;
             }
             catch (Exception e)
             {
-                Log.Error("An error occurred while processing the request###########################");
-                Log.Error("Exception occurred while sending email:$$$$$$$$$$ " + e);
+                Console.WriteLine("this is exception" + e);
                 return false;
             }
         }
+
+        //private async Task<bool> SendEmailAsync(string email, string subject, string confirmLink)
+        //{
+        //    SmtpClient smtpClient = new SmtpClient("mailrelay.auburn.edu");
+        //    smtpClient.Port = 25;
+        //    smtpClient.EnableSsl = false;
+
+
+        //    string senderEmail = "grace@auburn.edu";
+
+        //    // Configure the email message
+        //    MailMessage message = new MailMessage
+        //    {
+        //        From = new MailAddress(senderEmail),
+        //        Subject = subject,
+        //        Body = confirmLink,
+        //        IsBodyHtml = true
+        //    };
+        //    message.To.Add(new MailAddress(email));
+
+        //    try
+        //    {
+        //        // Send the email
+        //        await smtpClient.SendMailAsync(message);
+        //        return true;
+        //    }
+        //    catch (Exception e)
+        //    {
+     
+        //        return false;
+        //    }
+        //}
 
         private ApplicationUser CreateUser()
         {

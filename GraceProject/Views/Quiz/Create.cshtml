@@ -8,7 +8,9 @@
 <h2>Create Quiz</h2>
 
 <div class="quiz-creation-section">
-    <form asp-action="Create" enctype="multipart/form-data">
+    <form asp-action="Create" method="post"  enctype="multipart/form-data">
+        <input type="hidden" asp-for="CourseID" />
+        <input type="hidden" asp-for="SessionID" />
         <div class="form-group">
             <label for="Title">Title</label>
             <input type="text" asp-for="Title" class="form-control" style="width: 50%;" />
@@ -57,13 +59,14 @@
                                             <option value="Multiple Choice">Multiple Choice</option>
                                             <option value="True/False">True/False</option>
                                             <option value="Fill in the Blank">Fill in the Blank</option>
-                                            <option value="Matching">Matching</option>
-                                            <option value="File Upload Question">File Upload Question</option>
                                         </select>
                                     </div>
                                     <div>
                                         <label>Points</label>
-                                        <input type="number" class="form-control question-points" value="1" style="width: auto;" name="Questions[${questionIndex}].Points" />
+                                        <input type="number" class="form-control question-points" value="1" style="width: auto;"
+                                            name="Questions[${questionIndex}].Points"
+                                            onchange="updateQuestionPoints(this, ${questionIndex})" />
+
                                     </div>
                                 </div>
                                 <div class="question-attributes">
@@ -87,6 +90,10 @@
             document.getElementById('questions-container').appendChild(questionDiv);
             changeAnswerSection(questionDiv.querySelector(".question-type"));
         }
+                function updateQuestionPoints(input, questionIndex) {
+            questions[questionIndex].Points = parseInt(input.value, 10);
+        }
+
 
         function changeAnswerSection(select) {
             const questionDiv = select.closest('.question-div');
@@ -261,8 +268,8 @@
                                             <option value="Multiple Choice" ${question.Type === "Multiple Choice" ? 'selected' : ''}>Multiple Choice</option>
                                             <option value="True/False" ${question.Type === "True/False" ? 'selected' : ''}>True/False</option>
                                             <option value="Fill in the Blank" ${question.Type === "Fill in the Blank" ? 'selected' : ''}>Fill in the Blank</option>
-                                            <option value="Matching" ${question.Type === "Matching" ? 'selected' : ''}>Matching</option>
-                                            <option value="File Upload Question" ${question.Type === "File Upload Question" ? 'selected' : ''}>File Upload Question</option>
+                                            // <option value="Matching" ${question.Type === "Matching" ? 'selected' : ''}>Matching</option>
+                                            // <option value="File Upload Question" ${question.Type === "File Upload Question" ? 'selected' : ''}>File Upload Question</option>
                                         </select>
                                     </div>
                                     <div>

@@ -1,0 +1,33 @@
+﻿@model List<GraceProject.ViewModels.StudentCourseViewModel>
+
+@{
+    ViewData["Title"] = "My Courses";
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+}
+
+<div class="container">
+    <h1 class="display-4 text-center">📚 My Courses</h1>
+    <p class="text-center">Welcome, Student ID: @ViewData["UserID"]</p>
+
+    @if (Model.Any())
+    {
+        <div class="row">
+            @foreach (var courseData in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">@courseData.Course.Title</h5>
+                            <p class="card-text">Credits: @courseData.Course.Credits</p>
+                            <a href="~/Student/Courses/Details/@courseData.Course.CourseID" class="btn btn-primary">View Course</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-warning text-center">⚠ You are not registered for any courses.</p>
+    }
+</div>

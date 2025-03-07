@@ -4,21 +4,48 @@ var ChangeSlideAction = true;
 var ChangeSlideAction_Error = "";
 
 
+LoadActiveSlideWithURLInfo();
+function LoadActiveSlideWithURLInfo() {
+    var hash = window.location.hash;
+    if (hash) {
+        var slide = hash.replace('#', '');
+        debugger;
+        if (!isNaN(slide)) {
+            SetAcitvatedCairoselSlideById(slide);
+
+            startSlideTimer(); //start timer to calculate the duratio of reading for the next slide
+        }
+    }
+}
+function SetActiveSlideInURL() {
+    //debugger;
+    var ActiveId = GetIdofActiveSlide();
+    window.location.hash = ActiveId;
+}
+
 //.................Update The active slide number and total number of slide............................
-$('#carousel').find('.carousel-control').click(function () {
-
-
+$('#carousel').find('.carousel-control').unbind().click(function () {
     debugger;
-    if ($(".item.active").find(".QusetionSection").length > 0 && GetDragAndDropItemsResult($(".item.active") == false)) {
+    if ($('#carousel').find(".item.active").find(".QusetionSection").length > 0 &&
+        GetDragAndDropItemsResult($('#carousel').find(".item.active"), $('#carousel').find(".item.active").attr('id')) == false) {
         AllowChangingSlideAction(false, "Please provide a correct answer to the question and try again later!");
         alert(ChangeSlideAction_Error);
         return false;
     }
     else {
         if (ChangeSlideAction != false) {
+
+            debugger;
+            var slideId = GetIdofActiveSlide();
+            StoreSlideReading(slideId);// store the duration reading of the slide
+            startSlideTimer(); //start timer to calculate the duratio of reading for the next slide
+
+
             UpdatecarouselIndicatorText();
             UpdateStyleOfSelectedCauroselThumbItem();
             DisplayForwardAndBackwardButtons();
+
+
         }
         else {
             alert(ChangeSlideAction_Error);
@@ -27,9 +54,10 @@ $('#carousel').find('.carousel-control').click(function () {
     }
 });
 $('#thumbcarousel').find(".carousel-inner").find(".thumb").click(function () {
-    
 
-    if ($(".item.active").find(".QusetionSection").length > 0 && GetDragAndDropItemsResult($(".item.active") == false)) {
+
+    if ($('#carousel').find(".item.active").find(".QusetionSection").length > 0 &&
+        GetDragAndDropItemsResult($('#carousel').find(".item.active"), $('#carousel').find(".item.active").attr('id')) == false) {
         AllowChangingSlideAction(false, "Please provide a correct answer to the question and try again later!");
         alert(ChangeSlideAction_Error);
         return false;
@@ -39,6 +67,8 @@ $('#thumbcarousel').find(".carousel-inner").find(".thumb").click(function () {
             UpdatecarouselIndicatorText();
             UpdateStyleOfSelectedCauroselThumbItem();
             DisplayForwardAndBackwardButtons();
+
+            
         }
         else {
             alert(ChangeSlideAction_Error);
@@ -61,6 +91,13 @@ function GetIdofActiveSlide() {
 function GetIndexofSpecialItem(item) {
     return itemIndex = $("div.item").index($(item));
 }
+function GetSlideInfoById(id) {
+    //debugger;
+    var SlideTitle = $("div.item#" + id).find("#h1_title").text();
+    var SlideInfo = { 'SlideTitle': SlideTitle };
+    return SlideInfo;
+}
+
 
 //.................Display Slide content in Thumb items............................
 function CreateThumbnailSlidesBasedonSlides() {
@@ -100,6 +137,7 @@ function UpdatecarouselIndicatorText() {
         var totalItems = $('#carousel').find('.item').length;
         currentIndex = $('#carousel').find('div.active').index() + 1;
         $('#carouselIndicatorText').html('' + currentIndex + '/' + totalItems + '');
+
     }, 1000);
 }
 
@@ -108,27 +146,37 @@ function UpdateStyleOfSelectedCauroselThumbItem() {
         currentIndex = $('#carousel').find('div.active').index();
         $('.carousel-inner .thumb').removeClass('active');
         $('.carousel-inner .thumb').eq(currentIndex).addClass('active');
+
+        
+        SetActiveSlideInURL();
+
     }, 1000);
 
 }
+
 function SetAcitvatedCairoselSlide(slideNum) {
     $("#carousel .item").removeClass("active");
     $("#carousel .item").eq(slideNum - 1).addClass("active");
     UpdatecarouselIndicatorText();
     UpdateStyleOfSelectedCauroselThumbItem();
     DisplayForwardAndBackwardButtons();
+
 }
 function SetAcitvatedCairoselSlideById(slideId) {
-    $("#carousel .item").removeClass("active");
-    $("#carousel").find("#"+slideId).addClass("active");
-    UpdatecarouselIndicatorText();
-    UpdateStyleOfSelectedCauroselThumbItem();
-    DisplayForwardAndBackwardButtons();
+    var slide = $("#carousel").find("#" + slideId);
+    if (slide.length > 0) {
+        $("#carousel .item").removeClass("active");
+        $(slide).addClass("active");
+        UpdatecarouselIndicatorText();
+        UpdateStyleOfSelectedCauroselThumbItem();
+        DisplayForwardAndBackwardButtons();
+    }
+
 }
 
 function ChangingSlideActionIsFired() {
     var _ChangingSlideIsFired;
-    $('#carousel').find('.carousel-control').click(function () {
+    $('#carousel').find('.carousel-control').unbind().click(function () {
         _ChangingSlideIsFired = true;
     });
     $('#thumbcarousel').find(".carousel-inner").find(".thumb").click(function () {
@@ -140,15 +188,15 @@ function ChangingSlideActionIsFired() {
 //in each slide, we have 2 hidden parameters for dispalying the ForwardButton and BackwardButton
 function DisplayForwardAndBackwardButtons() {
     setTimeout(function () {
-    var ForwardButton = $(".item.active").find("#hidden_ForwardButton").val();
-    var BackwardButton = $(".item.active").find("#hidden_BackwardButton").val();
-    if (ForwardButton == 'true')
-        $("#a_ForwardButton").removeClass("hidden");
-    else
-        $("#a_ForwardButton").addClass("hidden");
-    if (BackwardButton == 'true')
-        $("#a_BackwardButton").removeClass("hidden");
-    else
+        var ForwardButton = $(".item.active").find("#hidden_ForwardButton").val();
+        var BackwardButton = $(".item.active").find("#hidden_BackwardButton").val();
+        if (ForwardButton == 'true')
+            $("#a_ForwardButton").removeClass("hidden");
+        else
+            $("#a_ForwardButton").addClass("hidden");
+        if (BackwardButton == 'true')
+            $("#a_BackwardButton").removeClass("hidden");
+        else
             $("#a_BackwardButton").addClass("hidden");
     }, 1000);
 }

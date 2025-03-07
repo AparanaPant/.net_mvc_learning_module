@@ -10,6 +10,7 @@ using System.Security.Claims;
 using GraceProject.Data;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Microsoft.AspNetCore.Identity;
 
 namespace GraceProject.Controllers
 {
@@ -17,10 +18,12 @@ namespace GraceProject.Controllers
     public class QuizController : Controller
     {
         private readonly GraceDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public QuizController(GraceDbContext context)
+        public QuizController(GraceDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // List all quizzes
@@ -32,9 +35,22 @@ namespace GraceProject.Controllers
 
         // Create a new quiz
         [HttpGet]
-        public IActionResult Create()
+        public IActionResult Create(string? courseId, int? sessionId)
         {
-            return View(new QuizViewModel { Questions = new List<QuestionViewModel>() });
+            // Ensure that at least one of them is provided
+            if (string.IsNullOrEmpty(courseId) && !sessionId.HasValue)
+            {
+                return BadRequest("A valid Course ID or Session ID is required.");
+            }
+
+            var model = new QuizViewModel
+            {
+                CourseID = courseId ?? string.Empty,  // Default to empty string if null
+                SessionID = sessionId,
+                Questions = new List<QuestionViewModel>()
+            };
+
+            return View(model);
         }
 
         [HttpPost]
@@ -67,6 +83,8 @@ namespace GraceProject.Controllers
                     Title = quizViewModel.Title,
                     Duration = quizViewModel.Duration,
                     CreatedAt = DateTime.Now,
+                    CourseID = quizViewModel.CourseID,
+                    SessionID = quizViewModel.SessionID,
                     Questions = quizViewModel.Questions.Select(q => new Question
                     {
                         Text = q.Text,
@@ -166,42 +184,6 @@ namespace GraceProject.Controllers
             };
 
             return View(quizViewModel);
-        }
-
-
-
-        [HttpPost]
-        public async Task<IActionResult> Submit(QuizViewModel quizViewModel)
-        {
-            if (ModelState.IsValid)
-            {
-                // Calculate score
-                int score = 0;
-                foreach (var question in quizViewModel.Questions)
-                {
-                    var correctOption = question.Options.FirstOrDefault(o => o.IsCorrect);
-                    var selectedOption = question.Options.FirstOrDefault(o => o.Selected);
-                    if (correctOption != null && selectedOption != null && correctOption.OptionId == selectedOption.OptionId)
-                    {
-                        score++;
-                    }
-                }
-
-                // Save user quiz result
-                var userQuiz = new UserQuiz
-                {
-                    UserId = User.FindFirstValue(ClaimTypes.NameIdentifier),
-                    QuizId = quizViewModel.QuizId,
-                    CompletedAt = DateTime.Now,
-                    Score = score
-                };
-
-                _context.UserQuizzes.Add(userQuiz);
-                await _context.SaveChangesAsync();
-
-                return RedirectToAction(nameof(Result), new { id = userQuiz.UserQuizId });
-            }
-            return View(nameof(Take), quizViewModel);
         }
 
         public async Task<IActionResult> Edit(int id)
@@ -412,19 +394,176 @@ namespace GraceProject.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+        public async Task<IActionResult> Submit(QuizViewModel submitQuizViewModel)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var quiz = await _context.Quizzes
+        .Include(q => q.Questions)
+            .ThenInclude(q => q.Options)
+        .Include(q => q.Questions)
+            .ThenInclude(q => q.FillInTheBlankAnswers)
+        .FirstOrDefaultAsync(q => q.QuizId == submitQuizViewModel.QuizId);
+
+            if (quiz == null) return NotFound("Quiz not found");
+
+            int totalScore = 0;
+            List<UserAnswer> userAnswers = new List<UserAnswer>();
+
+            var userQuiz = new UserQuiz
+            {
+                UserId = user.Id,
+                QuizId = quiz.QuizId,
+                CompletedAt = DateTime.Now,
+                Score = 0
+            };
+            _context.UserQuizzes.Add(userQuiz);
+            await _context.SaveChangesAsync();
+
+            int userQuizId = userQuiz.UserQuizId;
+
+            // Process each submitted answer
+            foreach (var questionAnswer in submitQuizViewModel.QuestionAnswers)
+            {
+                var question = quiz.Questions.FirstOrDefault(q => q.QuestionId == questionAnswer.QuestionId);
+                if (question == null) continue;
+
+                bool isCorrect = false;
+                int pointsAwarded = 0;
+
+                if ((question.Type == "Multiple Choice" || question.Type == "True/False") && questionAnswer.SelectedOptionId.HasValue)
+                {
+                    var selectedOption = question.Options.FirstOrDefault(o => o.OptionId == questionAnswer.SelectedOptionId.Value);
+                    isCorrect = selectedOption?.IsCorrect ?? false;
+                }
+                if (question.Type == "Fill in the Blank" && !string.IsNullOrWhiteSpace(questionAnswer.FillInTheBlankResponse))
+                {
+                    var correctAnswers = question.FillInTheBlankAnswers?.Select(a => a.Answer).ToList() ?? new List<string>();
+
+                    isCorrect = correctAnswers.Any(ans => ans.Equals(questionAnswer.FillInTheBlankResponse, StringComparison.OrdinalIgnoreCase));
+                }
+
+                if (isCorrect)
+                {
+                    pointsAwarded = question.Points;
+                    totalScore += pointsAwarded;
+                }
+
+                userAnswers.Add(new UserAnswer
+                {
+                    UserQuizId = userQuizId,
+                    QuestionId = question.QuestionId,
+                    SelectedOptionId = question.Type == "Fill in the Blank" ? null : questionAnswer.SelectedOptionId,
+                    FillInTheBlankResponse = questionAnswer.FillInTheBlankResponse,
+                    IsCorrect = isCorrect,
+                    PointsAwarded = pointsAwarded,
+                    SubmittedAt = DateTime.Now
+                });
+            }
+
+            _context.UserAnswers.AddRange(userAnswers);
+            await _context.SaveChangesAsync();
+
+            userQuiz.Score = totalScore;
+            _context.UserQuizzes.Update(userQuiz);
+            await _context.SaveChangesAsync();
+
+            return View("Result", userQuiz);
+        }
+
+        [Route("Quiz/Details/{quizId}")]
+        public async Task<IActionResult> Details(int quizId)
+        {
+            var quiz = await _context.Quizzes
+                .Include(q => q.Questions)
+                .ThenInclude(q => q.Options) // Include multiple-choice options
+                .Include(q => q.Questions)
+                .ThenInclude(q => q.FillInTheBlankAnswers) // Include fill-in-the-blank answers
+                .FirstOrDefaultAsync(q => q.QuizId == quizId);
+
+            if (quiz == null)
+            {
+                return NotFound("Quiz not found.");
+            }
+
+            return View("~/Views/Quiz/Details.cshtml", quiz);
+        }
+
         // Display quiz result
-        public async Task<IActionResult> Result(int id)
+        public async Task<IActionResult> ReviewQuiz(int userQuizId)
         {
             var userQuiz = await _context.UserQuizzes
                 .Include(uq => uq.Quiz)
-                .FirstOrDefaultAsync(uq => uq.UserQuizId == id);
+                .Include(uq => uq.UserAnswers)
+                    .ThenInclude(ua => ua.Question)
+                    .ThenInclude(q => q.Options) // Load options for MCQs and True/False
+                .Include(uq => uq.UserAnswers)
+                    .ThenInclude(ua => ua.Question.FillInTheBlankAnswers) // Load correct fill-in-the-blank answers
+                .FirstOrDefaultAsync(uq => uq.UserQuizId == userQuizId);
 
             if (userQuiz == null)
             {
-                return NotFound();
+                return NotFound("Quiz result not found.");
             }
 
-            return View(userQuiz);
+            userQuiz.UserAnswers ??= new List<UserAnswer>();
+
+            foreach (var answer in userQuiz.UserAnswers)
+            {
+                answer.Question ??= new Question();
+                answer.Question.Options ??= new List<Option>();
+                answer.Question.FillInTheBlankAnswers ??= new List<FillInTheBlankAnswer>();
+            }
+
+            return View("Result", userQuiz); // ✅ Ensures `UserQuiz` is passed to `Result.cshtml`
         }
+
+        [Authorize]
+        public async Task<IActionResult> QuizResults()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var userId = user.Id;
+
+            var userQuizzes = await _context.UserQuizzes
+                .Include(q => q.Quiz) // ✅ Load quiz details
+                .Include(q => q.UserAnswers)
+                    .ThenInclude(a => a.Question) // ✅ Load all Questions
+                .Include(q => q.UserAnswers)
+                    .ThenInclude(a => a.SelectedOption) // ✅ Load selected options for MCQs and True/False
+                .Include(q => q.UserAnswers)
+                    .ThenInclude(a => a.Question.FillInTheBlankAnswers) // ✅ Load correct Fill-in-the-Blank answers
+                .Where(q => q.UserId == userId)
+                .OrderByDescending(q => q.CompletedAt)
+                .ToListAsync();
+
+            // ✅ Ensure UserAnswers are properly loaded
+            foreach (var quiz in userQuizzes)
+            {
+                quiz.UserAnswers ??= new List<UserAnswer>();
+
+                foreach (var answer in quiz.UserAnswers)
+                {
+                    answer.Question ??= new Question();
+                    answer.Question.Options ??= new List<Option>();
+                    answer.Question.FillInTheBlankAnswers ??= new List<FillInTheBlankAnswer>();
+
+                    // ✅ Handle FIB: If the answer is a Fill-in-the-Blank response, check against all correct answers
+                    if (answer.Question.Type == "Fill in the Blank" && !string.IsNullOrWhiteSpace(answer.FillInTheBlankResponse))
+                    {
+                        var correctAnswers = answer.Question.FillInTheBlankAnswers.Select(f => f.Answer).ToList();
+                        answer.IsCorrect = correctAnswers.Any(correct => string.Equals(correct, answer.FillInTheBlankResponse, StringComparison.OrdinalIgnoreCase));
+                    }
+                }
+            }
+
+            return View(userQuizzes);
+        }
+
+
+
     }
 }

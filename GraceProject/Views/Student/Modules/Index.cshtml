@@ -7,6 +7,12 @@
     Layout = "~/Views/Shared/_StudentLayout.cshtml";
 }
 
+@{
+    GraceProject.Models.Course Course = new Course();
+    if (ViewData["Course"] != null)
+        Course = (GraceProject.Models.Course)ViewData["Course"];
+}
+
 @using Microsoft.EntityFrameworkCore
 @using System.Security.Claims;
 @inject IConfiguration Configuration
@@ -20,7 +26,7 @@
                 where userRole.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)
                 select role.Name;
 
-    bool IsAdmin = roles.Where(r => r == "Admin") != null;
+    bool IsAdmin = roles.Count() > 0 ? roles.Where(r => r == "Admin").Count() > 0 ? true : false : false;
 }
 
 <style>
@@ -51,7 +57,7 @@
 
 <div class="page-title">
     <div class="title_left">
-        <h3>Courses <small>(Controlled Environment Agriculture)</small></h3>
+        <h3>Modules of <strong>@Course.Title</strong></h3>
     </div>
 </div>
 
@@ -70,6 +76,12 @@
         <div class="x_panel">
             <div class="x_content">
                 <div id="treeview">
+                    @if (Model == null || !Model.Any())
+                    {
+                    <p>No courses available.</p>
+                    }
+                    else
+                    {
                     <ul>
                         @foreach (var topLevelModule in Model.Where(m => m.ParentModuleId == 0 || m.ParentModuleId == null))
                         {
@@ -77,11 +89,11 @@
                                 <a href="/Student/Slides/Info?moduleid=@topLevelModule.Id">
                                     <div>
                                          @topLevelModule.ModuleName
-                                        <div class="project_progress" style="display: inline-block;width: 10%;">
+                                        @*<div class="project_progress" style="display: inline-block;width: 10%;">
                                             <div class="progress progress_sm">
                                                 <div class="progress-bar bg-danger" role="progressbar" data-transitiongoal="10" title="10%"></div>
                                             </div>
-                                        </div>
+                                        </div>*@
 
                                     </div>
                                 </a>
@@ -94,11 +106,11 @@
                                                 <a href="/Student/Slides/Info?moduleid=@level2Module.Id">
                                                     <div>
                                                          @level2Module.ModuleName
-                                                        <div class="project_progress" style="display: inline-block;width: 10%;">
+                                                        @*<div class="project_progress" style="display: inline-block;width: 10%;">
                                                             <div class="progress progress_sm">
                                                                 <div class="progress-bar bg-warning" role="progressbar" data-transitiongoal="43" title="43%" ></div>
                                                             </div>
-                                                        </div>
+                                                        </div>*@
                                                         
                                                     </div>
                                                 </a>
@@ -111,11 +123,11 @@
                                                                 <a href="/Student/Slides/Info?moduleid=@level3Module.Id">
                                                                     <div>
                                                                         @level3Module.ModuleName
-                                                                        <div class="project_progress" style="display: inline-block;width: 10%;">
+                                                                        @*<div class="project_progress" style="display: inline-block;width: 10%;">
                                                                             <div class="progress progress_sm">
                                                                                 <div class="progress-bar bg-green" role="progressbar" data-transitiongoal="57" title="57%"></div>
                                                                             </div>
-                                                                        </div>
+                                                                        </div>*@
 
                                                                     </div>
                                                                 </a>
@@ -128,11 +140,11 @@
                                                                                 <a href="/Student/Slides/Info?moduleid=@level4Module.Id">
                                                                                     <div>
                                                                                          @level4Module.ModuleName
-                                                                                        <div class="project_progress" style="display: inline-block;width: 10%;">
+                                                                                       @* <div class="project_progress" style="display: inline-block;width: 10%;">
                                                                                             <div class="progress progress_sm">
                                                                                                 <div class="progress-bar bg-green" role="progressbar" data-transitiongoal="90" title="90%"></div>
                                                                                             </div>
-                                                                                        </div>
+                                                                                        </div>*@
                                                                                     </div>
                                                                                 </a>
                                                                             </li>
@@ -150,6 +162,7 @@
                             </li>
                         }
                     </ul>
+                    }
                 </div>
 
             </div>
@@ -157,109 +170,3 @@
     </div>
 </div>
 
-@section Scripts {
-    @*<script>
-        $(document).ready(function () {
-            $('#treeview').treeview({
-                levels: 4 // Adjust levels as needed
-            });
-        });
-    </script>*@
-}
-
-
-
-
-
-
-
-
-@*
-@model IEnumerable<GraceProject.Models.Module>
-
-@{
-    ViewData["Title"] = "Index";
-    Layout = "~/Views/Shared/_StudentLayout.cshtml";
-}
-
-<div class="page-title">
-    <div class="title_left">
-        <h3>Courses <small>(Controlled Environment Agriculture)</small></h3>
-    </div>
-</div>
-
-<div class="clearfix"></div>
-
-<div class="row">
-    <div class="col-md-12">
-        <div class="x_panel">
-            <div class="x_title">
-                <h2>Courses</h2>
-                <div class="clearfix"></div>
-            </div>
-            <div class="x_content">
-
-                <p>Table of course listing with progress</p>
-
-                <table class="table table-striped projects">
-                    <thead>
-                        <tr>
-                            <th>
-                                #
-                            </th>
-                            <th>
-                                @Html.DisplayNameFor(model => model.ModuleName)
-                            </th>
-                            <th>
-                                Teacher
-                            </th>
-                            <th>
-                                Progress
-                            </th>
-                            <th>
-                                Status
-                            </th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (var i = 0; i < Model.ToList().Count; i++)
-                        {
-                            var item = Model.ToList()[i];
-                            var num = i + 1;
-                            <tr>
-                                <td>
-                                    @(num)
-                                </td>
-                                <td>
-                                    @Html.DisplayFor(modelItem => item.ModuleName)
-                                </td>
-                                <td>
-                                    <ul class="list-inline">
-                                        <li>
-                                            <img src="~/PanelsTemplate/images/user.png" class="avatar" alt="Avatar">
-                                        </li>
-
-                                    </ul>
-                                </td>
-                                <td class="project_progress">
-                                    <div class="progress progress_sm">
-                                        <div class="progress-bar bg-green" role="progressbar" data-transitiongoal="57"></div>
-                                    </div>
-                                    <small>57% Complete</small>
-                                </td>
-                                <td>
-                                    <button type="button" class="btn btn-danger btn-xs">Not Completed</button>
-                                </td>
-                                <td>
-                                    <a class="btn btn-primary" href="/Student/Slides/Info?moduleid=@item.Id"><i class="fa fa-folder"></i>&nbsp;View</a>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-*@

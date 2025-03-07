@@ -49,12 +49,14 @@ $(document).ready(function () {
                 $("#div_MoveableElementDescription").html(Description);
                 //display the div
                 $("#div_MoveableElementDescription").fadeIn();
+                /*
                 //reset the timer
                 clearInterval(intervalTimer_MoveableElementDescription);
                 // Hide the description
                 intervalTimer_MoveableElementDescription = setTimeout(function () {
                     $("#div_MoveableElementDescription").fadeOut();
                 }, 7000);
+                */
             }
         });
     });

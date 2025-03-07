@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using GraceProject.Data;
 using GraceProject.Models;
+using System.Security.Claims;
 
 namespace GraceProject.Controllers.Student
 {
@@ -21,13 +22,23 @@ namespace GraceProject.Controllers.Student
         }
 
         // GET: Modules
-        [Route("Index")]
-        public async Task<IActionResult> Index()
+        [Route("Index/{courseId}")]
+        //[ValidateAntiForgeryToken]
+        public async Task<IActionResult> Index(string courseId)
         {
-            var graceDbContext = _context.Module.Include(m => m.ApplicationUser);
-            return View("~/views/Student/Modules/Index.cshtml", await graceDbContext.ToListAsync());
+            var UserId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+
+            ViewData["Course"] = _context.Course.FirstOrDefault(c => c.CourseID == courseId);
+
+            var g1raceDbContext = _context.Enrollment
+                .Where(e => e.StudentUserID == UserId && e.CourseID == courseId);
+            IEnumerable<GraceProject.Models.Module> Modules = _context.Enrollment
+                .Where(e => e.StudentUserID == UserId && e.CourseID== courseId)
+                .SelectMany(e => e.Course.Modules) // Flatten Modules collection
+                .ToList();
+            return View("~/views/Student/Modules/Index.cshtml", Modules);
         }
 
-       
+
     }
 }

@@ -7,8 +7,11 @@
     Layout = "~/Views/Shared/_StudentLayout.cshtml";
 }
 
-
-
+@{
+    GraceProject.Models.Course Course = new Course();
+    if (ViewData["Course"] != null)
+        Course = (GraceProject.Models.Course)ViewData["Course"];
+}
 
 @using Microsoft.EntityFrameworkCore
 @using System.Security.Claims;
@@ -23,11 +26,8 @@
                 where userRole.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)
                 select role.Name;
 
-    bool IsAdmin = roles.Where(r => r == "Admin") != null;
+    bool IsAdmin = roles.Count() > 0 ? roles.Where(r => r == "Admin").Count() > 0 ? true : false : false;
 }
-
-
-
 
 @*pie chart*@
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
@@ -38,7 +38,7 @@
             <div class="col-md-12">
                 <div class="x_panel">
                     <div class="x_title">
-                        <h2>Course : Water Quality</h2>
+                        <h2>Course : @Course.Title</h2>
                         <div class="clearfix"></div>
                     </div>
                     <div class="x_content">
@@ -96,6 +96,7 @@
                                 @{
                                     if (IsAdmin == true)
                                     {
+                                        <a href="/Documentation/Website/GraceProjectModuleandSlideManagement.pdf" class="btn btn-info pull-right" style="font-size: 12px;height: 27px;"><i class="fa fa-info-circle"></i> Help</a>
                                         <button type="button" class="btn btn-danger pull-right" style="font-size: 12px;height: 27px;" id="btn_DeleteCurrentSlide">
                                             <i class="fas fa-trash"></i> Delete Current Slide
                                         </button>
@@ -168,9 +169,13 @@
                 ClearSlideInfo();
                 SetAction("add");
             });
-            
+
             $("#modal_AddOrEditModalSlideInfo").find("#btn_AddOrEditModalSlideInfo").click(function () {
                 SaveSlideInfo();
+            })
+
+            $("#btn_DeleteCurrentSlide").click(function () {
+                DeleteSlideInfo(GetIdofActiveSlide());
             })
         })
     </script>
@@ -192,10 +197,6 @@
 <script>
     var slidesJson = @Html.Raw(JsonConvert.SerializeObject(Model));
     DisplaySlides(slidesJson, "div_slides", "div_thumbslides");
-
-    $("#btn_DeleteCurrentSlide").click(function () {
-        DeleteSlideInfo(GetIdofActiveSlide());
-    })
 </script>
 
 

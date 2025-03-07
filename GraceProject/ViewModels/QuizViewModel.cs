@@ -4,14 +4,39 @@ using Microsoft.AspNetCore.Http;
 
 namespace GraceProject.ViewModels
 {
+    public class QuestionAnswerViewModel
+    {
+        public int QuestionId { get; set; }
+        public int? SelectedOptionId { get; set; }  // MCQ Answer
+        public string? FillInTheBlankResponse { get; set; }  // Fill-in-the-blank Answer
+    }
+
     public class QuizViewModel
     {
         public int QuizId { get; set; }
         public string Title { get; set; }
 
         public int Duration { get; set; }
+
+        public List<QuestionAnswerViewModel> QuestionAnswers { get; set; } = new List<QuestionAnswerViewModel>();
+
         public List<QuestionViewModel> Questions { get; set; } = new List<QuestionViewModel>();
+
+        public string? CourseID { get; set; }  
+        public int? SessionID { get; set; }  
     }
+
+    //public class SubmitQuizViewModel
+    //{
+
+    //    public int QuizId { get; set; }
+    //    public string Title { get; set; }
+
+    //    public int Duration { get; set; }
+    //    public List<QuestionAnswerViewModel> QuestionAnswers { get; set; }
+    //    public List<QuestionViewModel> Questions { get; set; } = new List<QuestionViewModel>();
+    //}
+
 
     public class QuestionViewModel
     {

@@ -4,6 +4,25 @@
 @inject SignInManager<GraceProject.Models.ApplicationUser> SignInManager
 @inject UserManager<GraceProject.Models.ApplicationUser> UserManager
 
+@{
+    var user = await UserManager.GetUserAsync(User);
+    var roles = user != null ? await UserManager.GetRolesAsync(user) : new List<string>();
+    string dashboardUrl = "/"; // Default home
+
+    if (roles.Contains("Admin"))
+    {
+        dashboardUrl = "/Admin/Dashboard";
+    }
+    else if (roles.Contains("Educator"))
+    {
+        dashboardUrl = "/Educator/Dashboard";
+    }
+    else if (roles.Contains("Student"))
+    {
+        dashboardUrl = "/Student/Home/Dashboard";
+    }
+}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,8 +34,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>Grace - Green Reimaging Agriculture of Controlled Environments</title>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Bootstrap -->
     <link href="~/PanelsTemplate/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -58,6 +75,15 @@
     <!-- TransportProcess -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.5.0/fabric.min.js"></script>
     <script src="~/PanelsTemplate/build/slide/Files/custome/DisplayTransportProcess/DisplayTransportProcess-JS.js"></script>
+
+    <!-- MultiChoiceQuestion -->
+    <script src="~/PanelsTemplate/build/slide/Files/custome/multichoicequestion/multichoicequestion-js.js"></script>
+
+    <!-- slide navigation -->
+    <script src="~/panelstemplate/build/slide/files/custome/slidenvigation/slidenavigation-js.js"></script>
+
+    <!-- Store slide reading info -->
+    <script src="~/panelstemplate/build/slide/files/custome/SlideReadTracking/SlideReadTracking.js"></script>
 
 
 </head>
@@ -183,32 +209,35 @@
 
                             <br />
 
-                            <!-- sidebar menu -->
+                            <!-- Sidebar Menu -->
                             <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
                                 <div class="menu_section">
                                     <ul class="nav side-menu">
                                         <li>
-                                            <a href="~/Student/Home/Dashboard"><i class="fa fa-home"></i> Home </a>
-                                        </li>
-                                        <li>
-                                            <a href="calendar.html"><i class="fa fa-calendar"></i> Calendar </a>
-                                        </li>
-                                        <li>
-                                            <a href="~/Student/Modules/Index"><i class="fa fa-book"></i> Courses</a>
+                                            <a href="@dashboardUrl"><i class="fa fa-home"></i> Home </a>
                                         </li>
 
-                                        <li>
-                                            <a asp-controller="Quiz" asp-action="Index"><i class="fa fa-question-circle"></i> Quizzes </a>
-                                        </li>
-                                        <li>
-                                            <a href="studentreport.html"><i class="fa fa-bar-chart-o"></i> Grades</a>
-                                        </li>
-                                        <li>
-                                            <a href="~/Student/Profile/profile"><i class="fa fa-user"></i>Profile</a>
-                                        </li>
-                                        <li>
-                                            <a href="contactus.html"><i class="fa fa-phone"></i>Contact Us</a>
-                                        </li>
+                                        @if (roles.Contains("Student"))
+                                        {
+                                            <li><a href="~/Student/Courses"><i class="fa fa-book"></i> Courses</a></li>
+                                            <li><a asp-controller="Quiz" asp-action="Index"><i class="fa fa-question-circle"></i> Quizzes </a></li>
+                                            <li><a asp-controller="Quiz" asp-action="QuizResults"><i class="fa fa-bar-chart-o"></i> Grades</a></li>
+                                            <li><a href="~/Student/Profile/profile"><i class="fa fa-user"></i> Profile</a></li>
+                                        }
+                                        else if (roles.Contains("Educator"))
+                                        {
+                                            <li><a href="~/Educator/Courses"><i class="fa fa-book"></i> Manage Courses</a></li>
+                                            <li><a asp-controller="Quiz" asp-action="Index"><i class="fa fa-question-circle"></i> Quizzes </a></li>
+                                            <li><a asp-controller="Quiz" asp-action="QuizResults"><i class="fa fa-bar-chart-o"></i> Grades</a></li>
+                                        }
+                                        else if (roles.Contains("Admin"))
+                                        {
+                                            <li><a href="~/Admin/ManageUsers"><i class="fa fa-users"></i> Manage Users</a></li>
+                                            <li><a href="~/Admin/Courses"><i class="fa fa-book"></i> Manage Courses</a></li>
+                                            <li><a href="~/Admin/Reports"><i class="fa fa-chart-bar"></i> Reports</a></li>
+                                        }
+
+                                        <li><a href="contactus.html"><i class="fa fa-phone"></i> Contact Us</a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -248,11 +277,6 @@
         </div>
     </div>
 
-    
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- ChartsOnReport-->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Custome JS files -->
     <script src="~/PanelsTemplate/build/slide/Files/custome/TextToSpeech/TextToSpeech.js"></script>
@@ -264,7 +288,7 @@
 
 
     <!-- jQuery -->
-    @* <script src="~/PanelsTemplate/vendors/jquery/dist/jquery.min.js"></script> *@
+    <script src="~/PanelsTemplate/vendors/jquery/dist/jquery.min.js"></script>
     <!-- Bootstrap -->
     <script src="~/PanelsTemplate/vendors/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <!-- FastClick -->
@@ -275,7 +299,7 @@
     <script src="~/PanelsTemplate/vendors/bootstrap-progressbar/bootstrap-progressbar.min.js"></script>
 
     <!-- Custom Theme Scripts -->
-    @* <script src="~/PanelsTemplate/build/js/custom.js"></script>  *@
+    <script src="~/PanelsTemplate/build/js/custom.js"></script>
 
     <!-- blinking -->
     <link rel="stylesheet" href="~/PanelsTemplate/build/slide/Files/custome/Blinking/Blinking-CSS.css" />
@@ -301,6 +325,7 @@
     <!-- TransformtoSlide -->
     <link rel="stylesheet" href="~/PanelsTemplate/build/slide/Files/custome/TransformToSlide/TransformToSlide-CSS.css" />
     <script src="~/PanelsTemplate/build/slide/Files/custome/TransformToSlide/TransformToSlide-JS.js"></script>
+
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

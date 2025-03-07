@@ -54,7 +54,7 @@ function DisplaySlides(Slides, SlideContainer, ThumbSlideContainer) {
         $("#" + SlideContainer).append(slideHTML);
 
         //add thumbslide
-        var thumbslideHTML = '<div data-target="#carousel" data-slide-to="' + i + '" class="thumb justified-text-container text-center ' + (i == 0 ? ' active ' : '') + (Slides[i].DisplayThumbnailSlide != true?' hide ':'') + '">' +
+        var thumbslideHTML = '<div data-target="#carousel" data-slide-index="' + Slides[i].Id + '" data-slide-to="' + i + '" class="thumb justified-text-container text-center ' + (i == 0 ? ' active ' : '') + (Slides[i].DisplayThumbnailSlide != true ? ' hide ' : '') + '">' +
             '<i id="i_thumbslide" class="' + Slides[i].ThumbIcon + ' fa-3x"></i>' +
             '<br>' +
             '<label id="label_thumbslide">' + Slides[i].ShortTitle + '</label>' +
@@ -87,286 +87,312 @@ function SlideSectionHTML(SlideId, SlideSection, Container) {
 
     if (ControllerName != null && ControllerName != '') {
 
-        //Display an image and some arrows on it
-        if (ControllerName == 'TransportProcess') {
-            var NormalizedParameters = DisplayTransportProcess(ControllerParameters, 'display');
-
-            // Append elements to container
-            $('#' + Container).append(
-                NormalizedParameters.leftButton,
-                NormalizedParameters.canvas,
-                NormalizedParameters.rightButton);
-
-            InitiateDisplayTransportProcess(
-                'display',
-                Container,
-                NormalizedParameters.canvasId,
-                NormalizedParameters.MainImagePath,
-                NormalizedParameters.Button1ImagePath,
-                NormalizedParameters.Button2ImagePath,
-                NormalizedParameters.startPoints,
-                NormalizedParameters.endPoints,
-                NormalizedParameters.curveDefinitions
-            );
-        }
-        else if (ControllerName == 'Video') {
-            debugger;
-            var URL = ControllerParameters.URL;
-
-
-            /* Check if the URL is a kind of Youtube URL */
-            var youtubeUrlPattern = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
-            var iframeSrc = "";
-            if (youtubeUrlPattern.test(URL)) {
-
-                var standardUrlMatch = URL.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/);
-                var embedUrlMatch = URL.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^&]+)/);
-
-                if (standardUrlMatch && standardUrlMatch[1]) {
-                    videoId = standardUrlMatch[1];
-                } else if (embedUrlMatch && embedUrlMatch[1]) {
-                    videoId = embedUrlMatch[1];
-                } else {
-                    alert("Please enter a valid YouTube URL");
-                    return;
-                }
-                iframeSrc = "https://www.youtube.com/embed/" + videoId;
-            }
-
-
-            
-            ControllerHTML = '<div style="text-align:center;position: relative;width: 100%;padding-top: 56.25%; overflow: hidden; ">' +
-                '<iframe style="position: absolute;top: 0;left: 0;width: 100%;height: 100%;border: 0;" id="youtubeVideo" src="' + iframeSrc +'" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'+
-                '</div>';
-        }
-        else
-            if (ControllerName == 'Image') {
-                var Path = ControllerParameters.Path;
-                var TransformtoSlide = ControllerParameters.TransformtoSlide;
-                var TransformtoSlideNum = ControllerParameters.TransformtoSlideNum;
-                var BlinkingBorder = ControllerParameters.BlinkingBorder;
-                var Title = ControllerParameters.Title;
-                var Alt = ControllerParameters.Alt;
-                var Width = ControllerParameters.Width;
-
-                ControllerHTML = '<div style="text-align:center">' +
-                    '<img src="' + Path + '" alt="' + Alt + '" class="' + (TransformtoSlide == 'true' ? ' TransformtoSlide ' : '') + (BlinkingBorder == 'true' ? ' blinking-border ' : '') + '"' + (TransformtoSlide == 'true' ? 'TransformtoSlideNum="' + TransformtoSlideNum + '"' : '') + '  title="' + Title + '" style="width:' + Width + 'px;">' +
-                    '</div>';
+        debugger;
+        
+            //Display slide navigation button
+            if (ControllerName == 'SlideNavigation') {
+                CreateAndInitiateSlideNavigationHTML(Container, ControllerParameters);
             }
             else
-                if (ControllerName == 'ClickableImages') {
-                    ControllerHTML=CreateClickableImageandAreasHTML(ControllerParameters);
+                //Display multi choice question
+                if (ControllerName == 'MultiChoiceQuestion') {
+                    CreateAndInitiateMultiChoiceQuestionHTML(Container, ControllerParameters);
                 }
                 else
-                    if (ControllerName == 'DragandDropItems') {
-                        var Items = ControllerParameters.Items;
-                        var ItemsColumnCaption = ControllerParameters.ItemsColumnCaption;
-                        var AnswerColumnCaption = ControllerParameters.AnswerColumnCaption;
-                        var CheckAnswerByChangingSlide = ControllerParameters.CheckAnswerByChangingSlide;
-                        var DragAndDropItemDescription = ControllerParameters.Description;
-                        var CorrectItems = ControllerParameters.CorrectItems;
-                        var BackgroundImageOfTank = ControllerParameters.BackgroundImageOfTank;
-                        var BackgroundImageOfAnswer = ControllerParameters.BackgroundImageOfAnswer;
+                    //Display an image and some arrows on it
+                    if (ControllerName == 'TransportProcess') {
+                        ////debugger;
+                        var NormalizedParameters = DisplayTransportProcess(ControllerParameters, 'display');
 
+                        // Append elements to container
+                        $('#' + Container).append(
+                            NormalizedParameters.leftButton,
+                            NormalizedParameters.canvas,
+                            NormalizedParameters.rightButton);
 
-                        //Get the height of BackgroundImageOfTank
-                        var img_BackgroundImageOfTank = new Image();
-                        img_BackgroundImageOfTank.src = BackgroundImageOfTank;
-                        var height_BackgroundImageOfTank;
-                        $(img_BackgroundImageOfTank).on('load', function () {
-                            height_BackgroundImageOfTank = $(this).height();
-                        });
-
-                        //Get the height of BackgroundImageOfAnswer
-                        var img_BackgroundImageOfAnswer = new Image();
-                        img_BackgroundImageOfAnswer.src = BackgroundImageOfAnswer;
-                        var height_BackgroundImageOfAnswer;
-                        $(img_BackgroundImageOfAnswer).on('load', function () {
-                            height_BackgroundImageOfAnswer = $(this).height();
-                        });
-
-
-                        //items
-                        var ItemsHTML = Items.map(function (item, index) {
-                            var br = (index + 1) % 2 === 0 && index + 1 !== Items.length ? '<br>' : ''; // Add <br> after every 3 items except for the last set of items
-                            return '<div description="' + item.description + '" style="display: inline-block;">' + item.text + '</div>' + br;
-                        }).join('');
-
-                        var DragandDropItemsHTML = '<div class="QusetionSection parent">' +
-                            '<div style="font-size: 14px;">' + DragAndDropItemDescription + '</div>' +
-                            '<div class="wrapper" style="font-size: 14px;width:100%;">' +
-                            '<div id="left-rm-spill' + SlideId + '" class="container text-center" style="padding: 10px;' + (BackgroundImageOfTank != '' && BackgroundImageOfTank != null && BackgroundImageOfTank != undefined ? 'background: url(' + BackgroundImageOfTank + ') no-repeat center center; background-size: cover;height:500px;' : '') + '">' +
-
-                            '<b>' + ItemsColumnCaption + '</b>' +
-                            (ItemsColumnCaption != null && ItemsColumnCaption != undefined && ItemsColumnCaption != '' ? '<hr style="margin: 7px;"><br/><br/><br/>' : '') +
-                            ItemsHTML +
-                            '</div>' +
-                            '<div id="right-rm-spill' + SlideId + '" class="container text-center" style="padding: 10px;' + (BackgroundImageOfAnswer != '' && BackgroundImageOfAnswer != null && BackgroundImageOfAnswer != undefined ? 'background: url(' + BackgroundImageOfAnswer + ') no-repeat center center; background-size: cover;height:500px;' : '') + ' ">' +
-                            '<b>' + AnswerColumnCaption + '</b>' +
-                            (AnswerColumnCaption != null && AnswerColumnCaption != undefined && AnswerColumnCaption != '' ? '<hr style="margin: 7px;"><br/><br/><br/>' : '') +
-                            '</div>' +
-                            '</div>' +
-                            '<br><input type="hidden" id="hidden_result' + SlideId + '"/><div id="customAlert" class="alert alert-info text-center" role="alert" style="display: none;opacity:1;">' +
-                            '</div>';
-
-                        //display a notification
-                        var NotificationHTML = '<div class="container mt-3"><div class="alert alert-success" role = "alert" id = "Div_DragAndDropItems_Message' + SlideId + '" style = "display: none;position: fixed;left:50%;top: 20px;left: 50 %;transform: translateX(-50 %);z-index:1000;" ></div ></div > ';
-
-                        DragandDropItemsHTML += NotificationHTML;
-
-                        $('#' + Container).append(DragandDropItemsHTML);
-
-                        var drake = dragula([document.getElementById('left-rm-spill' + SlideId), document.getElementById('right-rm-spill' + SlideId)]);
-
-                        // Define variables to store original positions
-                        var originalPositions = {};
-                        // Function to store original positions before dragging starts
-                        drake.on('drag', function (el, source) {
-                            var itemId = el.getAttribute('id');
-                            originalPositions[itemId] = el;
-                        });
-
-                        drake.on('drop', function (el, target, source, sibling) {
-                            openCustomAlert($(el).attr("description"));
-
-                            //Selected Item
-                            var draggedText = $.trim($(el).html());
-
-                            var correctItem = false;
-                            for (var j = 0; j < CorrectItems.length; j++) {
-                                var CorrectItem = $.trim($(CorrectItems[j])[0].text);
-                                if (CorrectItem != '' && CorrectItem != null && (draggedText == CorrectItem)) {
-                                    correctItem = true;
-                                    break;
-                                }
-                            }
-                            if ($(target).attr("id") == 'right-rm-spill' + SlideId) {
-                                if (correctItem == true) {
-                                    $('#Div_DragAndDropItems_Message' + SlideId).removeClass("alert-danger").addClass("alert-success");
-                                    $('#Div_DragAndDropItems_Message' + SlideId).html("Correct!");
-                                    $('#Div_DragAndDropItems_Message' + SlideId).fadeIn().delay(2000).fadeOut(); // Show message for 2 seconds
-
-                                    $(el).css('color', 'green'); // Change color to red
-                                }
-                                else {
-                                    $('#Div_DragAndDropItems_Message' + SlideId).removeClass("alert-success").addClass("alert-danger");
-                                    $('#Div_DragAndDropItems_Message' + SlideId).html("'" + draggedText + "' is not correct, try again!");
-                                    $('#Div_DragAndDropItems_Message' + SlideId).fadeIn().delay(4000).fadeOut(); // Show message for 2 seconds
-
-
-                                    // Move uncorrected item back to its original position
-                                    var itemId = el.getAttribute('id');
-                                    var originalPosition = originalPositions[itemId];
-                                    if (originalPosition) {
-                                        // If original position is defined, move the item back
-                                        source.insertBefore(el, originalPosition.nextSibling);
-                                    }
-
-                                    $(el).css('color', 'red'); // Change color to red
-                                }
-                            }
-                            CheckAnswer(SlideId, Container, CorrectItems, function (result) {
-
-                                if (result == false) {
-                                    AllowChangingSlideAction(false, "Please provide a correct answer to the question and try again later!");
-                                }
-                                else {
-                                    AllowChangingSlideAction(true, null);
-                                    alert("Congratulation, your answer is correc!");
-                                }
-                            });
-
-                        })
+                        InitiateDisplayTransportProcess(
+                            'display',
+                            Container,
+                            NormalizedParameters
+                        );
 
                     }
+                    else if (ControllerName == 'Video') {
+                        ////debugger;
+                        var URL = ControllerParameters.URL;
+
+
+                        /* Check if the URL is a kind of Youtube URL */
+                        var youtubeUrlPattern = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+                        var iframeSrc = "";
+                        if (youtubeUrlPattern.test(URL)) {
+
+                            var standardUrlMatch = URL.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/);
+                            var embedUrlMatch = URL.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^&]+)/);
+
+                            if (standardUrlMatch && standardUrlMatch[1]) {
+                                videoId = standardUrlMatch[1];
+                            } else if (embedUrlMatch && embedUrlMatch[1]) {
+                                videoId = embedUrlMatch[1];
+                            } else {
+                                alert("Please enter a valid YouTube URL");
+                                return;
+                            }
+                            iframeSrc = "https://www.youtube.com/embed/" + videoId;
+                        }
+
+
+
+                        ControllerHTML = '<div style="text-align:center;position: relative;width: 100%;padding-top: 56.25%; overflow: hidden; ">' +
+                            '<iframe style="position: absolute;top: 0;left: 0;width: 100%;height: 100%;border: 0;" id="youtubeVideo" src="' + iframeSrc + '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>' +
+                            '</div>';
+                    }
                     else
-                        if (ControllerName == 'Animate') {
-                            //if the direction of the objects( that images fly to) is left, movementDistance is a negative number
-                            if (ControllerParameters.Location == "left")
-                                ControllerHTML += '<div class="col-lg-6"><img src="' + ControllerParameters.FlyingToImage + '" style="max-width:500px;"></div>';
+                        if (ControllerName == 'Image') {
+                            var Path = ControllerParameters.Path;
+                            var TransformtoSlide = ControllerParameters.TransformtoSlide;
+                            var TransformtoSlideNum = ControllerParameters.TransformtoSlideNum;
+                            var BlinkingBorder = ControllerParameters.BlinkingBorder;
+                            var Title = ControllerParameters.Title;
+                            var Alt = ControllerParameters.Alt;
+                            var Width = ControllerParameters.Width;
+                            var Align = ControllerParameters.Align;
 
-                            ControllerHTML += '<div class="col-lg-6">';
-                            $.each(ControllerParameters.MovableElements, function (index, element) {
-                                ControllerHTML += '<img class="' + (element.BlinkingBorder == 'true' ? ' blinking-border ' : '') + ' movableElement" ' +
-                                    'movementDirection="' + element.MovementDirection + '" ' +
-                                    'movementDescription="' + element.MovementDescription + '" ' +
-                                    'movementDistance="' + element.MovementDistance + '" ' +
-                                    'movementType="' + element.MovementType + '" ' +
-                                    'src="' + element.Path + '"' +
-                                    'style="z-idex:1000;width:100px;">' +
-                                    '<br><br><br><br><br>';
-                            });
-                            ControllerHTML += '</div>';
-
-                            //if the direction of the objects( that images fly to) is right, movementDistance is a positive number
-                            if (ControllerParameters.Location == "right")
-                                ControllerHTML += '<div class="col-lg-6"><img src="' + ControllerParameters.FlyingToImage + '" style="max-width:500px;"></div>';
-
-                            //display text
-                            ControllerHTML += '<div class="col-lg-12">';
-                            ControllerHTML += '<br/><div class="col-lg-12 alert alert-light " role="alert" style="display:none;" id="div_MoveableElementDescription"></div>';
-                            ControllerHTML += '</div>';
+                            ControllerHTML = '<div style="text-align:' + Align + '">' +
+                                '<img src="' + Path + '" alt="' + Alt + '" class="' + (TransformtoSlide == 'true' ? ' TransformtoSlide  blinking-border ' : '') + (BlinkingBorder == 'true' ? ' ' : '') + '"' + (TransformtoSlide == 'true' ? 'TransformtoSlideNum="' + TransformtoSlideNum + '"' : '') + '  title="' + Title + '" style="width:' + Width + 'px;">' +
+                                '</div>';
                         }
                         else
-                            if (ControllerName == 'PieChart') {
+                            if (ControllerName == 'ClickableImages') {
+                                ControllerHTML = CreateClickableImageandAreasHTML(ControllerParameters);
+                            }
+                            else
+                                if (ControllerName == 'DragandDropItems') {
+                                    debugger;
 
-                                $('#' + Container).append('<div id="pie_chart"></div>');
+                                    var Items = ControllerParameters.Items;
+                                    var ItemsColumnCaption = ControllerParameters.ItemsColumnCaption;
+                                    var AnswerColumnCaption = ControllerParameters.AnswerColumnCaption;
+                                    var CheckAnswerByChangingSlide = ControllerParameters.CheckAnswerByChangingSlide;
+                                    var DragAndDropItemDescription = ControllerParameters.Description;
+                                    var CorrectItems = ControllerParameters.CorrectItems;
+                                    var BackgroundImageOfTank = ControllerParameters.BackgroundImageOfTank;
+                                    var BackgroundImageOfAnswer = ControllerParameters.BackgroundImageOfAnswer;
+                                    var DescriptionLocation = ControllerParameters.DescriptionLocation;
 
-                                var series = ControllerParameters.series;
-                                let intseries = $.map(series, function (value) {
-                                    return parseInt(value, 10);
-                                });
-                                var labels = ControllerParameters.labels;
-                                var colors = ControllerParameters.colors;
-                                var type = ControllerParameters.type;
-                                var TransformtoSlideNum = ControllerParameters.TransformtoSlideNum;
-                                var options = {
-                                    series: intseries,
-                                    chart: {
-                                        width: 500,
-                                        type: type,
-                                        events: {
-                                            click: function (event, chartContext, config) {
-                                                var label = config.config.labels[config.dataPointIndex];;
 
-                                                // Find the index of the special label in the first array
-                                                let index = $.inArray(label, labels);
+                                    //Get the height of BackgroundImageOfTank
+                                    var img_BackgroundImageOfTank = new Image();
+                                    img_BackgroundImageOfTank.src = BackgroundImageOfTank;
+                                    var height_BackgroundImageOfTank;
+                                    $(img_BackgroundImageOfTank).on('load', function () {
+                                        height_BackgroundImageOfTank = $(this).height();
+                                    });
 
-                                                if (TransformtoSlideNum != undefined) {
-                                                    // Get the corresponding value from the second array
-                                                    let SlideId = (index !== -1) ? TransformtoSlideNum[index] : null;
+                                    //Get the height of BackgroundImageOfAnswer
+                                    var img_BackgroundImageOfAnswer = new Image();
+                                    img_BackgroundImageOfAnswer.src = BackgroundImageOfAnswer;
+                                    var height_BackgroundImageOfAnswer;
+                                    $(img_BackgroundImageOfAnswer).on('load', function () {
+                                        height_BackgroundImageOfAnswer = $(this).height();
+                                    });
 
-                                                    if (SlideId > 0) {
-                                                        var SourceSlide = GetIndexofSpecialItem($(this).closest('.item'));
-                                                        NavigateToOtherSlideId((SourceSlide + 1), SlideId);
-                                                        SetAcitvatedCairoselSlideById(SlideId);
-                                                    }
+
+                                    //items
+                                    var ItemsHTML = Items.map(function (item, index) {
+                                        var br = (index + 1) % 2 === 0 && index + 1 !== Items.length ? '<br>' : ''; // Add <br> after every 3 items except for the last set of items
+                                        return '<div description="' + item.description + '" style="display: inline-block;">' + item.text + '</div>' + br;
+                                    }).join('');
+
+                                    var DragandDropItemsHTML = '<div class="QusetionSection parent">' +
+                                        '<div style="font-size: 14px;">' + DragAndDropItemDescription + '</div>' +
+                                        (DescriptionLocation == "top" ? '<div id = "customAlert" class="alert alert-info text-center" role = "alert" style = "display: none;opacity:1;" ></div>' : '') +
+                                        '<div class="wrapper" style="font-size: 14px;width:100%;">' +
+                                        '<div id="left-rm-spill' + SlideId + '" class="container text-center" style="background-color:unset; padding: 10px;' + (BackgroundImageOfTank != '' && BackgroundImageOfTank != null && BackgroundImageOfTank != undefined ? 'background: url(' + BackgroundImageOfTank + ') no-repeat center center; background-size: cover;height:500px;' : '') + '">' +
+
+                                        '<b>' + ItemsColumnCaption + '</b>' +
+                                        (ItemsColumnCaption != null && ItemsColumnCaption != undefined && ItemsColumnCaption != '' ? '<hr style="margin: 7px;"><br/><br/><br/>' : '') +
+                                        ItemsHTML +
+                                        '</div>' +
+                                        '<div id="right-rm-spill' + SlideId + '" class="container text-center" style="background-color:unset;padding: 10px;' + (BackgroundImageOfAnswer != '' && BackgroundImageOfAnswer != null && BackgroundImageOfAnswer != undefined ? 'background: url(' + BackgroundImageOfAnswer + ') no-repeat center center; background-size: cover;height:500px;' : '') + ' ">' +
+                                        '<b>' + AnswerColumnCaption + '</b>' +
+                                        (AnswerColumnCaption != null && AnswerColumnCaption != undefined && AnswerColumnCaption != '' ? '<hr style="margin: 7px;"><br/><br/><br/>' : '') +
+                                        '</div>' +
+                                        '</div>' +
+                                        '<br><input type="hidden" id="hidden_result' + SlideId + '"/>' +
+                                        (DescriptionLocation == "bottom" ? '<div id = "customAlert" class="alert alert-info text-center" role = "alert" style = "display: none;opacity:1;" ></div>' : '');
+
+                                    //display a notification
+                                    var NotificationHTML = '<div class="container mt-3"><div class="alert alert-success" role = "alert" id = "Div_DragAndDropItems_Message' + SlideId + '" style = "display: none;position: fixed;left:50%;top: 20px;left: 50 %;transform: translateX(-50 %);z-index:1000;" ></div ></div > ';
+
+                                    DragandDropItemsHTML += NotificationHTML;
+
+                                    $('#' + Container).append(DragandDropItemsHTML);
+
+                                    var drake = dragula([document.getElementById('left-rm-spill' + SlideId), document.getElementById('right-rm-spill' + SlideId)]);
+
+                                    // Define variables to store original positions
+                                    var originalPositions = {};
+                                    // Function to store original positions before dragging starts
+                                    drake.on('drag', function (el, source) {
+                                        var itemId = el.getAttribute('id');
+                                        originalPositions[itemId] = el;
+                                    });
+
+                                    drake.on('drop', function (el, target, source, sibling) {
+                                        openCustomAlert(Container, $(el).attr("description"));
+
+                                        //Selected Item
+                                        var draggedText = $.trim($(el).html());
+
+                                        var correctItem = false;
+                                        for (var j = 0; j < CorrectItems.length; j++) {
+                                            var CorrectItem = $.trim($(CorrectItems[j])[0].text);
+                                            if (CorrectItem != '' && CorrectItem != null && (draggedText == CorrectItem)) {
+                                                correctItem = true;
+                                                break;
+                                            }
+                                        }
+                                        if ($(target).attr("id") == 'right-rm-spill' + SlideId) {
+                                            if (correctItem == true) {
+                                                $('#Div_DragAndDropItems_Message' + SlideId).removeClass("alert-danger").addClass("alert-success");
+                                                $('#Div_DragAndDropItems_Message' + SlideId).html("Correct!");
+                                                $('#Div_DragAndDropItems_Message' + SlideId).fadeIn().delay(2000).fadeOut(); // Show message for 2 seconds
+
+                                                $(el).css('color', 'green'); // Change color to red
+                                            }
+                                            else {
+                                                $('#Div_DragAndDropItems_Message' + SlideId).removeClass("alert-success").addClass("alert-danger");
+                                                $('#Div_DragAndDropItems_Message' + SlideId).html("'" + draggedText + "' is not correct, try again!");
+                                                $('#Div_DragAndDropItems_Message' + SlideId).fadeIn().delay(4000).fadeOut(); // Show message for 2 seconds
+
+
+                                                // Move uncorrected item back to its original position
+                                                var itemId = el.getAttribute('id');
+                                                var originalPosition = originalPositions[itemId];
+                                                if (originalPosition) {
+                                                    // If original position is defined, move the item back
+                                                    source.insertBefore(el, originalPosition.nextSibling);
                                                 }
 
-                                                //display modal
-                                                //$('#div_Modal_Information').modal('show');
-                                                //$(".modal-backdrop").remove();
+                                                $(el).css('color', 'red'); // Change color to red
+                                            }
+                                        }
+                                        debugger;
+                                        CheckAnswer(SlideId, Container, CorrectItems, function (result) {
+                                            debugger;
+                                            if (result == false) {
+                                                AllowChangingSlideAction(false, "Please provide a correct answer to the question and try again later!");
+                                            }
+                                            else {
+                                                AllowChangingSlideAction(true, null);
+                                                alert("Congratulation, your answer is correc!");
+                                            }
+                                        });
 
-                                            }
+                                    })
+
+                                }
+                                else
+                                    if (ControllerName == 'Animate') {
+                                        debugger;
+                                        //display Description
+                                        if (ControllerParameters.DescriptionLocation == "top") {
+                                            ControllerHTML += '<div class="col-lg-12">';
+                                            ControllerHTML += '<br/><div class="col-lg-12 alert alert-info " role="alert" style="display:none;" id="div_MoveableElementDescription"></div>';
+                                            ControllerHTML += '</div>';
                                         }
-                                    },
-                                    labels: labels,
-                                    responsive: [{
-                                        breakpoint: 480,
-                                        options: {
-                                            chart: {
-                                                width: 200
-                                            },
-                                            legend: {
-                                                position: 'bottom'
-                                            }
+
+                                        //if the direction of the objects( that images fly to) is left, movementDistance is a negative number
+                                        if (ControllerParameters.Location == "left")
+                                            ControllerHTML += '<div class="col-lg-6"><img src="' + ControllerParameters.FlyingToImage + '" style="max-width:500px;"></div>';
+
+                                        ControllerHTML += '<div class="col-lg-6">';
+                                        $.each(ControllerParameters.MovableElements, function (index, element) {
+                                            ControllerHTML += '<img class="' + (element.BlinkingBorder == 'true' ? ' blinking-border ' : '') + ' movableElement" ' +
+                                                'movementDirection="' + element.MovementDirection + '" ' +
+                                                'movementDescription="' + element.MovementDescription + '" ' +
+                                                'movementDistance="' + element.MovementDistance + '" ' +
+                                                'movementType="' + element.MovementType + '" ' +
+                                                'src="' + element.Path + '"' +
+                                                'style="z-idex:1000;width:100px;">' +
+                                                '<br><br><br><br><br>';
+                                        });
+                                        ControllerHTML += '</div>';
+
+                                        //if the direction of the objects( that images fly to) is right, movementDistance is a positive number
+                                        if (ControllerParameters.Location == "right")
+                                            ControllerHTML += '<div class="col-lg-6"><img src="' + ControllerParameters.FlyingToImage + '" style="max-width:500px;"></div>';
+
+                                        //display Description
+                                        if (ControllerParameters.DescriptionLocation == "bottom") {
+                                            ControllerHTML += '<div class="col-lg-12">';
+                                            ControllerHTML += '<br/><div class="col-lg-12 alert alert-info " role="alert" style="display:none;" id="div_MoveableElementDescription"></div>';
+                                            ControllerHTML += '</div>';
                                         }
-                                    }],
-                                    colors: colors // Specify your custom colors here
-                                };
-                                var chart = new ApexCharts(document.getElementById(Container).querySelector("#pie_chart"), options);
-                                chart.render();
-                            }
+                                    }
+                                    else
+                                        if (ControllerName == 'PieChart') {
+
+                                            $('#' + Container).append('<div id="pie_chart"></div>');
+
+                                            var series = ControllerParameters.series;
+                                            let intseries = $.map(series, function (value) {
+                                                return parseInt(value, 10);
+                                            });
+                                            var labels = ControllerParameters.labels;
+                                            var colors = ControllerParameters.colors;
+                                            var type = ControllerParameters.type;
+                                            var TransformtoSlideNum = ControllerParameters.TransformtoSlideNum;
+                                            var options = {
+                                                series: intseries,
+                                                chart: {
+                                                    width: 500,
+                                                    type: type,
+                                                    events: {
+                                                        click: function (event, chartContext, config) {
+                                                            var label = config.config.labels[config.dataPointIndex];;
+
+                                                            // Find the index of the special label in the first array
+                                                            let index = $.inArray(label, labels);
+
+                                                            if (TransformtoSlideNum != undefined) {
+                                                                // Get the corresponding value from the second array
+                                                                let ToSlideId = (index !== -1) ? TransformtoSlideNum[index] : null;
+                                                                let FromSlideId = GetIdofActiveSlide();
+
+                                                                if (SlideId > 0) {
+                                                                    //debugger;
+                                                                    //var SourceSlide = GetIndexofSpecialItem($(this).closest('.item'));
+                                                                    NavigateToOtherSlideId(FromSlideId, ToSlideId);
+                                                                    SetAcitvatedCairoselSlideById(ToSlideId);
+                                                                }
+                                                            }
+
+                                                            //display modal
+                                                            //$('#div_Modal_Information').modal('show');
+                                                            //$(".modal-backdrop").remove();
+
+                                                        }
+                                                    }
+                                                },
+                                                labels: labels,
+                                                responsive: [{
+                                                    breakpoint: 480,
+                                                    options: {
+                                                        chart: {
+                                                            width: 200
+                                                        },
+                                                        legend: {
+                                                            position: 'bottom'
+                                                        }
+                                                    }
+                                                }],
+                                                colors: colors // Specify your custom colors here
+                                            };
+                                            var chart = new ApexCharts(document.getElementById(Container).querySelector("#pie_chart"), options);
+                                            chart.render();
+                                        }
     }
     //description
     let Description = $.trim(SlideSection.Description);
@@ -374,7 +400,7 @@ function SlideSectionHTML(SlideId, SlideSection, Container) {
     var QillEditorContainerClassName = GetQillEditorJSContainerClassName();
     //Slide HTML
     var slideHTML =
-        '<div ' + ((SlideSection.TextToVoice == true) ? ' class="Text-To-Speech ' + QillEditorContainerClassName + '"' : ' class="' + QillEditorContainerClassName + '"') + ' >' +
+        '<div ' + ((SlideSection.TextToVoice == true) ? ' class="Text-To-Speech ' + QillEditorContainerClassName + '"' : ' class="' + QillEditorContainerClassName + '"') + ' style="overflow-y: unset">' +
         //if the title should be displayed
         ((SlideSection.Title != null && $.trim(SlideSection.Title) != '') ? '<h1>' + Slides[i].Title + '</h1>' : '') +
         '<div>' +
@@ -384,16 +410,17 @@ function SlideSectionHTML(SlideId, SlideSection, Container) {
 
     $('#' + Container).append(slideHTML);
 
-
     //initiate Clickable Images
-    InitiateClickableImageandAreas(Container,'display');
+    if (ControllerName == 'ClickableImages') {
+        InitiateClickableImageandAreas(Container, 'display', ControllerParameters);
+    }
 }
 
 var CustomAlertTimer;
-function openCustomAlert(alerttext) {
+function openCustomAlert(container, alerttext) {
     // Show the custom alert
-    $('#customAlert').fadeIn();
-    $('#customAlert').html(alerttext);
+    $('#' + container).find('#customAlert').fadeIn();
+    $('#' + container).find('#customAlert').html(alerttext);
 
     clearInterval(CustomAlertTimer);
     // Close the custom alert after 2 seconds
@@ -416,7 +443,7 @@ function CheckAnswer(SlideId, Container, CorrectAnswers, result) {
 
 
             if (CorrectItem != '' && CorrectItem != null && draggedText == CorrectItem) {
-                //debugger;
+                //////debugger;
                 correctitems++;
             }
         }
@@ -430,12 +457,14 @@ function CheckAnswer(SlideId, Container, CorrectAnswers, result) {
         return result(false);
     }
 }
-function GetDragAndDropItemsResult(Container) {
-    if ($(Container).find("#hidden_result").val() == "correct")
+function GetDragAndDropItemsResult(Container, id) {
+    if ($(Container).find("#hidden_result" + id).val() == "correct")
         return true;
     else
         return false;
 }
+
+//As we used ql js for editor, we should use its classes for displaying the content
 function GetQillEditorJSContainerClassName() {
     return 'ql-editor';
 }

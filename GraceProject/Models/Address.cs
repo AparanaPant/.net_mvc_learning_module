@@ -19,21 +19,22 @@ public class Address
     public virtual ApplicationUser ApplicationUser { get; set; } // Navigation property
 
     [Column(TypeName = "nvarchar(200)")]
-    public string StreetAddress { get; set; }
+    public string? StreetAddress { get; set; }
 
 
     [Column(TypeName = "nvarchar(200)")]
-    public string Country { get; set; } 
+    public string Country { get; set; }
 
 
     [Column(TypeName = "nvarchar(100)")]
-    public string City { get; set; }
+    public string? City { get; set; }
 
 
     [Column(TypeName = "nvarchar(20)")]
-    public string State { get; set; }
+    public string? State { get; set; }
+
 
 
     [Column(TypeName = "nvarchar(20)")]
-    public string ZIPCode { get; set; }
+    public string? ZIPCode { get; set; }
 }

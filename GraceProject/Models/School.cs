@@ -15,6 +15,8 @@ namespace GraceProject.Models
         [StringLength(50)]
         public string Country { get; set; }
 
+        public virtual ICollection<ApplicationUser> Users { get; set; }
+
         public ICollection<SchoolAddress> SchoolAddresses { get; set; }
         public ICollection<UserSchool> UserSchools { get; set; }
     }
@@ -29,10 +31,10 @@ namespace GraceProject.Models
         public string State { get; set; }
 
         [StringLength(100)]
-        public string AddressLine1 { get; set; }
+        public string? AddressLine1 { get; set; }
 
         [StringLength(100)]
-        public string AddressLine2 { get; set; }
+        public string? AddressLine2 { get; set; }
 
         [StringLength(50)]
         public string City { get; set; }
