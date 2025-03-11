@@ -201,6 +201,93 @@ namespace GraceProject.Controllers.Report
             return Ok(result);
         }
 
+        [HttpPost("GetSchoolList")]
+        public async Task<IActionResult> GetSchoolList([FromBody] SearchModel searchData)
+        {
+            var schools = await _context.Schools
+                .Where(s => s.SchoolName.Contains(searchData.Keyword))
+                .Select(s => new
+                {
+                    name = s.SchoolName,
+                    id = s.SchoolID
+                })
+                .ToListAsync();
+
+            return Ok(schools);
+        }
+
+        [HttpPost("GetSchoolGrades")]
+        public async Task<IActionResult> GetSchoolGrades([FromBody] IdModel model)
+        {
+            // Get all students linked to the selected school
+            var studentIds = await _context.UserSchools
+                .Where(us => us.SchoolID == Convert.ToInt32(model.Id))
+                .Select(us => us.UserID)
+                .ToListAsync();
+
+            if (!studentIds.Any())
+            {
+                return Ok(new { message = "No students found for this school." });
+            }
+
+            // Get courses and quizzes taken by these students
+            var quizResults = await _context.UserQuizzes
+                .Where(uq => studentIds.Contains(uq.UserId))
+                .Select(uq => new
+                {
+                    StudentId = uq.UserId,
+                    StudentName = _context.Users.Where(u => u.Id == uq.UserId).Select(u => u.FirstName + " " + u.LastName).FirstOrDefault(),
+                    CourseTitle = uq.Quiz.Course.Title ?? "Unknown Course",
+                    QuizTitle = uq.Quiz.Title,
+                    Score = uq.Score ?? 0,
+                    FullMarks = uq.Quiz.TotalScore ?? 0
+                })
+                .ToListAsync();
+
+            if (!quizResults.Any())
+            {
+                return Ok(new { message = "No quiz data available for this school." });
+            }
+
+            // Group results by course and student
+            var groupedResults = quizResults
+                .GroupBy(q => q.CourseTitle)
+                .Select(courseGroup => new
+                {
+                    CourseTitle = courseGroup.Key,
+                    Students = courseGroup
+                        .GroupBy(s => s.StudentId)
+                        .Select(studentGroup => new
+                        {
+                            StudentId = studentGroup.Key,
+                            StudentName = studentGroup.First().StudentName,
+                            Quizzes = studentGroup.Select(q => new
+                            {
+                                QuizTitle = q.QuizTitle,
+                                Score = q.Score,
+                                FullMarks = q.FullMarks
+                            }).ToList(),
+                            TotalScore = studentGroup.Sum(q => q.Score),
+                            TotalFullMarks = studentGroup.Sum(q => q.FullMarks)
+                        }).ToList()
+                }).ToList();
+
+            // Calculate overall total scores
+            int totalScore = quizResults.Sum(q => q.Score);
+            int totalFullMarks = quizResults.Sum(q => q.FullMarks);
+
+            var result = new
+            {
+                TotalScore = totalScore,
+                TotalFullMarks = totalFullMarks,
+                Courses = groupedResults
+            };
+
+            return Ok(result);
+        }
+
+
+
         [HttpPost("GetCourseGrades")]
         public async Task<IActionResult> GetCourseGrades([FromBody] IdModel model)
         {

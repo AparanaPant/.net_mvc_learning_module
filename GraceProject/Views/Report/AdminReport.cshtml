@@ -11,12 +11,14 @@
     <!-- Search Form -->
     <div class="row mb-4">
         <!-- Search Type -->
+        <!-- Search Type -->
         <div class="col-md-3">
             <label for="searchType" class="form-label">Search By</label>
             <select id="searchType" class="form-control">
                 <option value="student">Student Name</option>
                 <option value="course">Course Name</option>
                 <option value="educator">Educator Name</option>
+                <option value="school">School Name</option>  <!-- New Option -->
             </select>
         </div>
 
@@ -78,63 +80,77 @@
             setupSearchForOptions();
         });
 
-        // Setup Search For options based on Search Type
-        function setupSearchForOptions() {
-            let searchType = $('#searchType').val();
-            let searchForDropdown = $('#searchFor');
-            searchForDropdown.empty();
+                    function setupSearchForOptions() {
+                    let searchType = $('#searchType').val();
+                    let searchForDropdown = $('#searchFor');
+                    searchForDropdown.empty();
 
-            if (searchType === 'student') {
-                searchForDropdown.append(new Option("Grades", "grades"));
-                searchForDropdown.append(new Option("Time Spent on Slides", "timeSpent"));
-                searchForDropdown.append(new Option("Number of Slides Viewed", "slidesViewed"));
-            } else if (searchType === 'course' || searchType === 'educator') {
-                searchForDropdown.append(new Option("Grades", "grades"));
-            } else {
-                searchForDropdown.append(new Option("Please select", ""));
-            }
-        }
+                    if (searchType === 'student') {
+                        searchForDropdown.append(new Option("Grades", "grades"));
+                        searchForDropdown.append(new Option("Time Spent on Slides", "timeSpent"));
+                        searchForDropdown.append(new Option("Number of Slides Viewed", "slidesViewed"));
+                    } else if (searchType === 'course' || searchType === 'educator') {
+                        searchForDropdown.append(new Option("Grades", "grades"));
+                    } else if (searchType === 'school') {  // New condition for School
+                        searchForDropdown.append(new Option("Grades", "grades"));
+                        searchForDropdown.append(new Option("Time Spent on Slides", "timeSpent"));
+                        searchForDropdown.append(new Option("Number of Slides Viewed", "slidesViewed"));
+                    } else {
+                        searchForDropdown.append(new Option("Please select", ""));
+                    }
+                }
+
 
         // Setup autocomplete based on search type
-        function setupAutocomplete() {
-            let searchType = $('#searchType').val();
-            let url = searchType === 'student' ? '/Report/Report/GetStudentList' :
-                      searchType === 'course' ? '/Report/Report/GetCourseList' :
-                      '/Report/Report/GetEducatorList';
+                function setupAutocomplete() {
+                let searchType = $('#searchType').val();
 
-            $('#searchValue').autocomplete({
-                source: function (request, response) {
-                    $.ajax({
-                        url: url,
-                        type: 'POST',
-                        contentType: 'application/json; charset=utf-8',
-                        dataType: 'json',
-                        data: JSON.stringify({ keyword: request.term }),
-                        success: function (data) {
-                                response($.map(data, function (item) {
-                                let labelText = searchType === 'student'
-                                    ? `${item.name} (${item.email})`  
-                                    : item.name;  
-                                return {
-                                    label: labelText,
-                                    value: item.id
-                                };
-                            }));
-
-                        },
-                        error: function (xhr, status, error) {
-                            console.log("AJAX Error:", error);
-                        }
-                    });
-                },
-                select: function (event, ui) {
-                    $('#searchValue').val(ui.item.label);
-                    $('#selectedId').val(ui.item.value);
-                    loadSessions(ui.item.value);
-                    return false;
+                // Disable sessions if "school" is selected
+                if (searchType === 'school') {
+                    $('#dynamicDropdown').prop('disabled', true);  // Disable sessions dropdown
+                } else {
+                    $('#dynamicDropdown').prop('disabled', false); // Enable for others
                 }
-            });
-        }
+
+               let url = searchType === 'student' ? '/Report/Report/GetStudentList' :
+                        searchType === 'course' ? '/Report/Report/GetCourseList' :
+                        searchType === 'educator' ? '/Report/Report/GetEducatorList' :
+                        searchType === 'school' ? '/Report/Report/GetSchoolList' : 
+                        '';
+
+                $('#searchValue').autocomplete({
+                    source: function (request, response) {
+                        $.ajax({
+                            url: url,
+                            type: 'POST',
+                            contentType: 'application/json; charset=utf-8',
+                            dataType: 'json',
+                            data: JSON.stringify({ keyword: request.term }),
+                            success: function (data) {
+                                   response($.map(data, function (item) {
+                                    let labelText = searchType === 'student'
+                                        ? `${item.name} (${item.email})` 
+                                        : item.name;
+
+                                    return {
+                                        label: labelText,
+                                        value: item.id
+                                    };
+                                }));
+                            },
+                            error: function (xhr, status, error) {
+                                console.log("AJAX Error:", error);
+                            }
+                        });
+                    },
+                    select: function (event, ui) {
+                        $('#searchValue').val(ui.item.label);
+                        $('#selectedId').val(ui.item.value);
+                        return false;
+                    }
+                });
+            }
+
 
         // Load sessions based on selected type
         function loadSessions(selectedId) {
@@ -162,20 +178,75 @@
         }
 
         // Handle Search Button Click
-        $('#searchBtn').click(function () {
-            let selectedSession = $('#dynamicDropdown').val();
-            let searchType = $('#searchType').val();
-            let searchFor = $('#searchFor').val();
-            let studentId = $('#selectedId').val();
+           $('#searchBtn').click(function () {
+        let selectedSession = $('#dynamicDropdown').val();
+        let searchType = $('#searchType').val();
+        let searchFor = $('#searchFor').val();
+        let schoolId = $('#selectedId').val();
 
-            if (searchType === 'student' && searchFor === 'grades' && selectedSession) {
-                fetchGrades(studentId, selectedSession);
-            } else if (searchType === 'course' && searchFor === 'grades' && selectedSession) {
-                fetchCourseGrades(selectedSession); 
-            } else {
-                $('#resultsContent').text('Please select a session.');
+        if (searchType === 'school' && searchFor === 'grades') {
+            fetchSchoolGrades(schoolId);
+        } else if (searchType === 'student' && searchFor === 'grades' && selectedSession) {
+            fetchGrades(studentId, selectedSession);
+        } else if (searchType === 'course' && searchFor === 'grades' && selectedSession) {
+            fetchCourseGrades(selectedSession);
+        } else {
+            $('#resultsContent').text('Please select a session.');
+        }
+    });
+
+    // Fetch School Grades Function
+        function fetchSchoolGrades(schoolId) {
+        $.ajax({
+            url: '/Report/Report/GetSchoolGrades',
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            data: JSON.stringify({ Id: schoolId }),
+            success: function (data) {
+                let resultsContent = $('#resultsContent');
+                resultsContent.empty();
+
+                if (data && data.Courses && data.Courses.length > 0) {
+                    let gradeTable = `<table class="table table-bordered">
+                        <thead><tr><th>Course</th><th>Student Name</th><th>Quiz Title</th><th>Score</th><th>Full Marks</th></tr></thead><tbody>`;
+
+                    let quizTitles = [];
+                    let scores = [];
+                    let fullMarks = [];
+
+                    data.Courses.forEach(function (course) {
+                        course.Students.forEach(function (student) {
+                            student.Quizzes.forEach(function (quiz) {
+                                gradeTable += `<tr>
+                                    <td>${course.CourseTitle}</td>
+                                    <td>${student.StudentName}</td>
+                                    <td>${quiz.QuizTitle}</td>
+                                    <td>${quiz.Score}</td>
+                                    <td>${quiz.FullMarks}</td>
+                                </tr>`;
+                                quizTitles.push(quiz.QuizTitle);
+                                scores.push(quiz.Score);
+                                fullMarks.push(quiz.FullMarks);
+                            });
+                        });
+                    });
+
+                    gradeTable += `<tr class="font-weight-bold"><td colspan="3">Total</td><td>${data.TotalScore}</td><td>${data.TotalFullMarks}</td></tr></tbody></table>`;
+                    resultsContent.html(gradeTable);
+
+                    // Render Charts
+                    renderPieChart(quizTitles, scores);
+                    renderBarChart(quizTitles, scores, fullMarks);
+                } else {
+                    resultsContent.text("No quiz data available for this school.");
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Failed to fetch school quiz data:", error);
             }
         });
+    }
 
         // Fetch Grades Function
         function fetchGrades(studentId, sessionId) {
@@ -191,7 +262,7 @@
                      console.log("Grades received:", data);  // Log received data
                        console.log("QuizResults:", data.QuizResults);  // Log QuizResults array
 
-                    if (data && Array.isArray(data.quizResults) && data.quizResults.length > 0) {  
+                    if (data && data.Courses && data.Courses.length > 0) {
 
                         let gradeTable = `<table class="table table-bordered"><thead><tr><th>Quiz Title</th><th>Score</th><th>Full Marks</th></tr></thead><tbody>`;
                                console.log("Received Data:", data);  // Add this to debug
