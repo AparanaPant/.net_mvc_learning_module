@@ -101,22 +101,22 @@
                 }
 
 
-        // Setup autocomplete based on search type
-                function setupAutocomplete() {
+                // Setup autocomplete based on search type
+                 function setupAutocomplete() {
                 let searchType = $('#searchType').val();
 
-                // Disable sessions if "school" is selected
+                // Disable sessions if "school" is selected, otherwise enable
                 if (searchType === 'school') {
-                    $('#dynamicDropdown').prop('disabled', true);  // Disable sessions dropdown
+                    $('#dynamicDropdown').prop('disabled', true).empty().append('<option value="">Please select</option>');
                 } else {
-                    $('#dynamicDropdown').prop('disabled', false); // Enable for others
+                    $('#dynamicDropdown').prop('disabled', false); // Enable for other cases
                 }
 
-               let url = searchType === 'student' ? '/Report/Report/GetStudentList' :
-                        searchType === 'course' ? '/Report/Report/GetCourseList' :
-                        searchType === 'educator' ? '/Report/Report/GetEducatorList' :
-                        searchType === 'school' ? '/Report/Report/GetSchoolList' : 
-                        '';
+                let url = searchType === 'student' ? '/Report/Report/GetStudentList' :
+                          searchType === 'course' ? '/Report/Report/GetCourseList' :
+                          searchType === 'educator' ? '/Report/Report/GetEducatorList' :
+                          searchType === 'school' ? '/Report/Report/GetSchoolList' :
+                          '';
 
                 $('#searchValue').autocomplete({
                     source: function (request, response) {
@@ -127,9 +127,9 @@
                             dataType: 'json',
                             data: JSON.stringify({ keyword: request.term }),
                             success: function (data) {
-                                   response($.map(data, function (item) {
+                                response($.map(data, function (item) {
                                     let labelText = searchType === 'student'
-                                        ? `${item.name} (${item.email})` 
+                                        ? `${item.name} (${item.email})`
                                         : item.name;
 
                                     return {
@@ -146,11 +146,16 @@
                     select: function (event, ui) {
                         $('#searchValue').val(ui.item.label);
                         $('#selectedId').val(ui.item.value);
+
+                        // Load sessions dynamically only if the selected type requires it
+                        if (searchType !== 'school') {
+                            loadSessions(ui.item.value);
+                        }
+
                         return false;
                     }
                 });
             }
-
 
         // Load sessions based on selected type
         function loadSessions(selectedId) {
@@ -178,20 +183,29 @@
         }
 
         // Handle Search Button Click
-           $('#searchBtn').click(function () {
+              $('#searchBtn').off('click').on('click', function () {
+        console.log("Search Button Clicked");
+
         let selectedSession = $('#dynamicDropdown').val();
         let searchType = $('#searchType').val();
         let searchFor = $('#searchFor').val();
-        let schoolId = $('#selectedId').val();
+        let selectedId = $('#selectedId').val(); // Corrected this
+
+        console.log(`SearchType: ${searchType}, SearchFor: ${searchFor}, SelectedID: ${selectedId}, Session: ${selectedSession}`);
+
+        if (!selectedId) {
+            $('#resultsContent').text('Please select a valid value from the dropdown.');
+            return;
+        }
 
         if (searchType === 'school' && searchFor === 'grades') {
-            fetchSchoolGrades(schoolId);
+            fetchSchoolGrades(selectedId);
         } else if (searchType === 'student' && searchFor === 'grades' && selectedSession) {
-            fetchGrades(studentId, selectedSession);
+            fetchGrades(selectedId, selectedSession);  // Corrected this
         } else if (searchType === 'course' && searchFor === 'grades' && selectedSession) {
             fetchCourseGrades(selectedSession);
         } else {
-            $('#resultsContent').text('Please select a session.');
+            $('#resultsContent').text('Please select a valid search option.');
         }
     });
 
@@ -248,8 +262,8 @@
         });
     }
 
-        // Fetch Grades Function
-        function fetchGrades(studentId, sessionId) {
+            // Fetch Grades Function
+                function fetchGrades(studentId, sessionId) {
             $.ajax({
                 url: '/Report/Report/GetStudentGrades',
                 type: 'POST',
@@ -259,24 +273,25 @@
                 success: function (data) {
                     let resultsContent = $('#resultsContent');
                     resultsContent.empty();
-                     console.log("Grades received:", data);  // Log received data
-                       console.log("QuizResults:", data.QuizResults);  // Log QuizResults array
 
-                    if (data && data.Courses && data.Courses.length > 0) {
+                    console.log("Grades received:", data);
+                    console.log("QuizResults:", data.quizResults);
 
-                        let gradeTable = `<table class="table table-bordered"><thead><tr><th>Quiz Title</th><th>Score</th><th>Full Marks</th></tr></thead><tbody>`;
-                               console.log("Received Data:", data);  // Add this to debug
+                    // Check if quizResults exists
+                    if (data && data.quizResults && data.quizResults.length > 0) {
 
-                                    data.quizResults.forEach(function (quiz) {
-                                        console.log("Quiz Data:", quiz);  // Log each quiz item to debug
+                        let gradeTable = `<table class="table table-bordered">
+                            <thead><tr><th>Quiz Title</th><th>Score</th><th>Full Marks</th></tr></thead><tbody>`;
 
-                                        gradeTable += `
-                                            <tr>
-                                                <td>${quiz.quizTitle}</td>    <!-- Use lowercase properties -->
-                                                <td>${quiz.score}</td>
-                                                <td>${quiz.fullMarks}</td>
-                                            </tr>`;
-                                    });
+                        data.quizResults.forEach(function (quiz) {
+                            console.log("Quiz Data:", quiz);  // Log each quiz item
+
+                            gradeTable += `<tr>
+                                <td>${quiz.quizTitle}</td>
+                                <td>${quiz.score}</td>
+                                <td>${quiz.fullMarks}</td>
+                            </tr>`;
+                        });
 
                         gradeTable += `<tr class="font-weight-bold"><td>Total</td><td>${data.totalScore}</td><td>${data.totalFullMarks}</td></tr></tbody></table>`;
                         resultsContent.html(gradeTable);
@@ -289,6 +304,7 @@
                 }
             });
         }
+
 
            function fetchCourseGrades(sessionId) {
         $('#resultsContent').html("<div class='text-center'><span class='spinner-border'></span> Loading grades...</div>");
