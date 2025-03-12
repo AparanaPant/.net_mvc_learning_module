@@ -86,8 +86,6 @@ namespace GraceProject.Controllers.Report
             return Ok(courses);
         }
 
-
-        // Get Sessions By Student
         // Get Sessions By Student
         [HttpPost("GetSessionsByStudent")]
         public IActionResult GetSessionsByStudent([FromBody] IdModel idModel)
@@ -179,14 +177,15 @@ namespace GraceProject.Controllers.Report
             // model.Keyword -> Student ID
 
             var quizResults = await _context.UserQuizzes
-                .Where(uq => uq.UserId == model.Keyword && uq.Quiz.SessionID == model.Id)
-                .Select(uq => new
-                {
-                    QuizTitle = uq.Quiz.Title,
-                    Score = uq.Score ?? 0,
-                    FullMarks = uq.Quiz.TotalScore ?? 0
-                })
-                .ToListAsync();
+          .Where(uq => uq.UserId == model.Keyword
+                       && uq.Quiz.CourseID == model.CourseID) // Filter only by CourseID
+          .Select(uq => new
+          {
+              QuizTitle = uq.Quiz.Title,
+              Score = uq.Score ?? 0,
+              FullMarks = uq.Quiz.TotalScore ?? 0
+          })
+          .ToListAsync();
 
             int totalScore = quizResults.Sum(q => q.Score);
             int totalFullMarks = quizResults.Sum(q => q.FullMarks);
@@ -360,6 +359,78 @@ namespace GraceProject.Controllers.Report
                 Students = students
             };
 
+            return Ok(result);
+        }
+        [HttpPost("GetEducatorCourseGrades")]
+        public async Task<IActionResult> GetEducatorCourseGrades([FromBody] EducatorCourseModel model)
+        {
+            Console.WriteLine("✅ API Hit: GetEducatorCourseGrades");
+
+            if (_context.Course == null)
+            {
+                Console.WriteLine("❌ ERROR: Courses table is null");
+                return NotFound("Courses table is not available.");
+            }
+
+            var course = await _context.Course.FirstOrDefaultAsync(c => c.CourseID == model.CourseID);
+            if (course == null)
+            {
+                Console.WriteLine($"❌ ERROR: Course not found for CourseID: {model.CourseID}");
+                return NotFound("Course not found.");
+            }
+
+            Console.WriteLine($"✅ Course Found: {course.Title}");
+
+            var studentSessions = await _context.StudentSessions
+                .Where(ss => ss.Session.CourseID == model.CourseID)
+                .ToListAsync();
+
+            Console.WriteLine($"✅ Students Found: {studentSessions.Count}");
+
+            var users = await _context.Users.ToListAsync();
+            var quizzes = await _context.Quizzes
+                .Where(q => q.CourseID == model.CourseID)
+                .ToListAsync();
+            var userQuizzes = await _context.UserQuizzes.ToListAsync();
+
+            Console.WriteLine($"✅ Quizzes Found: {quizzes.Count}");
+            Console.WriteLine($"✅ User Quizzes Found: {userQuizzes.Count}");
+
+            var students = studentSessions
+                .AsEnumerable()
+                .Select(ss => new StudentQuizResultViewModel
+                {
+                    StudentId = ss.StudentID,
+                    StudentName = users
+                        .Where(u => u.Id.ToString() == ss.StudentID)
+                        .Select(u => u.FirstName + " " + u.LastName)
+                        .FirstOrDefault() ?? "Unknown Student",
+                    Quizzes = quizzes
+                        .Select(q => new EducatorQuizResultViewModel
+                        {
+                            QuizTitle = q.Title,
+                            TotalScore = q.TotalScore ?? 0,
+                            ObtainedScore = userQuizzes
+                                .Where(uq => uq.UserId == ss.StudentID && uq.QuizId == q.QuizId)
+                                .Sum(uq => uq.Score) ?? 0
+                        }).ToList()
+                }).ToList();
+
+            Console.WriteLine($"✅ Final Students Count: {students.Count}");
+
+            if (students.Count == 0)
+            {
+                Console.WriteLine("⚠️ No grades available for this course.");
+                return Ok(new { message = "No grades available for this course." });
+            }
+
+            var result = new TeacherGradebookViewModel
+            {
+                CourseTitle = course.Title ?? "Unknown Course",
+                Students = students
+            };
+
+            Console.WriteLine("✅ Returning Data to Frontend");
             return Ok(result);
         }
 
