@@ -248,10 +248,13 @@ namespace GraceProject.Controllers.Report
         }
 
         [HttpPost("GetSchoolGrades")]
-        public async Task<IActionResult> GetSchoolGrades([FromBody] IdModel model)
+        public async Task<IActionResult> GetSchoolGrades([FromBody] SchoolCourseRequestModel model)
         {
+            int schoolId = model.Id;
+            string? courseId = model.CourseID; // Course ID is now properly accessible
+
             var studentIds = await _context.UserSchools
-                .Where(us => us.SchoolID == Convert.ToInt32(model.Id))
+                .Where(us => us.SchoolID == schoolId)
                 .Select(us => us.UserID)
                 .ToListAsync();
 
@@ -260,7 +263,7 @@ namespace GraceProject.Controllers.Report
                 return Ok(new { message = "No students found for this school." });
             }
 
-            // Get date range using the common method
+            // Get date range
             var dateRange = GetDateRange(model.DateFilter, model.StartDate, model.EndDate);
             if (dateRange == null)
             {
@@ -270,8 +273,12 @@ namespace GraceProject.Controllers.Report
             DateTime startDate = dateRange.Value.startDate;
             DateTime endDate = dateRange.Value.endDate;
 
+            // Fetch quiz results, filtering by Course ID if provided
             var quizResults = await _context.UserQuizzes
-                .Where(uq => studentIds.Contains(uq.UserId) && uq.Quiz.CreatedAt >= startDate && uq.Quiz.CreatedAt <= endDate) // Apply date filter
+                .Where(uq => studentIds.Contains(uq.UserId)
+                    && uq.Quiz.CreatedAt >= startDate
+                    && uq.Quiz.CreatedAt <= endDate
+                    && (courseId == null || uq.Quiz.CourseID == courseId)) 
                 .Select(uq => new
                 {
                     StudentId = uq.UserId,
@@ -279,21 +286,28 @@ namespace GraceProject.Controllers.Report
                         .Where(u => u.Id == uq.UserId)
                         .Select(u => u.FirstName + " " + u.LastName)
                         .FirstOrDefault(),
+                    CourseId = uq.Quiz.CourseID,
                     CourseTitle = uq.Quiz.Course.Title,
                     QuizTitle = uq.Quiz.Title,
                     Score = uq.Score ?? 0,
-                    FullMarks = uq.Quiz.TotalScore ?? 0
+                    FullMarks = uq.Quiz.TotalScore ?? 0,
+                    QuizDate = uq.Quiz.CreatedAt
                 })
-                .Where(q => q.CourseTitle != null)
                 .ToListAsync();
 
-            // 🔹 Filter out "Unknown Course" and null values
             var groupedResults = quizResults
                 .Where(q => !string.IsNullOrEmpty(q.CourseTitle) && q.CourseTitle != "Unknown Course")
                 .GroupBy(q => q.CourseTitle)
                 .Select(courseGroup => new
                 {
+                    CourseId = courseGroup.First().CourseId,
                     CourseTitle = courseGroup.Key,
+                    TotalQuizzes = courseGroup.Count(),
+                    TotalStudents = courseGroup.Select(q => q.StudentId).Distinct().Count(),
+                    AverageScore = courseGroup.Average(q => q.Score),
+                    TotalScore = courseGroup.Sum(q => q.Score),
+                    TotalFullMarks = courseGroup.Sum(q => q.FullMarks),
+                    PassPercentage = (courseGroup.Count(q => q.Score >= q.FullMarks * 0.5) * 100.0) / courseGroup.Count(),
                     Students = courseGroup
                         .GroupBy(s => s.StudentId)
                         .Select(studentGroup => new
@@ -304,15 +318,17 @@ namespace GraceProject.Controllers.Report
                             {
                                 QuizTitle = q.QuizTitle,
                                 Score = q.Score,
-                                FullMarks = q.FullMarks
-                            }).ToList(),
+                                FullMarks = q.FullMarks,
+                                Percentage = (q.FullMarks > 0) ? Math.Round((q.Score / (double)q.FullMarks) * 100, 2) : 0,
+                                QuizDate = q.QuizDate
+                            }).OrderBy(q => q.QuizDate).ToList(),
                             TotalScore = studentGroup.Sum(q => q.Score),
-                            TotalFullMarks = studentGroup.Sum(q => q.FullMarks)
-                        }).ToList()
+                            TotalFullMarks = studentGroup.Sum(q => q.FullMarks),
+                            OverallPercentage = (studentGroup.Sum(q => q.Score) / (double)studentGroup.Sum(q => q.FullMarks)) * 100
+                        }).OrderByDescending(s => s.OverallPercentage).ToList()
                 })
                 .ToList();
 
-            // Handle case where all invalid courses were filtered out
             if (!groupedResults.Any())
             {
                 return Ok(new { message = "No valid courses found in the selected date range." });
@@ -320,13 +336,24 @@ namespace GraceProject.Controllers.Report
 
             var result = new
             {
-                TotalScore = quizResults.Sum(q => q.Score),
-                TotalFullMarks = quizResults.Sum(q => q.FullMarks),
+                SchoolId = schoolId,
+                SchoolName = _context.Schools.Where(s => s.SchoolID == schoolId).Select(s => s.SchoolName).FirstOrDefault(),
+                SelectedCourseId = courseId,
+                SelectedCourseTitle = courseId != null
+                ? _context.Course.Where(c => c.CourseID == courseId).Select(c => c.Title).FirstOrDefault()
+                : "All Courses",
+                TotalStudents = studentIds.Count,
+                TotalQuizzes = quizResults.Count,
+                OverallAverageScore = quizResults.Any() ? quizResults.Average(q => q.Score) : 0,
+                OverallPassPercentage = quizResults.Any()
+                    ? (quizResults.Count(q => q.Score >= q.FullMarks * 0.5) * 100.0) / quizResults.Count()
+                    : 0,
                 Courses = groupedResults
             };
 
             return Ok(result);
         }
+
 
         [HttpPost("GetCourseGrades")]
         public async Task<IActionResult> GetCourseGrades([FromBody] IdModel model)

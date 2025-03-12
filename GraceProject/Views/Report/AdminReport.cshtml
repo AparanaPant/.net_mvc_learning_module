@@ -18,7 +18,7 @@
                 <option value="student">Student Name</option>
                 <option value="course">Course Name</option>
                 <option value="educator">Educator Name</option>
-                <option value="school">School Name</option>  <!-- New Option -->
+                <option value="school">School Name</option>  
             </select>
         </div>
 
@@ -112,58 +112,55 @@
             setupSearchForOptions();
         });
 
-                    function setupSearchForOptions() {
-                    let searchType = $('#searchType').val();
-                    let searchForDropdown = $('#searchFor');
-                    searchForDropdown.empty();
+            function setupSearchForOptions() {
+            let searchType = $('#searchType').val();
+            let searchForDropdown = $('#searchFor');
+            searchForDropdown.empty();
 
-                    if (searchType === 'student') {
-                        searchForDropdown.append(new Option("Grades", "grades"));
-                        searchForDropdown.append(new Option("Time Spent on Slides", "timeSpent"));
-                        searchForDropdown.append(new Option("Number of Slides Viewed", "slidesViewed"));
-                    } else if (searchType === 'course' || searchType === 'educator') {
-                        searchForDropdown.append(new Option("Grades", "grades"));
-                    } else if (searchType === 'school') {  // New condition for School
-                        searchForDropdown.append(new Option("Grades", "grades"));
-                        searchForDropdown.append(new Option("Time Spent on Slides", "timeSpent"));
-                        searchForDropdown.append(new Option("Number of Slides Viewed", "slidesViewed"));
-                    } else {
-                        searchForDropdown.append(new Option("Please select", ""));
-                    }
-                }
+            if (searchType === 'student') {
+                searchForDropdown.append(new Option("Grades", "grades"));
+                searchForDropdown.append(new Option("Time Spent on Slides", "timeSpent"));
+                searchForDropdown.append(new Option("Number of Slides Viewed", "slidesViewed"));
+            } else if (searchType === 'course' || searchType === 'educator') {
+                searchForDropdown.append(new Option("Grades", "grades"));
+            } else if (searchType === 'school') {  // New condition for School
+                searchForDropdown.append(new Option("Grades", "grades"));
+                searchForDropdown.append(new Option("Time Spent on Slides", "timeSpent"));
+                searchForDropdown.append(new Option("Number of Slides Viewed", "slidesViewed"));
+            } else {
+                searchForDropdown.append(new Option("Please select", ""));
+            }
+        }
 
 
                 // Setup autocomplete based on search type
-                    function setupAutocomplete() {
+            function setupAutocomplete() {
         let searchType = $('#searchType').val();
         let dynamicDropdownLabel = $("#dynamicDropdownLabel");
         let dynamicDropdown = $('#dynamicDropdown');
 
-        // Handle dropdown behavior based on search type
-        if (searchType === 'school') {
-            $('#dynamicDropdown').prop('disabled', true).empty().append('<option value="">Please select</option>');
+        // Enable the dropdown for schools as well
+        if (searchType === 'school' || searchType === 'student' || searchType === 'educator') {
+            $('#dynamicDropdown').prop('disabled', false);
+            dynamicDropdownLabel.text("Select Course");  // Show course selection
+            loadCourses();  // Load courses for schools, students, and educators
+        } else if (searchType === 'course') {
+            dynamicDropdownLabel.text("Select Session");
         } else {
-            $('#dynamicDropdown').prop('disabled', false); // Enable for other cases
+            $('#dynamicDropdown').prop('disabled', true).empty().append('<option value="">Please select</option>');
         }
 
         let url = "";
         if (searchType === 'student') {
             url = '/Report/Report/GetStudentList';
-            dynamicDropdownLabel.text("Select Course");  // Show Course dropdown
-            loadCourses();  // Load courses for students
         } else if (searchType === 'course') {
             url = '/Report/Report/GetCourseList';
-            dynamicDropdownLabel.text("Select Session");  // Show Session dropdown
         } else if (searchType === 'educator') {
             url = '/Report/Report/GetEducatorList';
-            dynamicDropdownLabel.text("Select Course");  // Show Course dropdown
-            loadCourses();  // Load courses for educators
         } else if (searchType === 'school') {
             url = '/Report/Report/GetSchoolList';
-            dynamicDropdownLabel.text("Select Session");  // No course selection for schools
         }
 
-        // Setup jQuery Autocomplete
         $('#searchValue').autocomplete({
             source: function (request, response) {
                 $.ajax({
@@ -174,18 +171,11 @@
                     data: JSON.stringify({ keyword: request.term }),
                     success: function (data) {
                         response($.map(data, function (item) {
-                            let labelText = searchType === 'student'
-                                ? `${item.name} (${item.email})`
-                                : item.name;
-
                             return {
-                                label: labelText,
+                                label: item.name,
                                 value: item.id
                             };
                         }));
-                    },
-                    error: function (xhr, status, error) {
-                        console.log("AJAX Error:", error);
                     }
                 });
             },
@@ -193,10 +183,10 @@
                 $('#searchValue').val(ui.item.label);
                 $('#selectedId').val(ui.item.value);
 
-                // Load courses instead of sessions for Student & Educator
-                if (searchType === 'student' || searchType === 'educator') {
+                // Load courses for schools, students, and educators
+                if (searchType === 'student' || searchType === 'educator' || searchType === 'school') {
                     loadCourses();
-                } else if (searchType !== 'school') {
+                } else {
                     loadSessions(ui.item.value);
                 }
 
@@ -250,38 +240,40 @@
         }
 
         // Handle Search Button Click
-            $('#searchBtn').off('click').on('click', function () {
+            // Handle Search Button Click
+    $('#searchBtn').off('click').on('click', function () {
         console.log("Search Button Clicked");
 
-        let selectedDropdownValue = $('#dynamicDropdown').val(); // Could be CourseID or SessionID
+        let selectedDropdownValue = $('#dynamicDropdown').val(); // This is the CourseID
         let searchType = $('#searchType').val();
         let searchFor = $('#searchFor').val();
-        let selectedId = $('#selectedId').val();
+        let selectedId = $('#selectedId').val(); // This is the SchoolID, StudentID, or EducatorID
         let dateFilter = $('#dateFilterType').val();
         let startDate = $('#startDate').val();
         let endDate = $('#endDate').val();
 
-        console.log(`SearchType: ${searchType}, SearchFor: ${searchFor}, SelectedID: ${selectedId}, SelectedDropdownValue: ${selectedDropdownValue}`);
+        console.log(`SearchType: ${searchType}, SearchFor: ${searchFor}, SelectedID: ${selectedId}, SelectedCourseID: ${selectedDropdownValue}`);
 
         if (!selectedId) {
             $('#resultsContent').text('Please select a valid value from the dropdown.');
             return;
         }
-            if (searchType === 'student' && searchFor === 'grades' && selectedDropdownValue) {
-                fetchGrades(selectedId, selectedDropdownValue, dateFilter, startDate, endDate);
-            } else if (searchType === 'educator' && searchFor === 'grades' && selectedDropdownValue) {
-                fetchEducatorCourseGrades(selectedId, selectedDropdownValue, dateFilter, startDate, endDate);
-            } else if (searchType === 'course' && searchFor === 'grades' && selectedDropdownValue) {
-                fetchCourseGrades(selectedDropdownValue, dateFilter, startDate, endDate);
-            } else if (searchType === 'school' && searchFor === 'grades') {
-                fetchSchoolGrades(selectedId, dateFilter, startDate, endDate);
-            } else {
-                $('#resultsContent').text('Please select a valid search option.');
-            }
+
+        if (searchType === 'student' && searchFor === 'grades' && selectedDropdownValue) {
+            fetchGrades(selectedId, selectedDropdownValue, dateFilter, startDate, endDate);
+        } else if (searchType === 'educator' && searchFor === 'grades' && selectedDropdownValue) {
+            fetchEducatorCourseGrades(selectedId, selectedDropdownValue, dateFilter, startDate, endDate);
+        } else if (searchType === 'course' && searchFor === 'grades' && selectedDropdownValue) {
+            fetchCourseGrades(selectedDropdownValue, dateFilter, startDate, endDate);
+        } else if (searchType === 'school' && searchFor === 'grades' && selectedDropdownValue) {
+            fetchSchoolGrades(selectedId, selectedDropdownValue, dateFilter, startDate, endDate); 
+        } else {
+            $('#resultsContent').text('Please select a valid search option.');
+        }
     });
 
 
-        function fetchSchoolGrades(schoolId, dateFilter, startDate, endDate) {
+           function fetchSchoolGrades(schoolId, courseId, dateFilter, startDate, endDate) {
         $.ajax({
             url: '/Report/Report/GetSchoolGrades',
             type: 'POST',
@@ -289,17 +281,17 @@
             dataType: 'json',
             data: JSON.stringify({
                 Id: schoolId,
+                CourseID: courseId, // ✅ Pass Course ID to Backend
                 DateFilter: dateFilter,
                 StartDate: dateFilter === 'custom' ? startDate : null,
                 EndDate: dateFilter === 'custom' ? endDate : null
             }),
             success: function (data) {
                 let resultsContent = $('#resultsContent');
-                resultsContent.empty(); // Clear previous results
+                resultsContent.empty();
 
-                console.log("✅ School Grades received:", data); // Debugging
+                console.log("✅ School Grades received:", data);
 
-                // Check if courses exist in the response
                 if (data && data.courses && data.courses.length > 0) {
                     let content = "";
 
