@@ -364,28 +364,27 @@ namespace GraceProject.Controllers.Report
         [HttpPost("GetEducatorCourseGrades")]
         public async Task<IActionResult> GetEducatorCourseGrades([FromBody] EducatorCourseModel model)
         {
-            Console.WriteLine("✅ API Hit: GetEducatorCourseGrades");
 
             if (_context.Course == null)
             {
-                Console.WriteLine("❌ ERROR: Courses table is null");
+               
                 return NotFound("Courses table is not available.");
             }
 
             var course = await _context.Course.FirstOrDefaultAsync(c => c.CourseID == model.CourseID);
             if (course == null)
             {
-                Console.WriteLine($"❌ ERROR: Course not found for CourseID: {model.CourseID}");
+               
                 return NotFound("Course not found.");
             }
 
-            Console.WriteLine($"✅ Course Found: {course.Title}");
+           
 
             var studentSessions = await _context.StudentSessions
                 .Where(ss => ss.Session.CourseID == model.CourseID)
                 .ToListAsync();
 
-            Console.WriteLine($"✅ Students Found: {studentSessions.Count}");
+            
 
             var users = await _context.Users.ToListAsync();
             var quizzes = await _context.Quizzes
@@ -393,8 +392,7 @@ namespace GraceProject.Controllers.Report
                 .ToListAsync();
             var userQuizzes = await _context.UserQuizzes.ToListAsync();
 
-            Console.WriteLine($"✅ Quizzes Found: {quizzes.Count}");
-            Console.WriteLine($"✅ User Quizzes Found: {userQuizzes.Count}");
+          
 
             var students = studentSessions
                 .AsEnumerable()
@@ -416,11 +414,10 @@ namespace GraceProject.Controllers.Report
                         }).ToList()
                 }).ToList();
 
-            Console.WriteLine($"✅ Final Students Count: {students.Count}");
+         
 
             if (students.Count == 0)
             {
-                Console.WriteLine("⚠️ No grades available for this course.");
                 return Ok(new { message = "No grades available for this course." });
             }
 
@@ -430,7 +427,7 @@ namespace GraceProject.Controllers.Report
                 Students = students
             };
 
-            Console.WriteLine("✅ Returning Data to Frontend");
+           
             return Ok(result);
         }
 

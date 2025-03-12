@@ -250,7 +250,7 @@
 
 
     // Fetch School Grades Function
-        function fetchSchoolGrades(schoolId) {
+            function fetchSchoolGrades(schoolId) {
         $.ajax({
             url: '/Report/Report/GetSchoolGrades',
             type: 'POST',
@@ -259,45 +259,59 @@
             data: JSON.stringify({ Id: schoolId }),
             success: function (data) {
                 let resultsContent = $('#resultsContent');
-                resultsContent.empty();
+                resultsContent.empty(); // Clear previous results
 
-                if (data && data.Courses && data.Courses.length > 0) {
-                    let gradeTable = `<table class="table table-bordered">
-                        <thead><tr><th>Course</th><th>Student Name</th><th>Quiz Title</th><th>Score</th><th>Full Marks</th></tr></thead><tbody>`;
+                console.log("✅ School Grades received:", data); // Debugging
 
-                    let quizTitles = [];
-                    let scores = [];
-                    let fullMarks = [];
+                // Check if courses exist in the response
+                if (data && data.courses && data.courses.length > 0) {
+                    let content = "";
 
-                    data.Courses.forEach(function (course) {
-                        course.Students.forEach(function (student) {
-                            student.Quizzes.forEach(function (quiz) {
-                                gradeTable += `<tr>
-                                    <td>${course.CourseTitle}</td>
-                                    <td>${student.StudentName}</td>
-                                    <td>${quiz.QuizTitle}</td>
-                                    <td>${quiz.Score}</td>
-                                    <td>${quiz.FullMarks}</td>
+                    data.courses.forEach(function (course) {
+                        content += `<h4 class="mt-3">${course.courseTitle}</h4>`;
+                        content += `<table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Student Name</th>
+                                    <th>Quiz Title</th>
+                                    <th>Score</th>
+                                    <th>Full Marks</th>
+                                    <th>Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+
+                        course.students.forEach(function (student) {
+                            if (student.quizzes.length > 0) {
+                                student.quizzes.forEach(function (quiz, index) {
+                                    content += `<tr>
+                                        ${index === 0 ? `<td rowspan="${student.quizzes.length}">${student.studentName}</td>` : ""}
+                                        <td>${quiz.quizTitle}</td>
+                                        <td>${quiz.score}</td>
+                                        <td>${quiz.fullMarks}</td>
+                                        <td>${(quiz.fullMarks > 0) ? ((quiz.score / quiz.fullMarks) * 100).toFixed(2) + "%" : "N/A"}</td>
+                                    </tr>`;
+                                });
+                            } else {
+                                content += `<tr>
+                                    <td>${student.studentName}</td>
+                                    <td colspan="4" class="text-center">No quizzes available</td>
                                 </tr>`;
-                                quizTitles.push(quiz.QuizTitle);
-                                scores.push(quiz.Score);
-                                fullMarks.push(quiz.FullMarks);
-                            });
+                            }
                         });
+
+                        content += `</tbody></table>`;
                     });
 
-                    gradeTable += `<tr class="font-weight-bold"><td colspan="3">Total</td><td>${data.TotalScore}</td><td>${data.TotalFullMarks}</td></tr></tbody></table>`;
-                    resultsContent.html(gradeTable);
-
-                    // Render Charts
-                    renderPieChart(quizTitles, scores);
-                    renderBarChart(quizTitles, scores, fullMarks);
+                    resultsContent.html(content);
                 } else {
-                    resultsContent.text("No quiz data available for this school.");
+                    console.warn("⚠️ No grades found in response:", data);
+                    resultsContent.html("<div class='alert alert-warning'>No grades available for this school.</div>");
                 }
             },
             error: function (xhr, status, error) {
-                console.error("Failed to fetch school quiz data:", error);
+                console.error("❌ Failed to fetch school grades:", error);
+                $('#resultsContent').html("<div class='alert alert-danger'>Failed to load grades. Please try again.</div>");
             }
         });
     }
