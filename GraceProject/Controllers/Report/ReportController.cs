@@ -171,7 +171,6 @@ namespace GraceProject.Controllers.Report
         }
 
         [HttpPost("GetStudentGrades")]
-        [HttpPost("GetStudentGrades")]
         public async Task<IActionResult> GetStudentGrades([FromBody] StudentSessionModel model)
         {
             // Validate input
