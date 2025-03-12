@@ -405,8 +405,8 @@
         });
     }
 
-            // Fetch Grades Function
-        function fetchGrades(studentId, courseId, dateFilter, startDate, endDate) {
+    // Fetch Grades Function
+    function fetchGrades(studentId, courseId, dateFilter, startDate, endDate) {
         $.ajax({
             url: '/Report/Report/GetStudentGrades',
             type: 'POST',
@@ -428,31 +428,55 @@
 
                 if (data && data.quizResults && data.quizResults.length > 0) {
                     let gradeTable = `<table class="table table-bordered">
-                        <thead><tr><th>Quiz Title</th><th>Score</th><th>Full Marks</th><th>Date</th></tr></thead><tbody>`;
+                        <thead>
+                            <tr>
+                                <th>Quiz Title</th>
+                                <th>Score</th>
+                                <th>Full Marks</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
 
                     data.quizResults.forEach(function (quiz) {
                         gradeTable += `<tr>
                             <td>${quiz.quizTitle}</td>
                             <td>${quiz.score}</td>
                             <td>${quiz.fullMarks}</td>
-                            <td>${quiz.date}</td>  <!-- Added Date Column -->
+                            <td>${new Date(quiz.date).toLocaleDateString()}</td>
                         </tr>`;
                     });
 
-                    gradeTable += `<tr class="font-weight-bold"><td>Total</td><td>${data.totalScore}</td><td>${data.totalFullMarks}</td><td></td></tr></tbody></table>`;
-                    resultsContent.html(gradeTable);
+                    gradeTable += `<tr class="font-weight-bold">
+                        <td>Total</td>
+                        <td>${data.totalScore}</td>
+                        <td>${data.totalFullMarks}</td>
+                        <td></td>
+                    </tr>
+                    </tbody></table>`;
+
+                    // Additional summary section
+                    let summary = `<div class="mt-4">
+                        <h5>Summary</h5>
+                        <p><strong>Total Percentage:</strong> ${data.totalPercentage.toFixed(2)}%</p>
+                        <p><strong>Average Score Per Quiz:</strong> ${data.averageScorePerQuiz.toFixed(2)}</p>
+                        <p><strong>Total Quizzes Attempted:</strong> ${data.totalQuizzesAttempted}</p>
+                        <p><strong>Pass Status:</strong> <span class="badge ${data.passStatus === 'Passed' ? 'bg-success' : 'bg-danger'}">${data.passStatus}</span></p>
+                    </div>`;
+
+                    resultsContent.html(gradeTable + summary);
                 } else {
-                    resultsContent.text("No grades available for this selection.");
+                    resultsContent.html("<div class='alert alert-warning'>No grades available for this selection.</div>");
                 }
             },
             error: function (xhr, status, error) {
                 console.error("Failed to fetch grades:", error);
+                resultsContent.html("<div class='alert alert-danger'>Failed to load grades. Please try again.</div>");
             }
         });
     }
 
-
-           function fetchCourseGrades(sessionId, dateFilter, startDate, endDate) {
+     function fetchCourseGrades(sessionId, dateFilter, startDate, endDate) {
         $('#resultsContent').html("<div class='text-center'><span class='spinner-border'></span> Loading grades...</div>");
 
         $.ajax({

@@ -171,10 +171,14 @@ namespace GraceProject.Controllers.Report
         }
 
         [HttpPost("GetStudentGrades")]
+        [HttpPost("GetStudentGrades")]
         public async Task<IActionResult> GetStudentGrades([FromBody] StudentSessionModel model)
         {
-            // model.Id -> Session ID
-            // model.Keyword -> Student ID
+            // Validate input
+            if (model == null || string.IsNullOrEmpty(model.Keyword) || string.IsNullOrEmpty(model.CourseID))
+            {
+                return BadRequest("Invalid request parameters.");
+            }
 
             // Use the common date filter method
             var dateRange = GetDateRange(model.DateFilter, model.StartDate, model.EndDate);
@@ -186,6 +190,7 @@ namespace GraceProject.Controllers.Report
             DateTime startDate = dateRange.Value.startDate;
             DateTime endDate = dateRange.Value.endDate;
 
+            // Fetch quiz results within the selected date range
             var quizResults = await _context.UserQuizzes
                 .Where(uq => uq.UserId == model.Keyword
                              && uq.Quiz.CourseID == model.CourseID
@@ -196,18 +201,33 @@ namespace GraceProject.Controllers.Report
                     QuizTitle = uq.Quiz.Title,
                     Score = uq.Score ?? 0,
                     FullMarks = uq.Quiz.TotalScore ?? 0,
-                    Date = uq.Quiz.CreatedAt // Include date for frontend
+                    Date = uq.Quiz.CreatedAt
                 })
                 .ToListAsync();
 
             int totalScore = quizResults.Sum(q => q.Score);
             int totalFullMarks = quizResults.Sum(q => q.FullMarks);
+            int totalQuizzesAttempted = quizResults.Count;
+
+            // Calculate percentage
+            double totalPercentage = totalFullMarks > 0
+                ? ((double)totalScore / totalFullMarks) * 100
+                : 0;
+
+            // Calculate average score per quiz
+            double averageScorePerQuiz = totalQuizzesAttempted > 0
+                ? (double)totalScore / totalQuizzesAttempted
+                : 0;
 
             var result = new
             {
                 QuizResults = quizResults,
                 TotalScore = totalScore,
-                TotalFullMarks = totalFullMarks
+                TotalFullMarks = totalFullMarks,
+                TotalPercentage = Math.Round(totalPercentage, 2), // Round to 2 decimal places
+                AverageScorePerQuiz = Math.Round(averageScorePerQuiz, 2),
+                TotalQuizzesAttempted = totalQuizzesAttempted,
+                PassStatus = totalPercentage >= 50 ? "Passed" : "Failed" // Example: Pass if ≥ 50%
             };
 
             return Ok(result);
