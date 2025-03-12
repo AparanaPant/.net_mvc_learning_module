@@ -218,7 +218,6 @@ namespace GraceProject.Controllers.Report
         [HttpPost("GetSchoolGrades")]
         public async Task<IActionResult> GetSchoolGrades([FromBody] IdModel model)
         {
-            // Get all students linked to the selected school
             var studentIds = await _context.UserSchools
                 .Where(us => us.SchoolID == Convert.ToInt32(model.Id))
                 .Select(us => us.UserID)
@@ -229,27 +228,26 @@ namespace GraceProject.Controllers.Report
                 return Ok(new { message = "No students found for this school." });
             }
 
-            // Get courses and quizzes taken by these students
             var quizResults = await _context.UserQuizzes
                 .Where(uq => studentIds.Contains(uq.UserId))
                 .Select(uq => new
                 {
                     StudentId = uq.UserId,
-                    StudentName = _context.Users.Where(u => u.Id == uq.UserId).Select(u => u.FirstName + " " + u.LastName).FirstOrDefault(),
-                    CourseTitle = uq.Quiz.Course.Title ?? "Unknown Course",
+                    StudentName = _context.Users
+                        .Where(u => u.Id == uq.UserId)
+                        .Select(u => u.FirstName + " " + u.LastName)
+                        .FirstOrDefault(),
+                    CourseTitle = uq.Quiz.Course.Title, // Course Title (Can be null)
                     QuizTitle = uq.Quiz.Title,
                     Score = uq.Score ?? 0,
                     FullMarks = uq.Quiz.TotalScore ?? 0
                 })
+                .Where(q => q.CourseTitle != null) // ✅ Exclude null CourseTitles
                 .ToListAsync();
 
-            if (!quizResults.Any())
-            {
-                return Ok(new { message = "No quiz data available for this school." });
-            }
-
-            // Group results by course and student
+            // 🔹 Filter out "Unknown Course" and null values
             var groupedResults = quizResults
+                .Where(q => !string.IsNullOrEmpty(q.CourseTitle) && q.CourseTitle != "Unknown Course") // ✅ Ensure valid courses
                 .GroupBy(q => q.CourseTitle)
                 .Select(courseGroup => new
                 {
@@ -269,22 +267,24 @@ namespace GraceProject.Controllers.Report
                             TotalScore = studentGroup.Sum(q => q.Score),
                             TotalFullMarks = studentGroup.Sum(q => q.FullMarks)
                         }).ToList()
-                }).ToList();
+                })
+                .ToList();
 
-            // Calculate overall total scores
-            int totalScore = quizResults.Sum(q => q.Score);
-            int totalFullMarks = quizResults.Sum(q => q.FullMarks);
+            // Handle case where all invalid courses were filtered out
+            if (!groupedResults.Any())
+            {
+                return Ok(new { message = "No valid courses found." });
+            }
 
             var result = new
             {
-                TotalScore = totalScore,
-                TotalFullMarks = totalFullMarks,
+                TotalScore = quizResults.Sum(q => q.Score),
+                TotalFullMarks = quizResults.Sum(q => q.FullMarks),
                 Courses = groupedResults
             };
 
             return Ok(result);
         }
-
 
 
         [HttpPost("GetCourseGrades")]
@@ -418,6 +418,7 @@ namespace GraceProject.Controllers.Report
 
             if (students.Count == 0)
             {
+
                 return Ok(new { message = "No grades available for this course." });
             }
 
