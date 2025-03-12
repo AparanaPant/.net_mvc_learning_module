@@ -444,24 +444,26 @@ namespace GraceProject.Controllers.Report
             DateTime startDate = dateRange.Value.startDate;
             DateTime endDate = dateRange.Value.endDate;
 
+            // Get student sessions
             var studentSessions = await _context.StudentSessions
                 .Where(ss => ss.Session.CourseID == model.CourseID)
                 .ToListAsync();
 
+            // Get all users (students)
             var users = await _context.Users.ToListAsync();
 
-            // Apply date filtering to quizzes
+            // Get quizzes filtered by course and date range
             var quizzes = await _context.Quizzes
                 .Where(q => q.CourseID == model.CourseID && q.CreatedAt >= startDate && q.CreatedAt <= endDate)
                 .ToListAsync();
 
-            // Apply date filtering to user quizzes
+            // Get student quiz results
             var userQuizzes = await _context.UserQuizzes
                 .Where(uq => uq.Quiz.CourseID == model.CourseID && uq.Quiz.CreatedAt >= startDate && uq.Quiz.CreatedAt <= endDate)
                 .ToListAsync();
 
+            // Process and group student results
             var students = studentSessions
-                .AsEnumerable()
                 .Select(ss => new StudentQuizResultViewModel
                 {
                     StudentId = ss.StudentID,
@@ -479,6 +481,15 @@ namespace GraceProject.Controllers.Report
                                 .Sum(uq => uq.Score) ?? 0
                         }).ToList()
                 }).ToList();
+
+            // 🔹 Calculate total score, obtained score, percentage, and grade per student
+            foreach (var student in students)
+            {
+                student.TotalScore = student.Quizzes.Sum(q => q.TotalScore);
+                student.ObtainedScore = student.Quizzes.Sum(q => q.ObtainedScore);
+                student.Percentage = student.TotalScore > 0 ? (student.ObtainedScore / (double)student.TotalScore) * 100 : 0;
+                student.Grade = GetGrade(student.Percentage);
+            }
 
             if (students.Count == 0)
             {

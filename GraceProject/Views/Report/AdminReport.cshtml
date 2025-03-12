@@ -352,7 +352,9 @@
         });
     }
 
-        function fetchEducatorCourseGrades(educatorId, courseId, dateFilter, startDate, endDate) {
+          function fetchEducatorCourseGrades(educatorId, courseId, dateFilter, startDate, endDate) {
+        $('#resultsContent').html("<div class='text-center'><span class='spinner-border'></span> Loading grades...</div>");
+
         $.ajax({
             url: '/Report/Report/GetEducatorCourseGrades',
             type: 'POST',
@@ -361,42 +363,61 @@
             data: JSON.stringify({
                 EducatorID: educatorId,
                 CourseID: courseId,
-                DateFilter: dateFilter,  // Include date filter
+                DateFilter: dateFilter,
                 StartDate: dateFilter === 'custom' ? startDate : null,
                 EndDate: dateFilter === 'custom' ? endDate : null
             }),
             success: function (data) {
                 let resultsContent = $('#resultsContent');
-                resultsContent.empty(); // Clear previous results
+                resultsContent.empty();
 
-                console.log("✅ Grades received:", data); // Debugging
-
-                // Check if students exist in response
-                if (data && data.students && data.students.length > 0) {
-                    let gradeTable = `<table class="table table-bordered">
-                        <thead>
-                            <tr><th>Student Name</th><th>Quiz Title</th><th>Score</th><th>Full Marks</th><th>Date</th></tr>
-                        </thead>
-                        <tbody>`;
-
-                    data.students.forEach(function (student) {
-                        student.quizzes.forEach(function (quiz) {
-                            gradeTable += `<tr>
-                                <td>${student.studentName}</td>
-                                <td>${quiz.quizTitle}</td>
-                                <td>${quiz.obtainedScore}</td>
-                                <td>${quiz.totalScore}</td>
-                                <td>${quiz.date}</td>  <!-- Added Date Column -->
-                            </tr>`;
-                        });
-                    });
-
-                    gradeTable += `</tbody></table>`;
-                    resultsContent.html(gradeTable);
-                } else {
-                    console.warn("⚠️ No grades found in response:", data);
+                if (!data.students || data.students.length === 0) {
                     resultsContent.html("<div class='alert alert-warning'>No grades available for this course.</div>");
+                    return;
                 }
+
+                // 🔹 Course Summary
+                let totalStudents = data.students.length;
+                let totalScore = data.students.reduce((sum, student) => sum + student.totalScore, 0);
+                let totalObtained = data.students.reduce((sum, student) => sum + student.obtainedScore, 0);
+                let avgPercentage = totalScore > 0 ? ((totalObtained / totalScore) * 100).toFixed(2) : "N/A";
+
+                let summaryTable = `<table class="table table-striped table-bordered mt-3">
+                    <thead>
+                        <tr><th colspan="2" class="text-center bg-primary text-white">Course Summary</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>Course Title</strong></td><td>${data.courseTitle}</td></tr>
+                        <tr><td><strong>Total Students</strong></td><td>${totalStudents}</td></tr>
+                        <tr><td><strong>Overall Class Performance</strong></td><td>${avgPercentage}%</td></tr>
+                    </tbody>
+                </table>`;
+
+                // 🔹 Student Performance Table (Grouped by Student)
+                let studentTable = `<table class="table table-bordered mt-4">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Total Score</th>
+                            <th>Percentage</th>
+                            <th>Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+                data.students.forEach((student) => {
+                    let studentPerformance = student.percentage > 0 ? (student.percentage).toFixed(2) : "N/A";
+                    studentTable += `<tr>
+                        <td>${student.studentName}</td>
+                        <td>${student.obtainedScore} / ${student.totalScore}</td>
+                        <td>${studentPerformance}%</td>
+                        <td><span class="badge ${student.grade === 'F' ? 'bg-danger' : 'bg-success'}">${student.grade}</span></td>
+                    </tr>`;
+                });
+
+                studentTable += `</tbody></table>`;
+
+                resultsContent.html(summaryTable + studentTable);
             },
             error: function (xhr, status, error) {
                 console.error("❌ Failed to fetch educator's course grades:", error);
@@ -484,7 +505,17 @@
         });
     }
 
-         function fetchCourseGrades(sessionId, dateFilter, startDate, endDate) {
+           $(document).ready(function () {
+        fetchCourseGrades(sessionId, dateFilter, startDate, endDate);
+
+        // ✅ Use event delegation for dynamically generated buttons
+        $(document).on('click', '.view-details-btn', function () {
+            let index = $(this).data('index'); // Get the student index
+            toggleDetails(index);
+        });
+    });
+
+       function fetchCourseGrades(sessionId, dateFilter, startDate, endDate) {
         $('#resultsContent').html("<div class='text-center'><span class='spinner-border'></span> Loading grades...</div>");
 
         $.ajax({
@@ -525,7 +556,7 @@
                     </tbody>
                 </table>`;
 
-                // 🔹 Student Performance Table (Grouped by Student)
+                // 🔹 Student Performance Table
                 let studentTable = `<table class="table table-bordered mt-4">
                     <thead>
                         <tr>
@@ -533,41 +564,18 @@
                             <th>Total Score</th>
                             <th>Percentage</th>
                             <th>Grade</th>
-                            <th>Details</th>
                         </tr>
                     </thead>
                     <tbody>`;
 
-                data.students.forEach((student, index) => {
+                data.students.forEach((student) => {
                     let studentPerformance = (student.percentage).toFixed(2);
                     studentTable += `<tr>
                         <td>${student.studentName}</td>
                         <td>${student.obtainedScore} / ${student.totalScore}</td>
                         <td>${studentPerformance}%</td>
                         <td><span class="badge ${student.grade === 'F' ? 'bg-danger' : 'bg-success'}">${student.grade}</span></td>
-                        <td><button class="btn btn-info btn-sm" onclick="toggleDetails(${index})">View Details</button></td>
-                    </tr>
-                    <tr id="details-${index}" style="display: none;">
-                        <td colspan="5">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>Quiz Title</th>
-                                        <th>Score</th>
-                                        <th>Full Marks</th>
-                                    </tr>
-                                </thead>
-                                <tbody>`;
-
-                    student.quizzes.forEach(quiz => {
-                        studentTable += `<tr>
-                            <td>${quiz.quizTitle}</td>
-                            <td>${quiz.obtainedScore}</td>
-                            <td>${quiz.totalScore}</td>
-                        </tr>`;
-                    });
-
-                    studentTable += `</tbody></table></td></tr>`;
+                    </tr>`;
                 });
 
                 studentTable += `</tbody></table>`;
@@ -580,15 +588,6 @@
             }
         });
     }
-        function toggleDetails(index) {
-        let row = $(`#details-${index}`);
-        if (row.is(":visible")) {
-            row.hide();
-        } else {
-            row.show();
-        }
-    }
-
 
     });
 </script>
