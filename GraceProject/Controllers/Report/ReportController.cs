@@ -237,17 +237,17 @@ namespace GraceProject.Controllers.Report
                         .Where(u => u.Id == uq.UserId)
                         .Select(u => u.FirstName + " " + u.LastName)
                         .FirstOrDefault(),
-                    CourseTitle = uq.Quiz.Course.Title, // Course Title (Can be null)
+                    CourseTitle = uq.Quiz.Course.Title,
                     QuizTitle = uq.Quiz.Title,
                     Score = uq.Score ?? 0,
                     FullMarks = uq.Quiz.TotalScore ?? 0
                 })
-                .Where(q => q.CourseTitle != null) // ✅ Exclude null CourseTitles
+                .Where(q => q.CourseTitle != null) 
                 .ToListAsync();
 
             // 🔹 Filter out "Unknown Course" and null values
             var groupedResults = quizResults
-                .Where(q => !string.IsNullOrEmpty(q.CourseTitle) && q.CourseTitle != "Unknown Course") // ✅ Ensure valid courses
+                .Where(q => !string.IsNullOrEmpty(q.CourseTitle) && q.CourseTitle != "Unknown Course") 
                 .GroupBy(q => q.CourseTitle)
                 .Select(courseGroup => new
                 {

@@ -86,6 +86,8 @@ namespace GraceProject.Models
         [ForeignKey("User")]
         public string UserId { get; set; }
 
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
         public virtual ApplicationUser User { get; set; }
 
         [ForeignKey("Quiz")]
