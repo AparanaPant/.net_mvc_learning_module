@@ -45,7 +45,27 @@
             </select>
         </div>
 
+        <!-- Date Range Selection -->
+        <div class="col-md-3">
+            <label for="dateFilterType" class="form-label">Date Filter</label>
+            <select id="dateFilterType" class="form-control">
+                <option value="last3months" selected>Last 3 Months</option>
+                <option value="monthly">Monthly</option>
+                <option value="weekly">Weekly</option>
+                <option value="custom">Custom</option>
+            </select>
+        </div>
 
+        <!-- Custom Date Picker (Initially Hidden) -->
+        <div class="col-md-3 custom-date-range d-none">
+            <label for="startDate" class="form-label">Start Date</label>
+            <input type="date" id="startDate" class="form-control">
+        </div>
+
+        <div class="col-md-3 custom-date-range d-none">
+            <label for="endDate" class="form-label">End Date</label>
+            <input type="date" id="endDate" class="form-control">
+        </div>
 
         <!-- Search Button -->
         <div class="col-md-3 mt-2">
@@ -72,6 +92,16 @@
         // Initial setup
         setupAutocomplete();
         setupSearchForOptions();
+
+        // Show/Hide Custom Date Picker
+        $('#dateFilterType').change(function () {
+            if ($(this).val() === 'custom') {
+                $('.custom-date-range').removeClass('d-none');
+            } else {
+                $('.custom-date-range').addClass('d-none');
+            }
+        });
+
 
         // Handle search type change
         $('#searchType').change(function () {
@@ -226,7 +256,10 @@
         let selectedDropdownValue = $('#dynamicDropdown').val(); // Could be CourseID or SessionID
         let searchType = $('#searchType').val();
         let searchFor = $('#searchFor').val();
-        let selectedId = $('#selectedId').val(); // StudentID or EducatorID
+        let selectedId = $('#selectedId').val();
+        let dateFilter = $('#dateFilterType').val();
+        let startDate = $('#startDate').val();
+        let endDate = $('#endDate').val();
 
         console.log(`SearchType: ${searchType}, SearchFor: ${searchFor}, SelectedID: ${selectedId}, SelectedDropdownValue: ${selectedDropdownValue}`);
 
@@ -234,29 +267,32 @@
             $('#resultsContent').text('Please select a valid value from the dropdown.');
             return;
         }
-
-        if (searchType === 'student' && searchFor === 'grades' && selectedDropdownValue) {
-            fetchGrades(selectedId, selectedDropdownValue);  // Pass StudentID & CourseID
-        } else if (searchType === 'educator' && searchFor === 'grades' && selectedDropdownValue) {
-            fetchEducatorCourseGrades(selectedId, selectedDropdownValue);  // Pass EducatorID & CourseID
-        } else if (searchType === 'course' && searchFor === 'grades' && selectedDropdownValue) {
-            fetchCourseGrades(selectedDropdownValue); // Pass SessionID for Courses
-        } else if (searchType === 'school' && searchFor === 'grades') {
-            fetchSchoolGrades(selectedId);
-        } else {
-            $('#resultsContent').text('Please select a valid search option.');
-        }
+            if (searchType === 'student' && searchFor === 'grades' && selectedDropdownValue) {
+                fetchGrades(selectedId, selectedDropdownValue, dateFilter, startDate, endDate);
+            } else if (searchType === 'educator' && searchFor === 'grades' && selectedDropdownValue) {
+                fetchEducatorCourseGrades(selectedId, selectedDropdownValue, dateFilter, startDate, endDate);
+            } else if (searchType === 'course' && searchFor === 'grades' && selectedDropdownValue) {
+                fetchCourseGrades(selectedDropdownValue, dateFilter, startDate, endDate);
+            } else if (searchType === 'school' && searchFor === 'grades') {
+                fetchSchoolGrades(selectedId, dateFilter, startDate, endDate);
+            } else {
+                $('#resultsContent').text('Please select a valid search option.');
+            }
     });
 
 
-    // Fetch School Grades Function
-            function fetchSchoolGrades(schoolId) {
+        function fetchSchoolGrades(schoolId, dateFilter, startDate, endDate) {
         $.ajax({
             url: '/Report/Report/GetSchoolGrades',
             type: 'POST',
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',
-            data: JSON.stringify({ Id: schoolId }),
+            data: JSON.stringify({
+                Id: schoolId,
+                DateFilter: dateFilter,
+                StartDate: dateFilter === 'custom' ? startDate : null,
+                EndDate: dateFilter === 'custom' ? endDate : null
+            }),
             success: function (data) {
                 let resultsContent = $('#resultsContent');
                 resultsContent.empty(); // Clear previous results
@@ -316,13 +352,19 @@
         });
     }
 
-            function fetchEducatorCourseGrades(educatorId, courseId) {
+        function fetchEducatorCourseGrades(educatorId, courseId, dateFilter, startDate, endDate) {
         $.ajax({
             url: '/Report/Report/GetEducatorCourseGrades',
             type: 'POST',
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',
-            data: JSON.stringify({ EducatorID: educatorId, CourseID: courseId }),
+            data: JSON.stringify({
+                EducatorID: educatorId,
+                CourseID: courseId,
+                DateFilter: dateFilter,  // Include date filter
+                StartDate: dateFilter === 'custom' ? startDate : null,
+                EndDate: dateFilter === 'custom' ? endDate : null
+            }),
             success: function (data) {
                 let resultsContent = $('#resultsContent');
                 resultsContent.empty(); // Clear previous results
@@ -333,7 +375,7 @@
                 if (data && data.students && data.students.length > 0) {
                     let gradeTable = `<table class="table table-bordered">
                         <thead>
-                            <tr><th>Student Name</th><th>Quiz Title</th><th>Score</th><th>Full Marks</th></tr>
+                            <tr><th>Student Name</th><th>Quiz Title</th><th>Score</th><th>Full Marks</th><th>Date</th></tr>
                         </thead>
                         <tbody>`;
 
@@ -344,6 +386,7 @@
                                 <td>${quiz.quizTitle}</td>
                                 <td>${quiz.obtainedScore}</td>
                                 <td>${quiz.totalScore}</td>
+                                <td>${quiz.date}</td>  <!-- Added Date Column -->
                             </tr>`;
                         });
                     });
@@ -362,17 +405,20 @@
         });
     }
 
-
-
-
             // Fetch Grades Function
-     function fetchGrades(studentId, courseId) {
+        function fetchGrades(studentId, courseId, dateFilter, startDate, endDate) {
         $.ajax({
             url: '/Report/Report/GetStudentGrades',
             type: 'POST',
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',
-            data: JSON.stringify({ CourseID: courseId, Keyword: studentId }), // Pass CourseID
+            data: JSON.stringify({
+                CourseID: courseId,
+                Keyword: studentId,
+                DateFilter: dateFilter,  // New filter for weekly/monthly/custom
+                StartDate: dateFilter === 'custom' ? startDate : null,
+                EndDate: dateFilter === 'custom' ? endDate : null
+            }),
             success: function (data) {
                 let resultsContent = $('#resultsContent');
                 resultsContent.empty();
@@ -382,17 +428,18 @@
 
                 if (data && data.quizResults && data.quizResults.length > 0) {
                     let gradeTable = `<table class="table table-bordered">
-                        <thead><tr><th>Quiz Title</th><th>Score</th><th>Full Marks</th></tr></thead><tbody>`;
+                        <thead><tr><th>Quiz Title</th><th>Score</th><th>Full Marks</th><th>Date</th></tr></thead><tbody>`;
 
                     data.quizResults.forEach(function (quiz) {
                         gradeTable += `<tr>
                             <td>${quiz.quizTitle}</td>
                             <td>${quiz.score}</td>
                             <td>${quiz.fullMarks}</td>
+                            <td>${quiz.date}</td>  <!-- Added Date Column -->
                         </tr>`;
                     });
 
-                    gradeTable += `<tr class="font-weight-bold"><td>Total</td><td>${data.totalScore}</td><td>${data.totalFullMarks}</td></tr></tbody></table>`;
+                    gradeTable += `<tr class="font-weight-bold"><td>Total</td><td>${data.totalScore}</td><td>${data.totalFullMarks}</td><td></td></tr></tbody></table>`;
                     resultsContent.html(gradeTable);
                 } else {
                     resultsContent.text("No grades available for this selection.");
@@ -405,7 +452,7 @@
     }
 
 
-           function fetchCourseGrades(sessionId) {
+           function fetchCourseGrades(sessionId, dateFilter, startDate, endDate) {
         $('#resultsContent').html("<div class='text-center'><span class='spinner-border'></span> Loading grades...</div>");
 
         $.ajax({
@@ -413,7 +460,12 @@
             type: 'POST',
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',
-            data: JSON.stringify({ Id: sessionId }),
+            data: JSON.stringify({
+                Id: sessionId,
+                DateFilter: dateFilter,
+                StartDate: dateFilter === 'custom' ? startDate : null,
+                EndDate: dateFilter === 'custom' ? endDate : null
+            }),
             success: function (data) {
                 let resultsContent = $('#resultsContent');
                 resultsContent.empty();

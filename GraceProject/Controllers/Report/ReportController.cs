@@ -108,16 +108,16 @@ namespace GraceProject.Controllers.Report
 
         // Get Sessions By Course
         [HttpPost("GetSessionsByCourse")]
-        public IActionResult GetSessionsByCourse([FromBody] IdModel idModel)
+        public IActionResult GetSessionsByCourse([FromBody] CourseIdModel model)
         {
             var sessions = _context.Session
-                .Where(s => s.CourseID == idModel.Id)
+                .Where(s => s.CourseID == model.Id) // Fix: Use 'model.Id' instead of 'idModel.Id'
                 .Select(s => new
                 {
                     name = _context.Users
-                               .Where(u => s.EducatorSessions.Any(es => es.EducatorID == u.Id))
-                               .Select(u => u.FirstName + " " + u.LastName)
-                               .FirstOrDefault() ?? "Instructor Not Assigned",
+                        .Where(u => _context.EducatorSession.Any(es => es.SessionID == s.SessionID && es.EducatorID == u.Id))
+                        .Select(u => u.FirstName + " " + u.LastName)
+                        .FirstOrDefault() ?? "Instructor Not Assigned",
                     id = s.SessionID
                 })
                 .ToList();
@@ -176,16 +176,29 @@ namespace GraceProject.Controllers.Report
             // model.Id -> Session ID
             // model.Keyword -> Student ID
 
+            // Use the common date filter method
+            var dateRange = GetDateRange(model.DateFilter, model.StartDate, model.EndDate);
+            if (dateRange == null)
+            {
+                return BadRequest("Invalid or missing date range.");
+            }
+
+            DateTime startDate = dateRange.Value.startDate;
+            DateTime endDate = dateRange.Value.endDate;
+
             var quizResults = await _context.UserQuizzes
-          .Where(uq => uq.UserId == model.Keyword
-                       && uq.Quiz.CourseID == model.CourseID) // Filter only by CourseID
-          .Select(uq => new
-          {
-              QuizTitle = uq.Quiz.Title,
-              Score = uq.Score ?? 0,
-              FullMarks = uq.Quiz.TotalScore ?? 0
-          })
-          .ToListAsync();
+                .Where(uq => uq.UserId == model.Keyword
+                             && uq.Quiz.CourseID == model.CourseID
+                             && uq.Quiz.CreatedAt >= startDate
+                             && uq.Quiz.CreatedAt <= endDate) // Apply date filter
+                .Select(uq => new
+                {
+                    QuizTitle = uq.Quiz.Title,
+                    Score = uq.Score ?? 0,
+                    FullMarks = uq.Quiz.TotalScore ?? 0,
+                    Date = uq.Quiz.CreatedAt // Include date for frontend
+                })
+                .ToListAsync();
 
             int totalScore = quizResults.Sum(q => q.Score);
             int totalFullMarks = quizResults.Sum(q => q.FullMarks);
@@ -228,8 +241,18 @@ namespace GraceProject.Controllers.Report
                 return Ok(new { message = "No students found for this school." });
             }
 
+            // Get date range using the common method
+            var dateRange = GetDateRange(model.DateFilter, model.StartDate, model.EndDate);
+            if (dateRange == null)
+            {
+                return BadRequest("Invalid or missing date range.");
+            }
+
+            DateTime startDate = dateRange.Value.startDate;
+            DateTime endDate = dateRange.Value.endDate;
+
             var quizResults = await _context.UserQuizzes
-                .Where(uq => studentIds.Contains(uq.UserId))
+                .Where(uq => studentIds.Contains(uq.UserId) && uq.Quiz.CreatedAt >= startDate && uq.Quiz.CreatedAt <= endDate) // Apply date filter
                 .Select(uq => new
                 {
                     StudentId = uq.UserId,
@@ -242,12 +265,12 @@ namespace GraceProject.Controllers.Report
                     Score = uq.Score ?? 0,
                     FullMarks = uq.Quiz.TotalScore ?? 0
                 })
-                .Where(q => q.CourseTitle != null) 
+                .Where(q => q.CourseTitle != null)
                 .ToListAsync();
 
             // 🔹 Filter out "Unknown Course" and null values
             var groupedResults = quizResults
-                .Where(q => !string.IsNullOrEmpty(q.CourseTitle) && q.CourseTitle != "Unknown Course") 
+                .Where(q => !string.IsNullOrEmpty(q.CourseTitle) && q.CourseTitle != "Unknown Course")
                 .GroupBy(q => q.CourseTitle)
                 .Select(courseGroup => new
                 {
@@ -273,7 +296,7 @@ namespace GraceProject.Controllers.Report
             // Handle case where all invalid courses were filtered out
             if (!groupedResults.Any())
             {
-                return Ok(new { message = "No valid courses found." });
+                return Ok(new { message = "No valid courses found in the selected date range." });
             }
 
             var result = new
@@ -285,7 +308,6 @@ namespace GraceProject.Controllers.Report
 
             return Ok(result);
         }
-
 
         [HttpPost("GetCourseGrades")]
         public async Task<IActionResult> GetCourseGrades([FromBody] IdModel model)
@@ -309,17 +331,34 @@ namespace GraceProject.Controllers.Report
                 return NotFound("Course not found.");
             }
 
-            // Fetch student sessions and switch to in-memory processing
+            // Use the common date filter method
+            var dateRange = GetDateRange(model.DateFilter, model.StartDate, model.EndDate);
+            if (dateRange == null)
+            {
+                return BadRequest("Invalid or missing date range.");
+            }
+
+            DateTime startDate = dateRange.Value.startDate;
+            DateTime endDate = dateRange.Value.endDate;
+
+            // Fetch student sessions
             var studentSessions = await _context.StudentSessions
                 .Where(ss => ss.SessionID == session.SessionID)
                 .ToListAsync();
 
-            // Fetch users and quizzes
+            // Fetch users
             var users = await _context.Users.ToListAsync();
+
+            // Apply date filtering to quizzes
             var quizzes = await _context.Quizzes
-                .Where(q => q.CourseID == course.CourseID || q.SessionID == session.SessionID)
+                .Where(q => (q.CourseID == course.CourseID || q.SessionID == session.SessionID)
+                            && q.CreatedAt >= startDate && q.CreatedAt <= endDate)
                 .ToListAsync();
-            var userQuizzes = await _context.UserQuizzes.ToListAsync();
+
+            // Apply date filtering to user quizzes
+            var userQuizzes = await _context.UserQuizzes
+                .Where(uq => uq.Quiz.CreatedAt >= startDate && uq.Quiz.CreatedAt <= endDate)
+                .ToListAsync();
 
             // Process in-memory using AsEnumerable()
             var students = studentSessions
@@ -361,38 +400,46 @@ namespace GraceProject.Controllers.Report
 
             return Ok(result);
         }
+
         [HttpPost("GetEducatorCourseGrades")]
         public async Task<IActionResult> GetEducatorCourseGrades([FromBody] EducatorCourseModel model)
         {
-
             if (_context.Course == null)
             {
-               
                 return NotFound("Courses table is not available.");
             }
 
             var course = await _context.Course.FirstOrDefaultAsync(c => c.CourseID == model.CourseID);
             if (course == null)
             {
-               
                 return NotFound("Course not found.");
             }
 
-           
+            // Get the date range using the common method
+            var dateRange = GetDateRange(model.DateFilter, model.StartDate, model.EndDate);
+            if (dateRange == null)
+            {
+                return BadRequest("Invalid or missing date range.");
+            }
+
+            DateTime startDate = dateRange.Value.startDate;
+            DateTime endDate = dateRange.Value.endDate;
 
             var studentSessions = await _context.StudentSessions
                 .Where(ss => ss.Session.CourseID == model.CourseID)
                 .ToListAsync();
 
-            
-
             var users = await _context.Users.ToListAsync();
-            var quizzes = await _context.Quizzes
-                .Where(q => q.CourseID == model.CourseID)
-                .ToListAsync();
-            var userQuizzes = await _context.UserQuizzes.ToListAsync();
 
-          
+            // Apply date filtering to quizzes
+            var quizzes = await _context.Quizzes
+                .Where(q => q.CourseID == model.CourseID && q.CreatedAt >= startDate && q.CreatedAt <= endDate)
+                .ToListAsync();
+
+            // Apply date filtering to user quizzes
+            var userQuizzes = await _context.UserQuizzes
+                .Where(uq => uq.Quiz.CourseID == model.CourseID && uq.Quiz.CreatedAt >= startDate && uq.Quiz.CreatedAt <= endDate)
+                .ToListAsync();
 
             var students = studentSessions
                 .AsEnumerable()
@@ -414,12 +461,9 @@ namespace GraceProject.Controllers.Report
                         }).ToList()
                 }).ToList();
 
-         
-
             if (students.Count == 0)
             {
-
-                return Ok(new { message = "No grades available for this course." });
+                return Ok(new { message = "No grades available for this course in the selected date range." });
             }
 
             var result = new TeacherGradebookViewModel
@@ -428,10 +472,8 @@ namespace GraceProject.Controllers.Report
                 Students = students
             };
 
-           
             return Ok(result);
         }
-
 
         // Helper method to determine grade
         private string GetGrade(double percentage)
@@ -442,6 +484,28 @@ namespace GraceProject.Controllers.Report
             else if (percentage >= 60) return "D";
             else return "F";
         }
+
+        private (DateTime startDate, DateTime endDate)? GetDateRange(string dateFilter, DateTime? startDate, DateTime? endDate)
+        {
+            switch (dateFilter)
+            {
+                case "weekly":
+                    return (DateTime.UtcNow.AddDays(-7), DateTime.UtcNow);
+                case "monthly":
+                    return (DateTime.UtcNow.AddMonths(-1), DateTime.UtcNow);
+                case "last3months":
+                    return (DateTime.UtcNow.AddMonths(-3), DateTime.UtcNow);
+                case "custom":
+                    if (startDate.HasValue && endDate.HasValue)
+                    {
+                        return (startDate.Value, endDate.Value);
+                    }
+                    return null;
+                default:
+                    return null;
+            }
+        }
+
 
     }
 
@@ -454,5 +518,15 @@ namespace GraceProject.Controllers.Report
     public class IdModel
     {
         public string Id { get; set; }
+
+        public string DateFilter { get; set; } // "weekly", "monthly", "last3months", "custom"
+        public DateTime? StartDate { get; set; } // For custom date range
+        public DateTime? EndDate { get; set; } // For custom date range
     }
+
+    public class CourseIdModel
+    {
+        public string Id { get; set; }
+    }
+
 }

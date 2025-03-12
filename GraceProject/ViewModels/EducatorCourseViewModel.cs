@@ -13,5 +13,9 @@ namespace GraceProject.ViewModels
     {
         public string CourseID { get; set; }  // Course ID
         public string EducatorID { get; set; }  // Educator ID
+
+        public string DateFilter { get; set; } // "weekly", "monthly", "last3months", "custom"
+        public DateTime? StartDate { get; set; } // For custom date range
+        public DateTime? EndDate { get; set; } // For custom date range
     }
 }
