@@ -6,18 +6,18 @@
  *     // code here
  * });
  */
-(function($,sr){
+(function ($, sr) {
     // debouncing function from John Hann
     // http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
     var debounce = function (func, threshold, execAsap) {
-      var timeout;
+        var timeout;
 
-        return function debounced () {
+        return function debounced() {
             var obj = this, args = arguments;
-            function delayed () {
+            function delayed() {
                 if (!execAsap)
-                    func.apply(obj, args); 
-                timeout = null; 
+                    func.apply(obj, args);
+                timeout = null;
             }
 
             if (timeout)
@@ -25,14 +25,14 @@
             else if (execAsap)
                 func.apply(obj, args);
 
-            timeout = setTimeout(delayed, threshold || 100); 
+            timeout = setTimeout(delayed, threshold || 100);
         };
     };
 
     // smartresize 
-    jQuery.fn[sr] = function(fn){  return fn ? this.bind('resize', debounce(fn)) : this.trigger(sr); };
+    jQuery.fn[sr] = function (fn) { return fn ? this.bind('resize', debounce(fn)) : this.trigger(sr); };
 
-})(jQuery,'smartresize');
+})(jQuery, 'smartresize');
 /**
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -1957,416 +1957,92 @@ function init_EasyPieChart() {
 
 
 function init_charts() {
+    console.log("Initializing charts...");
 
-    console.log('run_charts  typeof [' + typeof (Chart) + ']');
-
-    if (typeof (Chart) === 'undefined') { return; }
-
-    console.log('init_charts');
-
-
-    Chart.defaults.global.legend = {
-        enabled: false
-    };
-
-
-
-    if ($('#canvas_line').length) {
-
-        var canvas_line_00 = new Chart(document.getElementById("canvas_line"), {
-            type: 'line',
-            data: {
-                labels: ["January", "February", "March", "April", "May", "June", "July"],
-                datasets: [{
-                    label: "My First dataset",
-                    backgroundColor: "rgba(38, 185, 154, 0.31)",
-                    borderColor: "rgba(38, 185, 154, 0.7)",
-                    pointBorderColor: "rgba(38, 185, 154, 0.7)",
-                    pointBackgroundColor: "rgba(38, 185, 154, 0.7)",
-                    pointHoverBackgroundColor: "#fff",
-                    pointHoverBorderColor: "rgba(220,220,220,1)",
-                    pointBorderWidth: 1,
-                    data: [31, 74, 6, 39, 20, 85, 7]
-                }, {
-                    label: "My Second dataset",
-                    backgroundColor: "rgba(3, 88, 106, 0.3)",
-                    borderColor: "rgba(3, 88, 106, 0.70)",
-                    pointBorderColor: "rgba(3, 88, 106, 0.70)",
-                    pointBackgroundColor: "rgba(3, 88, 106, 0.70)",
-                    pointHoverBackgroundColor: "#fff",
-                    pointHoverBorderColor: "rgba(151,187,205,1)",
-                    pointBorderWidth: 1,
-                    data: [82, 23, 66, 9, 99, 4, 2]
-                }]
-            },
-        });
-
+    // Check if Chart.js is loaded
+    if (typeof Chart === 'undefined') {
+        console.error("❌ Chart.js is not loaded!");
+        return;
     }
 
+    // Ensure the chart canvas elements exist before proceeding
+    let barCanvas = document.getElementById("barChart");
+    let pieCanvas = document.getElementById("pieChart");
 
-    if ($('#canvas_line1').length) {
-
-        var canvas_line_01 = new Chart(document.getElementById("canvas_line1"), {
-            type: 'line',
-            data: {
-                labels: ["January", "February", "March", "April", "May", "June", "July"],
-                datasets: [{
-                    label: "My First dataset",
-                    backgroundColor: "rgba(38, 185, 154, 0.31)",
-                    borderColor: "rgba(38, 185, 154, 0.7)",
-                    pointBorderColor: "rgba(38, 185, 154, 0.7)",
-                    pointBackgroundColor: "rgba(38, 185, 154, 0.7)",
-                    pointHoverBackgroundColor: "#fff",
-                    pointHoverBorderColor: "rgba(220,220,220,1)",
-                    pointBorderWidth: 1,
-                    data: [31, 74, 6, 39, 20, 85, 7]
-                }, {
-                    label: "My Second dataset",
-                    backgroundColor: "rgba(3, 88, 106, 0.3)",
-                    borderColor: "rgba(3, 88, 106, 0.70)",
-                    pointBorderColor: "rgba(3, 88, 106, 0.70)",
-                    pointBackgroundColor: "rgba(3, 88, 106, 0.70)",
-                    pointHoverBackgroundColor: "#fff",
-                    pointHoverBorderColor: "rgba(151,187,205,1)",
-                    pointBorderWidth: 1,
-                    data: [82, 23, 66, 9, 99, 4, 2]
-                }]
-            },
-        });
-
+    if (!barCanvas || !pieCanvas) {
+        console.error("❌ Chart elements not found in DOM!");
+        return;
     }
 
+    let barChartCtx = barCanvas.getContext("2d");
+    let pieChartCtx = pieCanvas.getContext("2d");
 
-    if ($('#canvas_line2').length) {
+    console.log("✅ Chart elements found, proceeding...");
 
-        var canvas_line_02 = new Chart(document.getElementById("canvas_line2"), {
-            type: 'line',
-            data: {
-                labels: ["January", "February", "March", "April", "May", "June", "July"],
-                datasets: [{
-                    label: "My First dataset",
-                    backgroundColor: "rgba(38, 185, 154, 0.31)",
-                    borderColor: "rgba(38, 185, 154, 0.7)",
-                    pointBorderColor: "rgba(38, 185, 154, 0.7)",
-                    pointBackgroundColor: "rgba(38, 185, 154, 0.7)",
-                    pointHoverBackgroundColor: "#fff",
-                    pointHoverBorderColor: "rgba(220,220,220,1)",
-                    pointBorderWidth: 1,
-                    data: [31, 74, 6, 39, 20, 85, 7]
-                }, {
-                    label: "My Second dataset",
-                    backgroundColor: "rgba(3, 88, 106, 0.3)",
-                    borderColor: "rgba(3, 88, 106, 0.70)",
-                    pointBorderColor: "rgba(3, 88, 106, 0.70)",
-                    pointBackgroundColor: "rgba(3, 88, 106, 0.70)",
-                    pointHoverBackgroundColor: "#fff",
-                    pointHoverBorderColor: "rgba(151,187,205,1)",
-                    pointBorderWidth: 1,
-                    data: [82, 23, 66, 9, 99, 4, 2]
-                }]
-            },
-        });
 
+    debugger;
+    let barChartInstance = null;
+    let pieChartInstance = null;
+
+    // Destroy existing charts if they exist
+    if (barChartInstance) {
+        barChartInstance.destroy();
+    }
+    if (pieChartInstance) {
+        pieChartInstance.destroy();
     }
 
-
-    if ($('#canvas_line3').length) {
-
-        var canvas_line_03 = new Chart(document.getElementById("canvas_line3"), {
-            type: 'line',
-            data: {
-                labels: ["January", "February", "March", "April", "May", "June", "July"],
-                datasets: [{
-                    label: "My First dataset",
-                    backgroundColor: "rgba(38, 185, 154, 0.31)",
-                    borderColor: "rgba(38, 185, 154, 0.7)",
-                    pointBorderColor: "rgba(38, 185, 154, 0.7)",
-                    pointBackgroundColor: "rgba(38, 185, 154, 0.7)",
-                    pointHoverBackgroundColor: "#fff",
-                    pointHoverBorderColor: "rgba(220,220,220,1)",
-                    pointBorderWidth: 1,
-                    data: [31, 74, 6, 39, 20, 85, 7]
-                }, {
-                    label: "My Second dataset",
-                    backgroundColor: "rgba(3, 88, 106, 0.3)",
-                    borderColor: "rgba(3, 88, 106, 0.70)",
-                    pointBorderColor: "rgba(3, 88, 106, 0.70)",
-                    pointBackgroundColor: "rgba(3, 88, 106, 0.70)",
-                    pointHoverBackgroundColor: "#fff",
-                    pointHoverBorderColor: "rgba(151,187,205,1)",
-                    pointBorderWidth: 1,
-                    data: [82, 23, 66, 9, 99, 4, 2]
-                }]
-            },
-        });
-
-    }
+    // Dummy Data for Testing (This will be replaced with actual AJAX response)
+    let studentNames = ["Student A", "Student B", "Student C"];
+    let scores = [75, 85, 95];
 
 
-    if ($('#canvas_line4').length) {
-
-        var canvas_line_04 = new Chart(document.getElementById("canvas_line4"), {
-            type: 'line',
-            data: {
-                labels: ["January", "February", "March", "April", "May", "June", "July"],
-                datasets: [{
-                    label: "My First dataset",
-                    backgroundColor: "rgba(38, 185, 154, 0.31)",
-                    borderColor: "rgba(38, 185, 154, 0.7)",
-                    pointBorderColor: "rgba(38, 185, 154, 0.7)",
-                    pointBackgroundColor: "rgba(38, 185, 154, 0.7)",
-                    pointHoverBackgroundColor: "#fff",
-                    pointHoverBorderColor: "rgba(220,220,220,1)",
-                    pointBorderWidth: 1,
-                    data: [31, 74, 6, 39, 20, 85, 7]
-                }, {
-                    label: "My Second dataset",
-                    backgroundColor: "rgba(3, 88, 106, 0.3)",
-                    borderColor: "rgba(3, 88, 106, 0.70)",
-                    pointBorderColor: "rgba(3, 88, 106, 0.70)",
-                    pointBackgroundColor: "rgba(3, 88, 106, 0.70)",
-                    pointHoverBackgroundColor: "#fff",
-                    pointHoverBorderColor: "rgba(151,187,205,1)",
-                    pointBorderWidth: 1,
-                    data: [82, 23, 66, 9, 99, 4, 2]
-                }]
-            },
-        });
-
-    }
-
-
-    // Line chart
-
-    if ($('#lineChart').length) {
-
-        var ctx = document.getElementById("lineChart");
-        var lineChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ["January", "February", "March", "April", "May", "June", "July"],
-                datasets: [{
-                    label: "My First dataset",
-                    backgroundColor: "rgba(38, 185, 154, 0.31)",
-                    borderColor: "rgba(38, 185, 154, 0.7)",
-                    pointBorderColor: "rgba(38, 185, 154, 0.7)",
-                    pointBackgroundColor: "rgba(38, 185, 154, 0.7)",
-                    pointHoverBackgroundColor: "#fff",
-                    pointHoverBorderColor: "rgba(220,220,220,1)",
-                    pointBorderWidth: 1,
-                    data: [31, 74, 6, 39, 20, 85, 7]
-                }, {
-                    label: "My Second dataset",
-                    backgroundColor: "rgba(3, 88, 106, 0.3)",
-                    borderColor: "rgba(3, 88, 106, 0.70)",
-                    pointBorderColor: "rgba(3, 88, 106, 0.70)",
-                    pointBackgroundColor: "rgba(3, 88, 106, 0.70)",
-                    pointHoverBackgroundColor: "#fff",
-                    pointHoverBorderColor: "rgba(151,187,205,1)",
-                    pointBorderWidth: 1,
-                    data: [82, 23, 66, 9, 99, 4, 2]
-                }]
-            },
-        });
-
-    }
-
-    // Bar chart
-
-    if ($('#mybarChart').length) {
-
-        var ctx = document.getElementById("mybarChart");
-        var mybarChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ["January", "February", "March", "April", "May", "June", "July"],
-                datasets: [{
-                    label: '# of Votes',
-                    backgroundColor: "#26B99A",
-                    data: [51, 30, 40, 28, 92, 50, 45]
-                }, {
-                    label: '# of Votes',
-                    backgroundColor: "#03586A",
-                    data: [41, 56, 25, 48, 72, 34, 12]
-                }]
-            },
-
-            options: {
-                scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true
-                        }
-                    }]
-                }
-            }
-        });
-
-    }
-
-
-    // Doughnut chart
-
-    if ($('#canvasDoughnut').length) {
-
-        var ctx = document.getElementById("canvasDoughnut");
-        var data = {
-            labels: [
-                "Dark Grey",
-                "Purple Color",
-                "Gray Color",
-                "Green Color",
-                "Blue Color"
-            ],
+    // ✅ Initialize Bar Chart
+    barChartInstance = new Chart(barChartCtx, {
+        type: "bar",
+        data: {
+            labels: studentNames,
             datasets: [{
-                data: [120, 50, 140, 180, 100],
-                backgroundColor: [
-                    "#455C73",
-                    "#9B59B6",
-                    "#BDC3C7",
-                    "#26B99A",
-                    "#3498DB"
-                ],
-                hoverBackgroundColor: [
-                    "#34495E",
-                    "#B370CF",
-                    "#CFD4D8",
-                    "#36CAAB",
-                    "#49A9EA"
-                ]
-
+                label: "Total Score",
+                data: scores,
+                backgroundColor: "rgba(54, 162, 235, 0.7)",
+                borderColor: "rgba(54, 162, 235, 1)",
+                borderWidth: 1
             }]
-        };
-
-        var canvasDoughnut = new Chart(ctx, {
-            type: 'doughnut',
-            tooltipFillColor: "rgba(51, 51, 51, 0.55)",
-            data: data
-        });
-
-    }
-
-    // Radar chart
-
-    if ($('#canvasRadar').length) {
-
-        var ctx = document.getElementById("canvasRadar");
-        var data = {
-            labels: ["Eating", "Drinking", "Sleeping", "Designing", "Coding", "Cycling", "Running"],
-            datasets: [{
-                label: "My First dataset",
-                backgroundColor: "rgba(3, 88, 106, 0.2)",
-                borderColor: "rgba(3, 88, 106, 0.80)",
-                pointBorderColor: "rgba(3, 88, 106, 0.80)",
-                pointBackgroundColor: "rgba(3, 88, 106, 0.80)",
-                pointHoverBackgroundColor: "#fff",
-                pointHoverBorderColor: "rgba(220,220,220,1)",
-                data: [65, 59, 90, 81, 56, 55, 40]
-            }, {
-                label: "My Second dataset",
-                backgroundColor: "rgba(38, 185, 154, 0.2)",
-                borderColor: "rgba(38, 185, 154, 0.85)",
-                pointColor: "rgba(38, 185, 154, 0.85)",
-                pointStrokeColor: "#fff",
-                pointHighlightFill: "#fff",
-                pointHighlightStroke: "rgba(151,187,205,1)",
-                data: [28, 48, 40, 19, 96, 27, 100]
-            }]
-        };
-
-        var canvasRadar = new Chart(ctx, {
-            type: 'radar',
-            data: data,
-        });
-
-    }
-
-
-    // Pie chart
-    if ($('#pieChart').length) {
-
-        var ctx = document.getElementById("pieChart");
-        var data = {
-            datasets: [{
-                data: [120, 50, 140, 180, 100],
-                backgroundColor: [
-                    "#455C73",
-                    "#9B59B6",
-                    "#BDC3C7",
-                    "#26B99A",
-                    "#3498DB"
-                ],
-                label: 'My dataset' // for legend
-            }],
-            labels: [
-                "Dark Gray",
-                "Purple",
-                "Gray",
-                "Green",
-                "Blue"
-            ]
-        };
-
-var pieChart = new Chart(ctx, {
-        type: 'pie',
-        data: data,
+        },
         options: {
-            legend: false,
+            responsive: true,
+            maintainAspectRatio: false,
             plugins: {
-                afterDraw: function(chart) {
-                    // Add a static label to the chart
-                    var ctx = chart.ctx;
-                    ctx.font = "16px Arial";
-                    ctx.fillStyle = "#333";
-                    ctx.textAlign = "center";
-                    ctx.fillText("Static Label", chart.width / 2, chart.height / 2);
-                }
+                legend: { display: true }
+            },
+            scales: {
+                y: { beginAtZero: true }
             }
         }
     });
 
-    }
+    console.log("✅ Bar Chart Initialized");
 
-
-    // PolarArea chart
-
-    if ($('#polarArea').length) {
-
-        var ctx = document.getElementById("polarArea");
-        var data = {
+    // ✅ Initialize Pie Chart
+    pieChartInstance = new Chart(pieChartCtx, {
+        type: "pie",
+        data: {
+            labels: ["Obtained Score (%)", "Remaining (%)"],
             datasets: [{
-                data: [120, 50, 140, 180, 100],
-                backgroundColor: [
-                    "#455C73",
-                    "#9B59B6",
-                    "#BDC3C7",
-                    "#26B99A",
-                    "#3498DB"
-                ],
-                label: 'My dataset'
-            }],
-            labels: [
-                "Dark Gray",
-                "Purple",
-                "Gray",
-                "Green",
-                "Blue"
-            ]
-        };
-
-        var polarArea = new Chart(ctx, {
-            data: data,
-            type: 'polarArea',
-            options: {
-                scale: {
-                    ticks: {
-                        beginAtZero: true
-                    }
-                }
+                data: [80, 20],
+                backgroundColor: ["#36a2eb", "#ff6384"]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: "bottom" }
             }
-        });
+        }
+    });
 
-    }
+    console.log("✅ Pie Chart Initialized");
 }
 
 /* COMPOSE */
@@ -2578,8 +2254,8 @@ function init_morris_charts() {
 
     if (typeof (Morris) === 'undefined') { return; }
     console.log('init_morris_charts');
-	
-	if ($('#graph_bar').length) {
+
+    if ($('#graph_bar').length) {
 
         Morris.Bar({
             element: 'graph_bar',
@@ -2596,9 +2272,9 @@ function init_morris_charts() {
             xLabelAngle: 0,
             hideHover: 'auto',
             resize: true,
-			barSize: 50, // Adjust this value to make the bars smaller or larger
-			ymin: 0,    // Set the minimum value for the y-axis
-			ymax: 100   // Set the maximum value for the y-axis
+            barSize: 50, // Adjust this value to make the bars smaller or larger
+            ymin: 0,    // Set the minimum value for the y-axis
+            ymax: 100   // Set the maximum value for the y-axis
         });
 
     }
@@ -3432,54 +3108,54 @@ function init_echarts() {
                 },
                 data: [
                     [47, 65],
-[56, 71],
-[82, 80],
-[73, 72],
-[78, 78],
-[70, 74],
-[80, 86],
-[78, 78],
-[46, 62],
-[80, 81],
-[69, 76],
-[65, 83],
-[90, 90],
-[74, 74],
-[41, 71],
-[79, 79],
-[93, 93],
-[71, 70],
-[72, 72],
-[85, 85],
-[78, 78],
-[77, 77],
-[66, 66],
-[86, 86],
-[82, 81],
-[89, 89],
-[82, 82],
-[76, 76],
-[63, 63],
-[60, 74],
-[74, 74],
-[70, 70],
-[72, 72],
-[72, 66],
-[68, 86],
-[81, 81],
-[79, 79],
-[63, 63],
-[75, 74],
-[70, 67],
-[72, 76],
-[67, 66],
-[64, 70],
-[81, 67],
-[72, 72],
-[82, 75],
-[64, 64],
-[74, 74],
-[74, 70]
+                    [56, 71],
+                    [82, 80],
+                    [73, 72],
+                    [78, 78],
+                    [70, 74],
+                    [80, 86],
+                    [78, 78],
+                    [46, 62],
+                    [80, 81],
+                    [69, 76],
+                    [65, 83],
+                    [90, 90],
+                    [74, 74],
+                    [41, 71],
+                    [79, 79],
+                    [93, 93],
+                    [71, 70],
+                    [72, 72],
+                    [85, 85],
+                    [78, 78],
+                    [77, 77],
+                    [66, 66],
+                    [86, 86],
+                    [82, 81],
+                    [89, 89],
+                    [82, 82],
+                    [76, 76],
+                    [63, 63],
+                    [60, 74],
+                    [74, 74],
+                    [70, 70],
+                    [72, 72],
+                    [72, 66],
+                    [68, 86],
+                    [81, 81],
+                    [79, 79],
+                    [63, 63],
+                    [75, 74],
+                    [70, 67],
+                    [72, 76],
+                    [67, 66],
+                    [64, 70],
+                    [81, 67],
+                    [72, 72],
+                    [82, 75],
+                    [64, 64],
+                    [74, 74],
+                    [74, 70]
 
                 ],
                 markPoint: {
@@ -3512,56 +3188,56 @@ function init_echarts() {
                 },
                 data: [
                     [75, 65],
-[87, 71],
-[45, 80],
-[86, 72],
-[47, 78],
-[61, 79],
-[40, 86],
-[60, 78],
-[93, 62],
-[48, 81],
-[60, 76],
-[78, 83],
-[96, 90],
-[46, 74],
-[42, 71],
-[79, 79],
-[90, 93],
-[50, 70],
-[40, 72],
-[90, 85],
-[78, 78],
-[60, 77],
-[63, 66],
-[80, 86],
-[35, 81],
-[88, 89],
-[83, 82],
-[64, 76],
-[63, 63],
-[90, 60],
-[66, 74],
-[55, 70],
-[80, 72],
-[92, 84],
-[92, 69],
-[55, 67],
-[65, 72],
-[56, 67],
-[72, 66],
-[59, 74],
-[58, 70],
-[100, 63],
-[73, 68],
-[75, 68],
-[80, 71],
-[16, 20],
-[38, 72],
-[62, 83],
-[75, 85],
-[53, 90],
-[80, 85]
+                    [87, 71],
+                    [45, 80],
+                    [86, 72],
+                    [47, 78],
+                    [61, 79],
+                    [40, 86],
+                    [60, 78],
+                    [93, 62],
+                    [48, 81],
+                    [60, 76],
+                    [78, 83],
+                    [96, 90],
+                    [46, 74],
+                    [42, 71],
+                    [79, 79],
+                    [90, 93],
+                    [50, 70],
+                    [40, 72],
+                    [90, 85],
+                    [78, 78],
+                    [60, 77],
+                    [63, 66],
+                    [80, 86],
+                    [35, 81],
+                    [88, 89],
+                    [83, 82],
+                    [64, 76],
+                    [63, 63],
+                    [90, 60],
+                    [66, 74],
+                    [55, 70],
+                    [80, 72],
+                    [92, 84],
+                    [92, 69],
+                    [55, 67],
+                    [65, 72],
+                    [56, 67],
+                    [72, 66],
+                    [59, 74],
+                    [58, 70],
+                    [100, 63],
+                    [73, 68],
+                    [75, 68],
+                    [80, 71],
+                    [16, 20],
+                    [38, 72],
+                    [62, 83],
+                    [75, 85],
+                    [53, 90],
+                    [80, 85]
 
                 ],
                 markPoint: {
@@ -3618,7 +3294,7 @@ function init_echarts() {
             }],
             yAxis: [{
                 type: 'category',
-                data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun','Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+                data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
             }],
             series: [{
                 name: '2022',

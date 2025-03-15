@@ -197,16 +197,19 @@ namespace GraceProject.Controllers.Report
                              && uq.Quiz.CreatedAt <= endDate) // Apply date filter
                 .Select(uq => new
                 {
+                    QuizId=uq.QuizId,
                     QuizTitle = uq.Quiz.Title,
                     Score = uq.Score ?? 0,
                     FullMarks = uq.Quiz.TotalScore ?? 0,
-                    Date = uq.Quiz.CreatedAt
+                    Date = uq.StartedAt
                 })
                 .ToListAsync();
 
-            int totalScore = quizResults.Sum(q => q.Score);
-            int totalFullMarks = quizResults.Sum(q => q.FullMarks);
-            int totalQuizzesAttempted = quizResults.Count;
+            var unqRes = quizResults.GroupBy(q => q.QuizId).Select(group => group.OrderByDescending(q => q.Date).FirstOrDefault()).ToList();
+
+            int totalScore = unqRes.Sum(q => q.Score);
+            int totalFullMarks = unqRes.Sum(q => q.FullMarks);
+            int totalQuizzesAttempted = unqRes.Count;
 
             // Calculate percentage
             double totalPercentage = totalFullMarks > 0
@@ -226,7 +229,7 @@ namespace GraceProject.Controllers.Report
                 TotalPercentage = Math.Round(totalPercentage, 2), // Round to 2 decimal places
                 AverageScorePerQuiz = Math.Round(averageScorePerQuiz, 2),
                 TotalQuizzesAttempted = totalQuizzesAttempted,
-                PassStatus = totalPercentage >= 50 ? "Passed" : "Failed" // Example: Pass if ≥ 50%
+                PassStatus = totalPercentage >= 60 ? "Passed" : "Failed" // Example: Pass if ≥ 50%
             };
 
             return Ok(result);
@@ -504,8 +507,10 @@ namespace GraceProject.Controllers.Report
                             QuizTitle = q.Title,
                             TotalScore = q.TotalScore ?? 0,
                             ObtainedScore = userQuizzes
-                                .Where(uq => uq.UserId == ss.StudentID && uq.QuizId == q.QuizId)
-                                .Sum(uq => uq.Score) ?? 0
+                            //    .Where(uq => uq.UserId == ss.StudentID && uq.QuizId == q.QuizId)
+                            //.Sum(uq => uq.Score) ?? 0
+                                .LastOrDefault(uq => uq.UserId == ss.StudentID && uq.QuizId == q.QuizId).Score ?? 0
+                            
                         }).ToList()
                 }).ToList();
 
