@@ -1,4 +1,4 @@
-﻿@model GraceProject.ViewModels.QuizViewModel
+﻿﻿@model GraceProject.ViewModels.QuizViewModel
 
 @{
     ViewData["Title"] = "Create Quiz";
@@ -94,9 +94,6 @@
             document.getElementById('questions-container').appendChild(questionDiv);
             changeAnswerSection(questionDiv.querySelector(".question-type"));
             updateTotalScore();
-        }
-                function updateQuestionPoints(input, questionIndex) {
-            questions[questionIndex].Points = parseInt(input.value, 10);
         }
 
             function updateQuestionPoints(input, questionIndex) {
