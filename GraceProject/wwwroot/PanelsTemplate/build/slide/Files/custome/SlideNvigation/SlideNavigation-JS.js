@@ -23,5 +23,6 @@ function CreateAndInitiateSlideNavigationHTML(Container, ControllerParameters) {
         var ToSlideId = $(this).attr("ToSlideId");
         NavigateToOtherSlideId(FromSlideId, ToSlideId);
         SetAcitvatedCairoselSlideById(ToSlideId);
+
     });
 }

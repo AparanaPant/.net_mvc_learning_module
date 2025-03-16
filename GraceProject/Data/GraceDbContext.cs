@@ -14,6 +14,8 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Module> Module { get; set; }
     public DbSet<Slide> Slide { get; set; }
     public DbSet<SlideSection> SlideSection { get; set; }
+    public DbSet<SlideReadTracking> SlideReadTracking { get; set; }
+
     public DbSet<School> Schools { get; set; }
     public DbSet<SchoolAddress> SchoolAddresses { get; set; }
     public DbSet<UserSchool> UserSchools { get; set; }
@@ -84,6 +86,7 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<Module>().ToTable("Module");
         builder.Entity<Slide>().ToTable("Slide");
         builder.Entity<SlideSection>().ToTable("SlideSection");
+        builder.Entity<SlideReadTracking>().ToTable("SlideReadTracking");
         builder.Entity<School>().ToTable("Schools");
         builder.Entity<SchoolAddress>().ToTable("SchoolAddresses");
         builder.Entity<School>()
@@ -127,23 +130,23 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
             // Define primary key
             //entity.HasKey(e => e.SchoolID).HasName("PK_SchoolInfo");
 
-            //// Map to table name
-            //entity.ToTable("SchoolInfo");
+        //// Map to table name
+        //entity.ToTable("SchoolInfo");
 
-            //// Define properties
-            //entity.Property(e => e.SchoolID)
-            //    .HasColumnName("SchoolID")
-            //    .IsRequired(); // Primary key, required
+        //// Define properties
+        //entity.Property(e => e.SchoolID)
+        //    .HasColumnName("SchoolID")
+        //    .IsRequired(); // Primary key, required
 
-            //entity.Property(e => e.SchoolName)
-            //    .HasColumnName("SchoolName")
-            //    .IsRequired()
-            //    .HasMaxLength(255); // You can adjust the max length as per your requirements
+        //entity.Property(e => e.SchoolName)
+        //    .HasColumnName("SchoolName")
+        //    .IsRequired()
+        //    .HasMaxLength(255); // You can adjust the max length as per your requirements
 
-            //entity.Property(e => e.Country)
-            //    .HasColumnName("Country")
-            //    .IsRequired()
-            //    .HasMaxLength(100); // You can adjust the max length as per your requirements
+        //entity.Property(e => e.Country)
+        //    .HasColumnName("Country")
+        //    .IsRequired()
+        //    .HasMaxLength(100); // You can adjust the max length as per your requirements
 
             // Define relationships
             //entity.HasMany(e => e.Course)

@@ -2,7 +2,13 @@
 @{
     Layout = "~/Views/Shared/_StudentLayout.cshtml";
     ViewBag.Title = "Manage Course";
+
+}
+@{
     var educators = ViewBag.Educators as List<GraceProject.Models.ApplicationUser> ?? new List<GraceProject.Models.ApplicationUser>();
+    GraceProject.Models.Course Course = new Course();
+    if (ViewData["Course"] != null)
+        Course = (GraceProject.Models.Course)ViewData["Course"];
 }
 
 <h2 class="text-center">@Model.Title</h2>
@@ -25,4 +31,19 @@
         </div>
     </div>
 
-    
+<h3>Add Educator</h3>
+<form asp-action="AddEducatorToCourse" method="post">
+    <input type="hidden" name="courseId" value="@Model.CourseID" />
+    <div class="form-group">
+        <label for="educatorId">Select Educator:</label>
+        <select id="educatorId" name="educatorId" class="form-control">
+            <option value="">-- Select Educator --</option>
+            @foreach (var educator in educators)
+            {
+                <option value="@educator.Id">@educator.FirstName @educator.LastName (@educator.Email)</option>
+
+            }
+        </select>
+    </div>
+    <button type="submit" class="btn btn-success">Add Educator</button>
+</form>

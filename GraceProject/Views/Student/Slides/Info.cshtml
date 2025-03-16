@@ -7,8 +7,11 @@
     Layout = "~/Views/Shared/_StudentLayout.cshtml";
 }
 
-
-
+@{
+    GraceProject.Models.Course Course = new Course();
+    if (ViewData["Course"] != null)
+        Course = (GraceProject.Models.Course)ViewData["Course"];
+}
 
 @using Microsoft.EntityFrameworkCore
 @using System.Security.Claims;
@@ -26,9 +29,6 @@
     bool IsAdmin = roles.Count() > 0 ? roles.Where(r => r == "Admin").Count() > 0 ? true : false : false;
 }
 
-
-
-
 @*pie chart*@
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
@@ -38,7 +38,7 @@
             <div class="col-md-12">
                 <div class="x_panel">
                     <div class="x_title">
-                        <h2>Course : Water Quality</h2>
+                        <h2>Course : @Course.Title</h2>
                         <div class="clearfix"></div>
                     </div>
                     <div class="x_content">

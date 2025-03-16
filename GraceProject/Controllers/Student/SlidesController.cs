@@ -31,6 +31,9 @@ namespace GraceProject.Controllers.Student
                     return NotFound();
                 }
 
+                string CourseId = _context.Module.FirstOrDefault(m => m.Id == moduleid).CourseId;
+                ViewData["Course"] = _context.Course.FirstOrDefault(c => c.CourseID == CourseId);
+
                 var graceDbContext = _context.Slide.Include(s => s.ApplicationUser).Include(s => s.SlideSections).Where(s => s.ModuleId == moduleid).OrderBy(s => s.SlideOrder);
                 return View("~/views/Student/Slides/Info.cshtml", await graceDbContext.ToListAsync());
             }
