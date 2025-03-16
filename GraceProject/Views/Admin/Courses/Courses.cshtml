@@ -11,38 +11,38 @@
         </button>
     </div>
 
-@if (Model == null || !Model.Any())
-{
-    <p>No courses available.</p>
-}
-else
-{
+    @if (Model == null || !Model.Any())
+    {
+        <p>No courses available.</p>
+    }
+    else
+    {
         <div class="table-responsive">
             <table class="table table-bordered table-hover">
                 <thead class="thead-light">
-            <tr>
-                <th>Course ID</th>
-                <th>Title</th>
-                <th>Credits</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var course in Model)
-            {
-                <tr>
-                    <td>@course.CourseID</td>
-                    <td>@(course.Title ?? "No Title")</td>
-                    <td>@(course.Credits?.ToString() ?? "0")</td>
-                    <td>
-                        <a href="@Url.Action("ManageCourse", "Course", new { courseId = course.CourseID })" class="btn btn-primary">Manage Course</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                    <tr>
+                        <th>Course ID</th>
+                        <th>Title</th>
+                        <th>Credits</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var course in Model)
+                    {
+                        <tr>
+                            <td>@course.CourseID</td>
+                            <td>@(course.Title ?? "No Title")</td>
+                            <td>@(course.Credits?.ToString() ?? "0")</td>
+                            <td>
+                                <a href="@Url.Action("ManageCourse", "Course", new { courseId = course.CourseID })" class="btn btn-primary">Manage Course</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </div>
-}
+    }
 </div>
 
 <!-- Add Course Modal -->
