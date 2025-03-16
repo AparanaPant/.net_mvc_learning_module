@@ -20,7 +20,6 @@ namespace GraceProject.Controllers.Admin
         {
             _context = context;
             _userManager = userManager;
-     
         }
 
         [HttpGet]
@@ -28,10 +27,6 @@ namespace GraceProject.Controllers.Admin
         public async Task<IActionResult> Courses()
         {
             var courses = await _context.Course.ToListAsync();
-            if (courses == null)
-                return NotFound("No courses available.");
-
-            // Pass the courses list to the view
             return View("~/Views/Admin/Courses/Courses.cshtml", courses);
         }
 
@@ -48,14 +43,11 @@ namespace GraceProject.Controllers.Admin
             if (course == null)
                 return NotFound();
 
-            // Fetch all educators based on role
             var educators = await _userManager.GetUsersInRoleAsync("Educator");
             ViewBag.Educators = educators;
 
-            // Pass the course model to the view
             return View("~/Views/Admin/Courses/ManageCourse.cshtml", course);
         }
-
 
         [HttpPost]
         [Route("CreateSessionForEducator")]
@@ -81,7 +73,7 @@ namespace GraceProject.Controllers.Admin
                     return Redirect($"/Admin/Courses/Sessions/List/{session.CourseID}");
 
                 }
-            else
+                else
                 {
                     return BadRequest("Session created but could not retrieve session details.");
                 }
@@ -237,7 +229,7 @@ namespace GraceProject.Controllers.Admin
         public async Task<IActionResult> QuizzesList(string courseId)
         {
             var quizzes = await _context.Quizzes.Where(q => q.CourseID == courseId).ToListAsync();
-            ViewBag.CourseID = courseId; 
+            ViewBag.CourseID = courseId;
             return View("~/Views/Admin/Courses/QuizList.cshtml", quizzes);
         }
 
