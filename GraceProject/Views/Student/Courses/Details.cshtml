@@ -50,7 +50,7 @@
                 let sessionId = link.getAttribute("data-sessionid");
                 sessionDetails.style.display = "block";
                 document.getElementById("quizzes-link").href = `/Student/Quizzes/${courseId}`;
-                document.getElementById("modules-link").href = `/Student/Modules/Index`;
+                document.getElementById("modules-link").href = `/Student/Modules/Index/${courseId}`;
                document.getElementById("gradebook-link").href = `/Student/Gradebook/${courseId}/${sessionId}/${studentId}`;
 
             });

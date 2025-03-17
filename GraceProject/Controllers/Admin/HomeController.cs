@@ -18,7 +18,7 @@ namespace GraceProject.Controllers.Student
         public IActionResult Dashboard()
         {
             if (!string.IsNullOrEmpty(_userManager.GetUserId(this.User)))
-                return View("~/Views/Student/Home/Dashboard.cshtml");
+                return View("~/Views/Admin/Home/Dashboard.cshtml");
             else
                 return NotFound();
         }

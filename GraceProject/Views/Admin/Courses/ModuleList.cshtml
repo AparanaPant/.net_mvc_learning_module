@@ -5,7 +5,9 @@
 }
 
 <h2>Modules</h2>
-<a href="~/Admin/Modules/Create" class="btn btn-primary mb-3">Add Module</a>
+
+<!-- Add CourseId to the Create Module URL -->
+<a href="~/Admin/Modules/Create/@ViewBag.CourseId" class="btn btn-primary mb-3">Add Module</a>
 
 @if (!Model.Any())
 {
