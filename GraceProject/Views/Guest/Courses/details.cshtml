@@ -6,12 +6,19 @@
 }
 
 <div class="container">
+    <!-- Course General Information Section -->
     <h1 class="display-4 text-center">@Model.Course.Title</h1>
     <p class="text-center"><strong>Course ID:</strong> @Model.Course.CourseID</p>
 
-    <h2 class="mt-4">Available Sessions</h2>
+    <h2>Course Actions</h2>
+    <div class="list-group">
+        <a href="~/Courses/Quizzes/@Model.Course.CourseID" class="list-group-item list-group-item-action">📖 Quizzes</a>
+        <a href="~/Student/Modules/Index/@Model.Course.CourseID" class="list-group-item list-group-item-action">📚 Modules</a>
+    </div>
 
-    <p class="text-muted">Total Sessions: @(Model.Sessions.Count)</p>
+    <!-- Guest-Specific Session Enrollment Section -->
+    <h2 class="mt-4">Available Sessions</h2>
+    <p class="text-muted">Total Sessions: @(Model.Sessions?.Count ?? 0)</p>
 
     @if (Model.Sessions != null && Model.Sessions.Any())
     {

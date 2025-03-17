@@ -1,0 +1,43 @@
+﻿@model GraceProject.ViewModels.QuizzesViewModel
+
+@{
+    ViewData["Title"] = "Quizzes for " + Model.Course.Title;
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+}
+
+<div class="container">
+    <h1 class="display-4 text-center">📖 Quizzes - @Model.Course.Title</h1>
+    <p class="text-center"><strong>Course ID:</strong> @Model.Course.CourseID</p>
+
+    <h2>📌 Available Quizzes</h2>
+    @if (Model.DefaultQuizzes.Any())
+    {
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Duration</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var quiz in Model.DefaultQuizzes)
+                {
+                            <tr>
+                                <td>@quiz.Title</td>
+                                <td>@quiz.Duration minutes</td>
+                                <td>@quiz.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>
+                                    <a href="~/Quiz/Details/@quiz.QuizId" class="btn btn-info">🔍 View</a>
+                                </td>
+                            </tr>
+                }
+                </tbody>
+            </table>
+    }
+    else
+    {
+            <p class="text-warning">⚠ No quizzes available for this course.</p>
+    }
+</div>
