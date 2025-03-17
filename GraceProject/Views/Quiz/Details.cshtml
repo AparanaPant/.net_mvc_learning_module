@@ -5,68 +5,94 @@
     Layout = "~/Views/Shared/_StudentLayout.cshtml";
 }
 
-<div class="container">
-    <h1 class="display-4 text-center">📖 Quiz: @Model.Title</h1>
-    <p class="text-center"><strong>Duration:</strong> @Model.Duration minutes</p>
-    <p class="text-center"><strong>Created At:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</p>
+<div class="container mt-5">
+    <div class="quiz-header text-center mb-4">
+        <h1 class="display-4">📖 @Model.Title</h1>
+        <p class="text-muted">
+            <strong>⏳ Duration:</strong> @Model.Duration minutes |
+            <strong>📅 Created:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")
+        </p>
+    </div>
 
-    <h2 class="mt-4">📜 Questions</h2>
+    <div class="quiz-body">
+        <h2 class="mb-4 text-primary">📜 Quiz Questions</h2>
 
-    @if (Model.Questions.Any())
-    {
-        <div class="accordion" id="quizQuestions">
-            @foreach (var question in Model.Questions)
-            {
-                <div class="card">
-                    <div class="card-header" id="heading-@question.QuestionId">
-                        <h5 class="mb-0">
-                            <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse-@question.QuestionId"
-                                    aria-expanded="true" aria-controls="collapse-@question.QuestionId">
-                                ❓ @question.Text
-                            </button>
-                        </h5>
-                    </div>
+        @if (Model.Questions.Any())
+        {
+            <div class="accordion" id="quizQuestions">
+                @foreach (var question in Model.Questions)
+                {
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-light" id="heading-@question.QuestionId">
+                            <h5 class="mb-0">
+                                <button class="btn btn-link text-dark font-weight-bold" type="button" data-toggle="collapse"
+                                        data-target="#collapse-@question.QuestionId" aria-expanded="true" aria-controls="collapse-@question.QuestionId">
+                                    ❓ <span class="question-text">@question.Text</span>
+                                </button>
+                            </h5>
+                        </div>
 
-                    <div id="collapse-@question.QuestionId" class="collapse show" aria-labelledby="heading-@question.QuestionId" data-parent="#quizQuestions">
-                        <div class="card-body">
-                            @if (question.Type == "Fill in the Blank")
-                            {
-                                <h5>📝 Correct Answers:</h5>
-                                <ul>
-                                    @foreach (var answer in question.FillInTheBlankAnswers)
+                        <div id="collapse-@question.QuestionId" class="collapse show" aria-labelledby="heading-@question.QuestionId" data-parent="#quizQuestions">
+                            <div class="card-body">
+
+                                <!-- Display Question Image -->
+                                @if (!string.IsNullOrEmpty(question.ImageUrl))
+                                {
+                                    <div class="text-center mb-3">
+                                        <img src="@question.ImageUrl" class="img-thumbnail rounded shadow-sm"
+                                             alt="Question Image" style="max-width: 350px; height: auto;">
+                                    </div>
+                                }
+
+                                <!-- Display Answer Section -->
+                                <div class="answers-section">
+                                    <h5 class="text-secondary font-weight-bold">📝 Answers:</h5>
+
+                                    @if (question.Type == "Fill in the Blank")
                                     {
-                                        <li><strong>@answer.Answer</strong></li>
+                                        <div class="alert alert-info">
+                                            <ul class="mb-0">
+                                                @foreach (var answer in question.FillInTheBlankAnswers)
+                                                {
+                                                    <li><strong>@answer.Answer</strong></li>
+                                                }
+                                            </ul>
+                                        </div>
                                     }
-                                </ul>
-                            }
-                            else
-                            {
-                                <h5>📝 Options:</h5>
-                                <ul>
-                                    @foreach (var option in question.Options)
+                                    else
                                     {
-                                        <li class="@(option.IsCorrect ? "text-success font-weight-bold" : "")">
-                                            @option.Text @(option.IsCorrect ? "✅" : "❌")
-                                        </li>
+                                        <ul class="list-group">
+                                            @foreach (var option in question.Options)
+                                            {
+                                                <li class="list-group-item d-flex justify-content-between align-items-center
+                                                    @(option.IsCorrect ? "list-group-item-success font-weight-bold" : "list-group-item-light")">
+                                                    @option.Text
+                                                    @if (option.IsCorrect)
+                                                    {
+                                                        <span class="badge badge-success">✅ Correct</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge badge-danger">❌ Incorrect</span>
+                                                    }
+                                                </li>
+                                            }
+                                        </ul>
                                     }
-                                </ul>
-                            }
-
-                            @if (!string.IsNullOrEmpty(question.ImageUrl))
-                            {
-                                <h5>📷 Attached Image:</h5>
-                                <img src="@question.ImageUrl" class="img-fluid rounded" alt="Question Image" style="max-width: 300px;">
-                            }
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            }
-        </div>
-    }
-    else
-    {
-        <p class="text-warning">⚠ No questions available in this quiz.</p>
-    }
+                }
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-warning text-center">
+                ⚠ No questions available in this quiz.
+            </div>
+        }
+    </div>
 </div>
 
 @section Scripts {
@@ -76,3 +102,47 @@
         });
     </script>
 }
+
+<style>
+    .quiz-header {
+        padding: 20px;
+        border-bottom: 2px solid #ddd;
+    }
+
+    .quiz-body {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .card {
+        border-radius: 8px;
+    }
+
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .question-text {
+        font-size: 18px;
+    }
+
+    .list-group-item {
+        font-size: 16px;
+        padding: 10px;
+    }
+
+    .list-group-item-success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .list-group-item-light {
+        background-color: #f8f9fa;
+    }
+
+    .badge {
+        font-size: 14px;
+        padding: 5px 10px;
+    }
+</style>
