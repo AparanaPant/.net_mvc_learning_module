@@ -25,7 +25,7 @@
 
         <div class="form-group">
             <label for="Duration">Duration (in minutes)</label>
-            <input type="number" asp-for="Duration" class="form-control" style="width: 50%;" />
+            <input type="number" asp-for="Duration" class="form-control" style="width: 50%;" min="1" required />
             <span asp-validation-for="Duration" class="text-danger"></span>
         </div>
 
@@ -203,59 +203,118 @@
             }
         }
 
-        function updateQuestion(button) {
+                function updateQuestion(button) {
             const questionDiv = button.closest('.question-div');
             const questionIndex = questionDiv.dataset.index;
 
-            questions[questionIndex].Text = questionDiv.querySelector('.question-text').value;
-            questions[questionIndex].Points = questionDiv.querySelector('.question-points').value;
-            questions[questionIndex].ImageUrl = questionDiv.querySelector('.img-url').value;
+            const questionText = questionDiv.querySelector('.question-text').value.trim();
+            const points = parseInt(questionDiv.querySelector('.question-points').value, 10) || 0;
+            const questionType = questions[questionIndex].Type;
+
+            // Validation: Ensure question text is not empty
+            if (!questionText) {
+                alert("Question text cannot be empty.");
+                return;
+            }
+
+            // Validation: Ensure points are greater than zero
+            if (points <= 0) {
+                alert("Points must be greater than zero.");
+                return;
+            }
 
             const options = [];
             const fillInTheBlankAnswers = [];
+            let correctAnswerCount = 0;
 
-            if (questions[questionIndex].Type === "True/False") {
-                const trueOptionSelected = questionDiv.querySelector(`#true-option-${questionIndex}`).checked;
-                const falseOptionSelected = questionDiv.querySelector(`#false-option-${questionIndex}`).checked;
-                options.push({ Text: "True", IsCorrect: trueOptionSelected });
-                options.push({ Text: "False", IsCorrect: falseOptionSelected });
-            } else if (questions[questionIndex].Type === "Fill in the Blank") {
-                questionDiv.querySelectorAll('.fitb-answer-instance').forEach((answerDiv, index) => {
-                    const answerText = answerDiv.querySelector('.fitb-answer-text').value;
-                    fillInTheBlankAnswers.push(answerText);
-                });
-                questions[questionIndex].FillInTheBlankAnswers = fillInTheBlankAnswers;
-            } else {
-                questionDiv.querySelectorAll('.option-instance').forEach((optionDiv, index) => {
-                    const text = optionDiv.querySelector('.option-text').value;
+            if (questionType === "True/False") {
+                const trueOption = questionDiv.querySelector(`#true-option-${questionIndex}`);
+                const falseOption = questionDiv.querySelector(`#false-option-${questionIndex}`);
+
+                // Validation: Ensure a correct answer is selected for True/False
+                if (!trueOption.checked && !falseOption.checked) {
+                    alert("You must select a correct answer for True/False.");
+                    return;
+                }
+
+                options.push({ Text: "True", IsCorrect: trueOption.checked });
+                options.push({ Text: "False", IsCorrect: falseOption.checked });
+
+            } else if (questionType === "Multiple Choice") {
+                const optionElements = questionDiv.querySelectorAll('.option-instance');
+
+                // Validation: Ensure at least two options exist
+                if (optionElements.length < 2) {
+                    alert("Multiple choice questions must have at least two options.");
+                    return;
+                }
+
+                optionElements.forEach((optionDiv) => {
+                    const text = optionDiv.querySelector('.option-text').value.trim();
                     const isCorrect = optionDiv.querySelector('.is-correct-checkbox').checked;
+                    if (!text) {
+                        alert("All options must have text.");
+                        return;
+                    }
+                    if (isCorrect) correctAnswerCount++;
+
                     options.push({ Text: text, IsCorrect: isCorrect });
                 });
+
+                // Validation: Ensure exactly one correct answer is selected for MCQ
+                if (correctAnswerCount !== 1) {
+                    alert("Multiple Choice questions must have exactly one correct answer.");
+                    return;
+                }
+
+            } else if (questionType === "Fill in the Blank") {
+                const answerInstances = questionDiv.querySelectorAll('.fitb-answer-instance input');
+
+                // Validation: Ensure at least one answer is provided
+                if (answerInstances.length === 0) {
+                    alert("Fill in the Blank must have at least one answer.");
+                    return;
+                }
+
+                answerInstances.forEach(input => {
+                    const answerText = input.value.trim();
+                    if (!answerText) {
+                        alert("Fill in the Blank answers cannot be empty.");
+                        return;
+                    }
+                    fillInTheBlankAnswers.push(answerText);
+                });
             }
+
+            // Update question details
+            questions[questionIndex].Text = questionText;
+            questions[questionIndex].Points = points;
+            questions[questionIndex].ImageUrl = questionDiv.querySelector('.img-url').value;
             questions[questionIndex].Options = options;
+            questions[questionIndex].FillInTheBlankAnswers = fillInTheBlankAnswers;
 
             // Collapse the question section to only show the question text
             const collapsedSection = document.createElement('div');
             collapsedSection.classList.add('collapsed-question');
             collapsedSection.innerHTML = `
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <strong>Question:</strong> ${questions[questionIndex].Text}
-                            </div>
-                            <button type="button" class="btn btn-secondary" onclick="editQuestion(this)">Edit Question</button>
-                        </div>
-                        <input type="hidden" name="Questions[${questionIndex}].Text" value="${questions[questionIndex].Text}" />
-                        <input type="hidden" name="Questions[${questionIndex}].Points" value="${questions[questionIndex].Points}" />
-                        <input type="hidden" name="Questions[${questionIndex}].Type" value="${questions[questionIndex].Type}" />
-                        <input type="hidden" name="Questions[${questionIndex}].ImageUrl" value="${questions[questionIndex].ImageUrl}" />
-                        ${fillInTheBlankAnswers.map((answer, answerIndex) => `
-                            <input type="hidden" name="Questions[${questionIndex}].FillInTheBlankAnswers[${answerIndex}]" value="${answer}" />
-                        `).join('')}
-                        ${options.map((option, optionIndex) => `
-                            <input type="hidden" name="Questions[${questionIndex}].Options[${optionIndex}].Text" value="${option.Text}" />
-                            <input type="hidden" name="Questions[${questionIndex}].Options[${optionIndex}].IsCorrect" value="${option.IsCorrect}" />
-                        `).join('')}
-                    `;
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <strong>Question:</strong> ${questions[questionIndex].Text}
+                    </div>
+                    <button type="button" class="btn btn-secondary" onclick="editQuestion(this)">Edit Question</button>
+                </div>
+                <input type="hidden" name="Questions[${questionIndex}].Text" value="${questions[questionIndex].Text}" />
+                <input type="hidden" name="Questions[${questionIndex}].Points" value="${questions[questionIndex].Points}" />
+                <input type="hidden" name="Questions[${questionIndex}].Type" value="${questions[questionIndex].Type}" />
+                <input type="hidden" name="Questions[${questionIndex}].ImageUrl" value="${questions[questionIndex].ImageUrl}" />
+                ${fillInTheBlankAnswers.map((answer, answerIndex) => `
+                    <input type="hidden" name="Questions[${questionIndex}].FillInTheBlankAnswers[${answerIndex}]" value="${answer}" />
+                `).join('')}
+                ${options.map((option, optionIndex) => `
+                    <input type="hidden" name="Questions[${questionIndex}].Options[${optionIndex}].Text" value="${option.Text}" />
+                    <input type="hidden" name="Questions[${questionIndex}].Options[${optionIndex}].IsCorrect" value="${option.IsCorrect}" />
+                `).join('')}
+            `;
 
             questionDiv.innerHTML = '';
             questionDiv.appendChild(collapsedSection);
