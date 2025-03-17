@@ -1,0 +1,35 @@
+﻿@model GuestCourseDetailsViewModel
+
+@{
+    ViewData["Title"] = "Guest Course Details";
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+}
+
+<div class="container">
+    <h1 class="display-4 text-center">@Model.Course.Title</h1>
+    <p class="text-center"><strong>Course ID:</strong> @Model.Course.CourseID</p>
+
+    <h2 class="mt-4">Available Sessions</h2>
+
+    <p class="text-muted">Total Sessions: @(Model.Sessions.Count)</p>
+
+    @if (Model.Sessions != null && Model.Sessions.Any())
+    {
+        <div class="list-group">
+            @foreach (var session in Model.Sessions)
+            {
+                <div class="d-flex justify-content-between align-items-center border p-3 mb-2">
+                    <div>
+                        <span>👨‍🏫 Instructor: @session.EducatorName</span><br>
+                        <span>📅 Start: @(session.StartDate?.ToString("yyyy-MM-dd") ?? "TBD") — End: @(session.EndDate?.ToString("yyyy-MM-dd") ?? "TBD")</span>
+                    </div>
+                    <a href="~/Guest/RegisterCourse?sessionId=@session.SessionID" class="btn btn-success">✅ Enroll</a>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-warning text-center">⚠ No sessions available for this course.</p>
+    }
+</div>

@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Educator Courses";
+    ViewData["Title"] = "Guest Courses";
     Layout = "~/Views/Shared/_StudentLayout.cshtml";
 }
 
@@ -20,22 +20,20 @@
 }
 
 <div class="container">
-    <h1 class="display-4 text-center">Educator Courses</h1>
+    <h1 class="display-4 text-center">Guest Courses</h1>
 
-    <h2>Your Courses</h2>
-    @if (ViewData["EducatorCourses"] is List<dynamic> educatorCourses && educatorCourses.Any())
+    <h2>Your Enrolled Courses</h2>
+    @if (ViewData["GuestCourses"] is List<GraceProject.Models.Course> guestCourses && guestCourses.Any())
     {
         <div class="row">
-            @foreach (var courseData in educatorCourses)
+            @foreach (var course in guestCourses)
             {
-                var course = courseData.Course;
                 <div class="col-md-4 mb-4">
                     <div class="card shadow-sm border-primary">
-                       
                         <div class="card-body text-center">
                             <h5 class="card-title">@course.Title</h5>
                             <p class="card-text">Credits: @course.Credits</p>
-                            <a href="~/Educator/Courses/Details/@course.CourseID" class="btn btn-primary">Manage Course</a>
+                            <a href="~/guest/courses/details/@course.CourseID" class="btn btn-primary">View Course</a>
                         </div>
                     </div>
                 </div>
@@ -44,7 +42,7 @@
     }
     else
     {
-        <p class="text-warning text-center">⚠ You are not assigned to any courses.</p>
+        <p class="text-warning text-center">⚠ You are not enrolled in any courses.</p>
     }
 
     <h2 class="mt-5">All Available Courses</h2>
@@ -55,11 +53,10 @@
             {
                 <div class="col-md-4 mb-4">
                     <div class="card shadow-sm border-success">
-                       
                         <div class="card-body text-center">
                             <h5 class="card-title">@course.Title</h5>
                             <p class="card-text">Credits: @course.Credits</p>
-                            <a href="~/Courses/Details/@course.CourseID" class="btn btn-outline-success">View Course</a>
+                            <a href="~/guest/courses/details/@course.CourseID" class="btn btn-outline-success">View & Enroll</a>
                         </div>
                     </div>
                 </div>

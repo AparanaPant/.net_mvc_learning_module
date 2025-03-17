@@ -133,6 +133,10 @@ namespace GraceProject.Areas.Identity.Pages.Account
                         {
                             return RedirectToAction("Dashboard", "Student");
                         }
+                        else if (roles.Contains("Guest"))
+                        {
+                            return RedirectToAction("Dashboard", "Guest");
+                        }
                     }
 
                     return LocalRedirect(returnUrl);

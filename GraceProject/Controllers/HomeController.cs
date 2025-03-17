@@ -41,6 +41,10 @@ public class HomeController : Controller
         {
             return RedirectToAction("Dashboard", "Student");
         }
+        else if (roles.Contains("Guest"))
+        {
+            return RedirectToAction("Dashboard", "Guest");
+        }
 
         return RedirectToAction("Login", "Account"); // Fallback to login if no valid role
     }

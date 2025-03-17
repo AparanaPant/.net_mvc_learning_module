@@ -30,7 +30,21 @@ public class CoursesController : Controller
             return NotFound("Invalid Course ID.");
         }
 
-        var course = await _context.Course 
+        // ✅ Check if the Guest is already enrolled
+        var isEnrolled = await _context.StudentSessions
+            .AnyAsync(ss => ss.StudentID == user.Id && ss.Session.CourseID == courseId);
+
+        // ✅ If enrolled, redirect to Student Course Details
+        if (isEnrolled)
+        {
+            return Redirect($"~/Student/Courses/Details/{courseId}");
+        }
+
+        // ✅ If the user is a guest, fetch the course and session details
+        var course = await _context.Course
+            .Include(c => c.Sessions)
+            .ThenInclude(s => s.EducatorSessions)
+            .ThenInclude(es => es.Educator)
             .FirstOrDefaultAsync(c => c.CourseID == courseId);
 
         if (course == null)
@@ -38,11 +52,37 @@ public class CoursesController : Controller
             return NotFound("Course not found.");
         }
 
-        
-        ViewData["Course"] = course;
+        // ✅ Fetch Sessions with Educator Details
+        var courseSessions = await _context.Session
+            .Where(s => s.CourseID == courseId)
+            .Select(session => new GuestSessionViewModel
+            {
+                SessionID = session.SessionID,
+                StartDate = session.StartDate,
+                EndDate = session.EndDate,
+                EducatorName = _context.Users
+                    .Where(u => session.EducatorSessions.Any(es => es.EducatorID == u.Id))
+                    .Select(u => u.FirstName + " " + u.LastName)
+                    .FirstOrDefault() ?? "Unknown Educator"
+            })
+            .ToListAsync();
 
+        // ✅ If the user is a guest, return GuestCourseDetailsViewModel
+        if (await _userManager.IsInRoleAsync(user, "Guest"))
+        {
+            var viewModel = new GuestCourseDetailsViewModel
+            {
+                Course = course,
+                Sessions = courseSessions
+            };
+
+            return View("~/Views/Guest/Courses/Details.cshtml", viewModel);
+        }
+
+        // ✅ If not a guest, return the default Course view
         return View("~/Views/Courses/Details.cshtml", course);
     }
+
 
 
     [HttpPost("RegisterToCourse")]
