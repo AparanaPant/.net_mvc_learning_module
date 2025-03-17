@@ -273,10 +273,9 @@ namespace GraceProject.Controllers
             return View(quizViewModel);
         }
 
-        // POST: Quiz/Edit/5
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public async Task<IActionResult> Edit(QuizViewModel model, string userType=null)
+        public async Task<IActionResult> Edit(QuizViewModel model, string userType = null)
         {
             if (ModelState.IsValid)
             {
@@ -292,7 +291,7 @@ namespace GraceProject.Controllers
                     return NotFound();
                 }
 
-                // Update quiz details
+                // ✅ Update Quiz Details
                 if (!string.IsNullOrEmpty(model.Title))
                 {
                     quiz.Title = model.Title;
@@ -302,29 +301,12 @@ namespace GraceProject.Controllers
                     quiz.Duration = model.Duration;
                 }
 
-                // Track question IDs to identify deleted questions
-                var updatedQuestionIds = model.Questions.Select(q => q.QuestionId).ToList();
-                var existingQuestionIds = quiz.Questions.Select(q => q.QuestionId).ToList();
-
-                // Identify questions to be deleted
-                var questionsToDelete = existingQuestionIds.Except(updatedQuestionIds).ToList();
-
-                foreach (var questionId in questionsToDelete)
-                {
-                    var questionToDelete = quiz.Questions.FirstOrDefault(q => q.QuestionId == questionId);
-                    if (questionToDelete != null)
-                    {
-                        _context.Questions.Remove(questionToDelete);
-                    }
-                }
-
-                // Update existing questions
+                // ✅ Update Questions
                 foreach (var questionModel in model.Questions)
                 {
                     var existingQuestion = quiz.Questions.FirstOrDefault(q => q.QuestionId == questionModel.QuestionId);
                     if (existingQuestion != null)
                     {
-                        // Update only non-null fields
                         if (!string.IsNullOrEmpty(questionModel.Text))
                         {
                             existingQuestion.Text = questionModel.Text;
@@ -337,73 +319,18 @@ namespace GraceProject.Controllers
                         {
                             existingQuestion.Type = questionModel.Type;
                         }
-                        if (!string.IsNullOrEmpty(questionModel.ImageUrl))
-                        {
-                            existingQuestion.ImageUrl = questionModel.ImageUrl; 
-                        }
 
-                        else if (!string.IsNullOrEmpty(questionModel.ImageUrl))
+                        // ✅ Image Handling: If a new image URL exists, update it
+                        if (!string.IsNullOrEmpty(questionModel.ImageUrl))
                         {
                             existingQuestion.ImageUrl = questionModel.ImageUrl;
                         }
 
-                        // Update options if they are provided
-                        if (questionModel.Options != null)
-                        {
-                            foreach (var optionModel in questionModel.Options)
-                            {
-                                var existingOption = existingQuestion.Options.FirstOrDefault(o => o.OptionId == optionModel.OptionId);
-                                if (existingOption != null)
-                                {
-                                    if (!string.IsNullOrEmpty(optionModel.Text))
-                                    {
-                                        existingOption.Text = optionModel.Text;
-                                    }
-                                    existingOption.IsCorrect = optionModel.IsCorrect;
-                                }
-                                else
-                                {
-                                    // Add new option
-                                    existingQuestion.Options.Add(new Option
-                                    {
-                                        Text = optionModel.Text,
-                                        IsCorrect = optionModel.IsCorrect
-                                    });
-                                }
-                            }
-                        }
-
-                        // Handle deleted options
-                        if (model.Questions.Any(q => q.QuestionId == questionModel.QuestionId && q.OptionsToDelete != null))
-                        {
-                            foreach (var optionIdToDelete in model.Questions.First(q => q.QuestionId == questionModel.QuestionId).OptionsToDelete)
-                            {
-                                var optionToDelete = existingQuestion.Options.FirstOrDefault(o => o.OptionId == optionIdToDelete);
-                                if (optionToDelete != null)
-                                {
-                                    existingQuestion.Options.Remove(optionToDelete);
-                                }
-                            }
-                        }
-
-                        // Update fill-in-the-blank answers if they are provided
-                        if (questionModel.FillInTheBlankAnswers != null)
-                        {
-                            // Clear existing answers and add the new ones
-                            existingQuestion.FillInTheBlankAnswers.Clear();
-                            foreach (var answer in questionModel.FillInTheBlankAnswers)
-                            {
-                                existingQuestion.FillInTheBlankAnswers.Add(new FillInTheBlankAnswer
-                                {
-                                    Answer = answer
-                                });
-                            }
-                        }
+                        // ✅ Save Changes
+                        _context.Quizzes.Update(quiz);
+                        await _context.SaveChangesAsync();
                     }
                 }
-
-                _context.Quizzes.Update(quiz);
-                await _context.SaveChangesAsync();
 
                 if (userType == "educator")
                 {
@@ -416,17 +343,6 @@ namespace GraceProject.Controllers
                 else
                 {
                     return RedirectToAction(nameof(Index));
-                }
-            }
-
-            // Print out model state errors
-            foreach (var state in ModelState)
-            {
-                var key = state.Key;
-                var errors = state.Value.Errors;
-                foreach (var error in errors)
-                {
-                    Console.WriteLine($"Key: {key}, Error: {error.ErrorMessage}");
                 }
             }
 
