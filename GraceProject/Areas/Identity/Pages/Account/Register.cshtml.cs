@@ -71,11 +71,12 @@ namespace GraceProject.Areas.Identity.Pages.Account
 
         public class InputModel
         {
+            [Required(ErrorMessage = "First Name is required.")]
             [DataType(DataType.Text)]
             [Display(Name = "First Name")]
             public string FirstName { get; set; }
 
-
+            [Required(ErrorMessage = "Last Name is required.")]
             [DataType(DataType.Text)]
             [Display(Name = "Last Name")]
             public string LastName { get; set; }
@@ -101,7 +102,7 @@ namespace GraceProject.Areas.Identity.Pages.Account
             [Display(Name = "ZIP Code")]
             public string ZIPCode { get; set; }
 
-            [Required]
+            [Required(ErrorMessage = "Email is required.")]
             [EmailAddress]
             [Display(Name = "Email")]
             public string Email { get; set; }
@@ -160,6 +161,29 @@ namespace GraceProject.Areas.Identity.Pages.Account
         {
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
+            if (Input.UserType.Equals("STUDENT", StringComparison.OrdinalIgnoreCase) ||
+                 Input.UserType.Equals("EDUCATOR", StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.IsNullOrWhiteSpace(Input.FirstName))
+                    ModelState.AddModelError(nameof(Input.FirstName), "First Name is required.");
+
+                if (string.IsNullOrWhiteSpace(Input.LastName))
+                    ModelState.AddModelError(nameof(Input.LastName), "Last Name is required.");
+
+                if (string.IsNullOrWhiteSpace(Input.Password))
+                    ModelState.AddModelError(nameof(Input.Password), "Password is required.");
+
+                if (!Input.SchoolID.HasValue || Input.SchoolID == 0) // Ensure valid school is selected
+                    ModelState.AddModelError(nameof(Input.SchoolID), "School selection is required.");
+            }
+
+            // Stop processing if there are validation errors
+            if (!ModelState.IsValid)
+            {
+                return Page();
+            }
+
 
             if (!ModelState.IsValid) return Page();
 
