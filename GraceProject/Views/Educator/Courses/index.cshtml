@@ -21,7 +21,6 @@
 
 <div class="container">
     <h1 class="display-4 text-center">Educator Courses</h1>
-    <p class="text-center">Welcome, Educator ID: @ViewData["UserID"]</p>
 
     <h2>Your Courses</h2>
     @if (ViewData["EducatorCourses"] is List<dynamic> educatorCourses && educatorCourses.Any())
@@ -31,7 +30,8 @@
             {
                 var course = courseData.Course;
                 <div class="col-md-4 mb-4">
-                    <div class="card shadow-sm">
+                    <div class="card shadow-sm border-primary">
+                       
                         <div class="card-body text-center">
                             <h5 class="card-title">@course.Title</h5>
                             <p class="card-text">Credits: @course.Credits</p>
@@ -54,11 +54,12 @@
             @foreach (var course in allCourses)
             {
                 <div class="col-md-4 mb-4">
-                    <div class="card shadow-sm">
+                    <div class="card shadow-sm border-success">
+                       
                         <div class="card-body text-center">
                             <h5 class="card-title">@course.Title</h5>
                             <p class="card-text">Credits: @course.Credits</p>
-                            <a href="~/Courses/Details/@course.CourseID" class="btn btn-outline-primary">View Course</a>
+                            <a href="~/Courses/Details/@course.CourseID" class="btn btn-outline-success">View Course</a>
                         </div>
                     </div>
                 </div>

@@ -12,6 +12,8 @@ function LoadActiveSlideWithURLInfo() {
         debugger;
         if (!isNaN(slide)) {
             SetAcitvatedCairoselSlideById(slide);
+
+            startSlideTimer(); //start timer to calculate the duratio of reading for the next slide
         }
     }
 }
@@ -32,9 +34,18 @@ $('#carousel').find('.carousel-control').unbind().click(function () {
     }
     else {
         if (ChangeSlideAction != false) {
+
+            debugger;
+            var slideId = GetIdofActiveSlide();
+            StoreSlideReading(slideId);// store the duration reading of the slide
+            startSlideTimer(); //start timer to calculate the duratio of reading for the next slide
+
+
             UpdatecarouselIndicatorText();
             UpdateStyleOfSelectedCauroselThumbItem();
             DisplayForwardAndBackwardButtons();
+
+
         }
         else {
             alert(ChangeSlideAction_Error);

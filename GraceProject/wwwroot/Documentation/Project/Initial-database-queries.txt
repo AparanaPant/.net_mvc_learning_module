@@ -23,5 +23,9 @@ VALUES
 
     ALTER TABLE [grace].[dbo].[UserAnswers] ALTER COLUMN SelectedOptionId INT NULL;
 
+4. Confiimed after you register in the website, without approving email
+UPDATE AspNetUsers
+SET EmailConfirmed = 1;
+
     
 	 

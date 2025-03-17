@@ -47,4 +47,7 @@ function NavigateToOtherSlideId(FromSlideId, SlideId, DisplayReturnToMainSlideBu
         else
             $(nthItemDiv).find("#a_NavigateToOtherSlide").html("Click here to return back");
     }
+
+
+
 }

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GraceProject.Controllers.Admin
 {
-    [Route("Admin/Home")]
+    [Route("Student")]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -20,7 +20,7 @@ namespace GraceProject.Controllers.Admin
         public IActionResult Dashboard()
         {
             if (!string.IsNullOrEmpty(_userManager.GetUserId(this.User)))
-                return View("~/Views/Admin/Home/Dashboard.cshtml");
+                return View("~/Views/Student/Home/Dashboard.cshtml");
             else
                 return NotFound();
         }

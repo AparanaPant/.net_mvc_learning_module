@@ -1,21 +1,33 @@
-﻿@model GraceProject.Models.Module
+﻿@{
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+    ViewData["Title"] = "Creating a Module";
+
+}
+@model GraceProject.Models.Module
 
 @{
-    ViewData["Title"] = "Create";
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    GraceProject.Models.Course Course=new Course();
+    if (ViewData["Course"] != null)
+        Course = (GraceProject.Models.Course)ViewData["Course"];
 }
 
-<h1>Create</h1>
+<h2>Adding a Module</h2>
 
-<h4>Module</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form asp-action="CreateModule">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
+                <label class="control-label">Course</label>
+                <input type="text" class="form-control" value="@Course.Title" disabled />
+                <input type="hidden" asp-for="CourseId" value="@Course.CourseID" />
+                <span asp-validation-for="CourseId" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
                 <label asp-for="ParentModuleId" class="control-label">Parent Module</label>
-                <select asp-for="ParentModuleId" class="form-control" asp-items="@((IEnumerable<SelectListItem>)ViewData["ModuleList"])">
+                <select asp-for="ParentModuleId"  class="form-control" asp-items="@((IEnumerable<SelectListItem>)ViewData["ModuleList"])">
                     <option value="">-- Select Parent Module --</option>
                 </select>
                 <span asp-validation-for="ParentModuleId" class="text-danger"></span>
@@ -34,9 +46,11 @@
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a href="ManageModule/@Course.CourseID">Back to List</a>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
