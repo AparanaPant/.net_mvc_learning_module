@@ -16,7 +16,7 @@
             <label for="searchType" class="form-label">Search By</label>
             <select id="searchType" class="form-control">
                 <option value="student">Student Name</option>
-                <option value="course">Course Name</option>
+                @* <option value="course">Course Name</option> *@
                 <option value="educator">Educator Name</option>
                 <option value="school">School Name</option>
             </select>
@@ -93,11 +93,11 @@
             <div class="row">
                 <!-- Bar Chart -->
                 <div class="col-md-6">
-                    <canvas id="barChart"></canvas>
+                    <canvas id="barChartId"></canvas>
                 </div>
                 <!-- Pie Chart -->
                 <div class="col-md-6">
-                    <canvas id="pieChart"></canvas>
+                    <canvas id="pieChartId"></canvas>
                 </div>
             </div>
             @* <div id="resultsContent" class="mt-3"></div> <!-- Table will be populated here --> *@
@@ -233,12 +233,15 @@
     }
 
         function loadCourses() {
+
+            var UserId=$("selectedId").val();
+            var searchType = $('#searchType').val();
         $.ajax({
             url: '/Report/Report/GetCourseList', // Fetch courses
             type: 'POST',
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',
-            data: JSON.stringify({ keyword: "" }), // Fetch all courses
+            data: JSON.stringify({ keyword: "", UserId:UserId, SearchType:searchType }), // Fetch all courses
             success: function (data) {
                 $('#dynamicDropdown').empty().append('<option value="">Please select</option>');
                 $.each(data, function (index, item) {
@@ -369,6 +372,44 @@
                     });
 
                     resultsContent.html(content);
+
+                    let quizScores = {};
+                    let gradeCounts = { A: 0, B: 0, C: 0, D: 0, F: 0 };
+
+                    data.courses.forEach(course => {
+                        course.students.forEach(student => {
+                            student.quizzes.forEach(quiz => {
+                                if (!quizScores[quiz.quizTitle] || quizScores[quiz.quizTitle].date < quiz.quizDate) {
+                                    quizScores[quiz.quizTitle] = { total: 0, count: 0 };
+                                }
+                                quizScores[quiz.quizTitle].total += quiz.percentage;
+                                quizScores[quiz.quizTitle].count += 1;
+                            });
+
+                            let percentage = student.overallPercentage;
+                            if (percentage >= 90) gradeCounts.A++;
+                            else if (percentage >= 80) gradeCounts.B++;
+                            else if (percentage >= 70) gradeCounts.C++;
+                            else if (percentage >= 60) gradeCounts.D++;
+                            else gradeCounts.F++;
+                        });
+                    });
+
+                    let chartData = {
+                        searchType: "school",
+                        barChartData: {
+                            labels: Object.keys(quizScores),
+                            data: Object.values(quizScores).map(q => q.total / q.count)
+                        },
+                        pieChartData: {
+                            labels: ["A", "B", "C", "D", "F"],
+                            data: Object.values(gradeCounts)
+                        }
+                    };
+
+                    updateBarChart(chartData);
+                    updatePieChart(chartData);
+
                 } else {
                     console.warn("⚠️ No grades found in response:", data);
                     resultsContent.html("<div class='alert alert-warning'>No grades available for this school.</div>");
@@ -447,6 +488,42 @@
                 studentTable += `</tbody></table>`;
 
                 resultsContent.html(summaryTable + studentTable);
+
+                let quizScores = {};
+                let gradeCounts = { A: 0, B: 0, C: 0, D: 0, F: 0 };
+
+                data.students.forEach(student => {
+                    student.quizzes.forEach(quiz => {
+                        if (!quizScores[quiz.quizTitle] || quizScores[quiz.quizTitle].date < quiz.date) {
+                            quizScores[quiz.quizTitle] = { total: 0, count: 0 };
+                        }
+                        quizScores[quiz.quizTitle].total += (quiz.obtainedScore / quiz.totalScore) * 100;
+                        quizScores[quiz.quizTitle].count += 1;
+                    });
+
+                    let percentage = student.percentage;
+                    if (percentage >= 90) gradeCounts.A++;
+                    else if (percentage >= 80) gradeCounts.B++;
+                    else if (percentage >= 70) gradeCounts.C++;
+                    else if (percentage >= 60) gradeCounts.D++;
+                    else gradeCounts.F++;
+                });
+
+                let chartData = {
+                    searchType: "educator",
+                    barChartData: {
+                        labels: Object.keys(quizScores),
+                        data: Object.values(quizScores).map(q => q.total / q.count)
+                    },
+                    pieChartData: {
+                        labels: ["A", "B", "C", "D", "F"],
+                        data: Object.values(gradeCounts)
+                    }
+                };
+
+                updateBarChart(chartData);
+                updatePieChart(chartData);
+
             },
             error: function (xhr, status, error) {
                 console.error("❌ Failed to fetch educator's course grades:", error);
@@ -524,6 +601,36 @@
 
                     // 🔹 Append Summary and Grades Table
                     resultsContent.html(summaryTable + gradeTable);
+
+                    let latestScores = {};
+                    //debugger;
+                    data.quizResults.forEach(quiz => {
+                        //console.log("🔹 Processing Quiz:", quiz); //debugging
+
+                            if (!latestScores[quiz.quizTitle]) {
+                                // No entry yet, so set this quiz as the latest
+                                latestScores[quiz.quizTitle] = quiz;
+                            } else {
+                                // Compare dates only if we already have an entry
+                                let existingDate = new Date(latestScores[quiz.quizTitle].date);
+                                let currentDate = new Date(quiz.date);
+
+                                if (currentDate > existingDate) {
+                                    latestScores[quiz.quizTitle] = quiz;
+                                }
+                            }
+                    });
+
+                    let chartData = {
+                        searchType: "student",
+                        barChartData: {
+                            labels: Object.keys(latestScores),
+                            data: Object.values(latestScores).map(q => (q.score / q.fullMarks) * 100)
+                        }
+                    };
+
+                    updateBarChart(chartData);
+
                 } else {
                     resultsContent.html("<div class='alert alert-warning'>No grades available for this selection.</div>");
                 }
@@ -545,7 +652,7 @@
     //     });
     // });
 
-       function fetchCourseGrades(sessionId, dateFilter, startDate, endDate) {
+    function fetchCourseGrades(sessionId, dateFilter, startDate, endDate) {
         $('#resultsContent').html("<div class='text-center'><span class='spinner-border'></span> Loading grades...</div>");
 
         $.ajax({
@@ -619,21 +726,116 @@
         });
     }
 
-    function updateBarChart(data){
-            console.log("📊 Updating Bar Chart with Data:", data);
-            
-            if (!data || !data.students || data.students.length === 0) {
-            console.warn("⚠️ No valid student data for charts");
-            $('#charts').html("<div class='alert alert-warning'>No chart data available.</div>");
-            return;
+
+        function updateBarChart(chartData) {
+            console.log("📊 updateBarChart called with:", chartData);
+
+            // 1️⃣ Check if barChartData is present
+            if (!chartData.barChartData || !chartData.barChartData.labels || !chartData.barChartData.data) {
+                console.warn("⚠️ Missing bar chart data; cannot render chart.");
+                return;
+            }
+
+            // 2️⃣ Destroy any existing bar chart
+            if (window.barChartInstance) {
+                window.barChartInstance.destroy();
+            }
+
+            // 3️⃣ Get Canvas Context
+            let ctx = document.getElementById('barChartId').getContext('2d');
+
+            // 4️⃣ Choose a label depending on search type
+            let barLabel = (chartData.searchType === 'student')
+                ? "Latest Quiz Score (%)"
+                : "Class Average (%)";
+
+            // 5️⃣ Create Bar Chart
+            window.barChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartData.barChartData.labels,
+                    datasets: [{
+                        label: barLabel,
+                        data: chartData.barChartData.data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100, // because these are percentages
+                            title: {
+                                display: true,
+                                text: 'Percentage (%)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Quiz Titles'
+                            }
+                        }
+                    }
+                }
+            });
         }
 
-        }
 
-    function updatePieChart(data){
-            console.log("📊 Updating Pie Chart with Data:", data);
+            function updatePieChart(chartData) {
+                console.log("📊 updatePieChart called with:", chartData);
 
-        }
+                // 1️⃣ If there's no pieChartData (or it's a student search), skip
+                if (!chartData.pieChartData) {
+                    console.warn("⚠️ No pie chart data; skipping pie chart.");
+                    return;
+                }
+
+                // 2️⃣ Destroy any existing pie chart
+                if (window.pieChartInstance) {
+                    window.pieChartInstance.destroy();
+                }
+
+                // 3️⃣ Get Canvas Context
+                let ctx = document.getElementById('pieChartId').getContext('2d');
+
+                // 4️⃣ Create Pie Chart
+                window.pieChartInstance = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: chartData.pieChartData.labels, // e.g. ["A", "B", "C", "D", "F"]
+                        datasets: [{
+                            data: chartData.pieChartData.data,   // e.g. [5, 10, 12, 3, 2]
+                            backgroundColor: [
+                                'rgba(75, 192, 192, 0.6)',  // A - teal
+                                'rgba(54, 162, 235, 0.6)',  // B - blue
+                                'rgba(255, 206, 86, 0.6)',  // C - yellow
+                                'rgba(255, 159, 64, 0.6)',  // D - orange
+                                'rgba(255, 99, 132, 0.6)'   // F - red
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Grade Distribution'
+                            }
+                        }
+                    }
+                });
+            }
+
+
 
     });
 </script>
