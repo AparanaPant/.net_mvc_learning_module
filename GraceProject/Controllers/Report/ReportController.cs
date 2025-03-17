@@ -70,6 +70,9 @@ namespace GraceProject.Controllers.Report
         [HttpPost("GetCourseList")]
         public async Task<IActionResult> GetCourseList([FromBody] SearchModel searchData)
         {
+
+
+
             // Fetch all courses matching the keyword (if provided)
             var courses = await _context.Course
                 .Where(c => string.IsNullOrEmpty(searchData.Keyword) || c.Title.Contains(searchData.Keyword))
@@ -153,7 +156,7 @@ namespace GraceProject.Controllers.Report
                 .ToListAsync();
 
             // Log result for debugging
-            Console.WriteLine("Educators Found: " + educators.Count);
+           Console.WriteLine("Educators Found: " + educators.Count);
 
             return Ok(educators);
         }
@@ -575,6 +578,8 @@ namespace GraceProject.Controllers.Report
     public class SearchModel
     {
         public string Keyword { get; set; }
+        string UserId { get; set; }
+        string SearchType { get; set; }
     }
 
     public class IdModel
