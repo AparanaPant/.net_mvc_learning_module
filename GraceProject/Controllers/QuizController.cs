@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Hosting;
 
 namespace GraceProject.Controllers
 {
@@ -20,11 +21,13 @@ namespace GraceProject.Controllers
     {
         private readonly GraceDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public QuizController(GraceDbContext context, UserManager<ApplicationUser> userManager)
+        public QuizController(GraceDbContext context, UserManager<ApplicationUser> userManager, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
             _userManager = userManager;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         // List all quizzes
@@ -53,6 +56,36 @@ namespace GraceProject.Controllers
 
             return View(model);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadImage(IFormFile ImageFile, int questionIndex)
+        {
+            if (ImageFile != null && ImageFile.Length > 0)
+            {
+                var quizImagesFolder = Path.Combine(_webHostEnvironment.WebRootPath, "quiz-images");
+
+                if (!Directory.Exists(quizImagesFolder))
+                {
+                    Directory.CreateDirectory(quizImagesFolder);
+                }
+
+                var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(ImageFile.FileName);
+                var filePath = Path.Combine(quizImagesFolder, uniqueFileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await ImageFile.CopyToAsync(fileStream);
+                }
+
+                return Json(new
+                {
+                    imageUrl = "/quiz-images/" + uniqueFileName,
+                    questionIndex = questionIndex // ✅ Return the question index to associate image with the correct question
+                });
+            }
+            return BadRequest("Image upload failed.");
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> Create(QuizViewModel quizViewModel)
@@ -92,7 +125,7 @@ namespace GraceProject.Controllers
                         Text = q.Text,
                         Type = q.Type,
                         Points = q.Points,
-                        ImageUrl = q.Image != null ? UploadImage(q.Image) : q.ImageUrl,
+                        ImageUrl = q.ImageUrl,
                         Options = q.Type != "Fill in the Blank" && q.Options != null
                                   ? q.Options.Select(o => new Option
                                   {
@@ -141,29 +174,29 @@ namespace GraceProject.Controllers
         }
 
 
-        private string UploadImage(IFormFile image)
-        {
+        //private string UploadImage(IFormFile image)
+        //{
             
-            if (image == null || image.Length == 0)
-            {
-                return null;
-            }
+        //    if (image == null || image.Length == 0)
+        //    {
+        //        return null;
+        //    }
 
-            var directoryPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "PanelsTemplate", "images");
-            if (!Directory.Exists(directoryPath))
-            {
-                Directory.CreateDirectory(directoryPath);
-            }
+        //    var directoryPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "PanelsTemplate", "images");
+        //    if (!Directory.Exists(directoryPath))
+        //    {
+        //        Directory.CreateDirectory(directoryPath);
+        //    }
 
-            var filePath = Path.Combine(directoryPath, image.FileName);
+        //    var filePath = Path.Combine(directoryPath, image.FileName);
 
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                image.CopyTo(stream);
-            }
-            var imageUrl = $"/PanelsTemplate/images/{image.FileName}";
-            return imageUrl;
-        }
+        //    using (var stream = new FileStream(filePath, FileMode.Create))
+        //    {
+        //        image.CopyTo(stream);
+        //    }
+        //    var imageUrl = $"/PanelsTemplate/images/{image.FileName}";
+        //    return imageUrl;
+        //}
 
         [HttpGet]
         public async Task<IActionResult> Take(int id)
@@ -304,16 +337,11 @@ namespace GraceProject.Controllers
                         {
                             existingQuestion.Type = questionModel.Type;
                         }
-                        if (questionModel.Image != null)
+                        if (!string.IsNullOrEmpty(questionModel.ImageUrl))
                         {
-                            // Save the new image and update the ImageUrl
-                            var imagePath = Path.Combine("wwwroot/images", questionModel.Image.FileName);
-                            using (var stream = new FileStream(imagePath, FileMode.Create))
-                            {
-                                await questionModel.Image.CopyToAsync(stream);
-                            }
-                            existingQuestion.ImageUrl = $"/images/{questionModel.Image.FileName}";
+                            existingQuestion.ImageUrl = questionModel.ImageUrl; 
                         }
+
                         else if (!string.IsNullOrEmpty(questionModel.ImageUrl))
                         {
                             existingQuestion.ImageUrl = questionModel.ImageUrl;

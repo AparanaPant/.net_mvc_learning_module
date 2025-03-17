@@ -51,46 +51,48 @@
         function addQuestion() {
             const questionIndex = questions.length;
             questions.push({ Type: "Multiple Choice", Points: 0, Text: "", ImageUrl: "", Options: [], FillInTheBlankAnswers: [] });
-            const questionDiv = document.createElement('div');
-            questionDiv.classList.add('question-div');
-            questionDiv.dataset.index = questionIndex;
-            questionDiv.innerHTML = `
-                        <div class="card mb-3">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between">
-                                    <div>
-                                        <label>Question Type</label>
-                                        <select class="form-control question-type" style="width: auto;" onchange="changeAnswerSection(this)" name="Questions[${questionIndex}].Type">
-                                            <option value="Multiple Choice">Multiple Choice</option>
-                                            <option value="True/False">True/False</option>
-                                            <option value="Fill in the Blank">Fill in the Blank</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label>Points</label>
-                                           <input type="number" class="form-control question-points" value="0" style="width: auto;"
-                                            name="Questions[${questionIndex}].Points"
-                                            onchange="updateQuestionPoints(this, ${questionIndex})" />
-                                    </div>
+                const questionDiv = document.createElement('div');
+                questionDiv.classList.add('question-div');
+                questionDiv.dataset.index = questionIndex;
+                questionDiv.innerHTML = `
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <label>Question Type</label>
+                                    <select class="form-control question-type" style="width: auto;" onchange="changeAnswerSection(this)" name="Questions[${questionIndex}].Type">
+                                        <option value="Multiple Choice">Multiple Choice</option>
+                                        <option value="True/False">True/False</option>
+                                        <option value="Fill in the Blank">Fill in the Blank</option>
+                                    </select>
                                 </div>
-                                <div class="question-attributes">
-                                    <label>Question Text</label>
-                                    <textarea class="form-control question-text" style="width: 100%;" name="Questions[${questionIndex}].Text"></textarea>
-                                    <label>Question Image</label>
-                                    <input type="file" class="form-control question-image" style="width: 100%;" name="Questions[${questionIndex}].Image" onchange="previewImage(this)" />
-                                    <img src="" class="img-preview" style="width: 100px; height: auto; display: none;" />
-                                    <input type="hidden" class="img-url" name="Questions[${questionIndex}].ImageUrl" value="" />
-                                </div>
-                                <div class="answer-section mt-3">
-                                    <!-- Answer input section will be dynamically inserted here -->
-                                </div>
-                                <div class="d-flex justify-content-end mt-3">
-                                    <button type="button" class="btn btn-primary update-question" onclick="updateQuestion(this)">Update Question</button>
+                                <div>
+                                    <label>Points</label>
+                                    <input type="number" class="form-control question-points" value="0" style="width: auto;"
+                                        name="Questions[${questionIndex}].Points"
+                                        onchange="updateQuestionPoints(this, ${questionIndex})" />
                                 </div>
                             </div>
-                        </div>
-                    `;
+                            <div class="question-attributes">
+                                <label>Question Text</label>
+                                <textarea class="form-control question-text" style="width: 100%;" name="Questions[${questionIndex}].Text"></textarea>
 
+                                <label>Question Image</label>
+                                       <input type="file" class="form-control question-image"
+                                    name="Questions[${questionIndex}].ImageFile" onchange="previewImage(this, ${questionIndex})" />
+                                <input type="hidden" class="img-url" name="Questions[${questionIndex}].ImageUrl" value="" />
+                                <img src="" class="img-preview" style="width: 100px; height: auto; display: none;" />
+                            </div>
+
+                            <div class="answer-section mt-3">
+                                <!-- Answer input section will be dynamically inserted here -->
+                            </div>
+                            <div class="d-flex justify-content-end mt-3">
+                                <button type="button" class="btn btn-primary update-question" onclick="updateQuestion(this)">Update Question</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
             document.getElementById('questions-container').appendChild(questionDiv);
             changeAnswerSection(questionDiv.querySelector(".question-type"));
             updateTotalScore();
@@ -182,28 +184,33 @@
             optionList.appendChild(optionDiv);
         }
 
-        function previewImage(input) {
+                   function previewImage(input, questionIndex) {
             const questionDiv = input.closest('.question-div');
             const imgPreview = questionDiv.querySelector('.img-preview');
             const imgUrlInput = questionDiv.querySelector('.img-url');
 
             if (input.files && input.files[0]) {
-                const reader = new FileReader();
+                const formData = new FormData();
+                formData.append("ImageFile", input.files[0]);
+                formData.append("questionIndex", questionIndex); 
 
-                reader.onload = function (e) {
-                    imgPreview.src = e.target.result;
+                fetch('/Quiz/UploadImage', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    imgPreview.src = data.imageUrl;
                     imgPreview.style.display = 'block';
-                    imgUrlInput.value = e.target.result;
-                }
-
-                reader.readAsDataURL(input.files[0]);
-            } else {
-                imgPreview.style.display = 'none';
-                imgUrlInput.value = '';
+                    imgUrlInput.value = data.imageUrl; 
+                    questions[questionIndex].ImageUrl = data.imageUrl; 
+                })
+                .catch(error => console.error("Error uploading image:", error));
             }
         }
 
-                function updateQuestion(button) {
+
+                  function updateQuestion(button) {
             const questionDiv = button.closest('.question-div');
             const questionIndex = questionDiv.dataset.index;
 
@@ -286,10 +293,15 @@
                 });
             }
 
+            // ✅ Image Handling: Ensure the correct image is assigned to this question
+            const imgUrlInput = questionDiv.querySelector('.img-url');
+            if (imgUrlInput && imgUrlInput.value.trim() !== "") {
+                questions[questionIndex].ImageUrl = imgUrlInput.value.trim();  
+            }
+
             // Update question details
             questions[questionIndex].Text = questionText;
             questions[questionIndex].Points = points;
-            questions[questionIndex].ImageUrl = questionDiv.querySelector('.img-url').value;
             questions[questionIndex].Options = options;
             questions[questionIndex].FillInTheBlankAnswers = fillInTheBlankAnswers;
 
@@ -320,6 +332,7 @@
             questionDiv.appendChild(collapsedSection);
         }
 
+
         function editQuestion(button) {
             const questionDiv = button.closest('.question-div');
             const questionIndex = questionDiv.dataset.index;
@@ -347,10 +360,11 @@
                                 <div class="question-attributes">
                                     <label>Question Text</label>
                                     <textarea class="form-control question-text" style="width: 100%;" name="Questions[${questionIndex}].Text">${question.Text}</textarea>
-                                    <label>Question Image</label>
-                                    <input type="file" class="form-control question-image" style="width: 100%;" name="Questions[${questionIndex}].Image" onchange="previewImage(this)" />
-                                    <img src="${question.ImageUrl}" class="img-preview" style="width: 100px; height: auto; ${question.ImageUrl ? '' : 'display: none;'}" />
-                                    <input type="hidden" class="img-url" name="Questions[${questionIndex}].ImageUrl" value="${question.ImageUrl}" />
+                                           <label>Question Image</label>
+                                            <input type="file" class="form-control question-image" style="width: 100%;"
+                                                   name="Questions[${questionIndex}].Image" onchange="previewImage(this)" />
+                                            <img src="" class="img-preview" style="width: 100px; height: auto; display: none;" />
+                                            <input type="hidden" class="img-url" name="Questions[${questionIndex}].ImageUrl" value="" />
                                 </div>
                                 <div class="answer-section mt-3">
                                     <!-- Answer input section will be dynamically inserted here -->
