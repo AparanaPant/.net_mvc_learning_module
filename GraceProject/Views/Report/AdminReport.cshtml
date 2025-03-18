@@ -263,25 +263,16 @@
         }
 
         function loadCourses() {
-
-<<<<<<< Updated upstream
-            var UserId=$("selectedId").val();
-            var searchType = $('#searchType').val();
-=======
             //var UserId=$("selectedId").val();
             //var searchType = $('#searchType').val();
->>>>>>> Stashed changes
+
         $.ajax({
             url: '/Report/Report/GetCourseList', // Fetch courses
             type: 'POST',
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',
-<<<<<<< Updated upstream
-            data: JSON.stringify({ keyword: "", UserId:UserId, SearchType:searchType }), // Fetch all courses
-=======
             //data: JSON.stringify({ keyword: "", UserId:UserId, SearchType:searchType }), // Fetch all courses
             data: JSON.stringify({ keyword: ""}),
->>>>>>> Stashed changes
             success: function (data) {
                 $('#dynamicDropdown').empty().append('<option value="">Please select</option>');
                 $.each(data, function (index, item) {
