@@ -81,7 +81,7 @@
                             </div>
                             <div class="form-group col-md-6">
                                 <label asp-for="Questions[i].Points" class="control-label">Points</label>
-                                <input asp-for="Questions[i].Points" class="form-control" readonly />
+                                <input asp-for="Questions[i].Points" class="form-control" type="number" min="1" readonly />
                                 <span asp-validation-for="Questions[i].Points" class="text-danger"></span>
                             </div>
                         </div>
@@ -119,7 +119,7 @@
                                             <input type="hidden" asp-for="Questions[i].Options[j].OptionId" />
                                             <input type="radio" name="Questions[@i].CorrectOptionIndex" value="@j"
                                             @(Model.Questions[i].Options[j].IsCorrect ? "checked" : "")
-                                                   class="mr-2 correct-option-radio" data-question-index="@i" data-option-index="@j" />
+                                                   class="mr-2 correct-option-radio" data-question-index="@i" data-option-index="@j" disabled />
                                             <input asp-for="Questions[i].Options[j].Text" class="form-control mr-2 option-text" placeholder="Option text" readonly />
                                             <button type="button" class="btn btn-outline-danger delete-option" data-question-index="@i" data-option-index="@j" disabled>
                                                 <i class="fas fa-trash-alt"></i>
@@ -142,7 +142,7 @@
                                     {
                                         <div class="form-group d-flex align-items-center">
                                             <input asp-for="Questions[i].FillInTheBlankAnswers[k]" class="form-control mr-2 answer-text" readonly />
-                                            <button type="button" class="btn btn-outline-danger delete-answer" data-question-index="@i" data-answer-index="@k">
+                                            <button type="button" class="btn btn-outline-danger delete-answer" data-question-index="@i" data-answer-index="@k" disabled>
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
                                         </div>
@@ -161,8 +161,8 @@
                                         <input type="hidden" asp-for="Questions[i].Options[0].OptionId" />
                                         <input type="radio" name="Questions[@i].CorrectOptionIndex" value="0"
                                         @(Model.Questions[i].Options[0].IsCorrect ? "checked" : "")
-                                               class="mr-2 correct-option-radio" data-question-index="@i" data-option-index="0" />
-                                        <input type="text" asp-for="Questions[i].Options[0].Text" class="form-control mr-2" />
+                                               class="mr-2 correct-option-radio" data-question-index="@i" data-option-index="0" disabled />
+                                        <input type="text" asp-for="Questions[i].Options[0].Text" class="form-control mr-2" readonly />
                                         <input type="hidden" asp-for="Questions[i].Options[0].IsCorrect" />
                                     </div>
 
@@ -170,8 +170,8 @@
                                         <input type="hidden" asp-for="Questions[i].Options[1].OptionId" />
                                         <input type="radio" name="Questions[@i].CorrectOptionIndex" value="1"
                                         @(Model.Questions[i].Options[1].IsCorrect ? "checked" : "")
-                                               class="mr-2 correct-option-radio" data-question-index="@i" data-option-index="1" />
-                                        <input type="text" asp-for="Questions[i].Options[1].Text" class="form-control mr-2" />
+                                               class="mr-2 correct-option-radio" data-question-index="@i" data-option-index="1" disabled />
+                                        <input type="text" asp-for="Questions[i].Options[1].Text" class="form-control mr-2" readonly />
                                         <input type="hidden" asp-for="Questions[i].Options[1].IsCorrect" />
                                     </div>
                                 }
@@ -325,9 +325,9 @@
                     questionCard.find('input, textarea').not('[name$=".Type"], [value="True"], [value="False"]').prop('readonly', false);
                     questionCard.find('input[type="file"], .btn-outline-danger, .add-option, .add-answer').prop('disabled', false).show();
                     questionCard.find('.delete-option, .delete-answer').show();
-
-                    // Enable radio buttons for multiple choice and true/false
+                    questionCard.find('.delete-answer').prop('disabled', false).show();
                     questionCard.find('.correct-option-radio').prop('disabled', false);
+
 
                     // Show save button and hide edit button
                     questionCard.find('.save-question').show();
