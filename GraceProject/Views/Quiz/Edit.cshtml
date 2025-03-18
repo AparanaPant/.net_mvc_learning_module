@@ -117,13 +117,16 @@
                                     {
                                         <div class="form-group d-flex align-items-center">
                                             <input type="hidden" asp-for="Questions[i].Options[j].OptionId" />
-                                            <input type="radio" name="Questions[@i].CorrectOptionIndex" value="@j" @(Model.Questions[i].Options[j].IsCorrect ? "checked" : "") class="mr-2 correct-option-radio" data-question-index="@i" data-option-index="@j" disabled />
-                                            <input asp-for="Questions[i].Options[j].Text" class="form-control mr-2 option-text" placeholder="Option text" readonly />
-                                            <button type="button" class="btn btn-outline-danger delete-option" data-question-index="@i" data-option-index="@j" style="display: none;">
+                                            <input type="radio" name="Questions[@i].CorrectOptionIndex" value="@j"
+                                            @(Model.Questions[i].Options[j].IsCorrect ? "checked" : "")
+                                                   class="mr-2 correct-option-radio" data-question-index="@i" data-option-index="@j" />
+                                            <input asp-for="Questions[i].Options[j].Text" class="form-control mr-2 option-text" placeholder="Option text" />
+                                            <button type="button" class="btn btn-outline-danger delete-option" data-question-index="@i" data-option-index="@j">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
                                             <input type="hidden" asp-for="Questions[i].Options[j].IsCorrect" />
                                         </div>
+
                                     }
                                 }
                             </div>
@@ -138,15 +141,15 @@
                                     @for (int k = 0; k < Model.Questions[i].FillInTheBlankAnswers.Count; k++)
                                     {
                                         <div class="form-group d-flex align-items-center">
-                                            <input asp-for="Questions[i].FillInTheBlankAnswers[k]" class="form-control mr-2 answer-text" placeholder="Answer text" readonly />
-                                            <button type="button" class="btn btn-outline-danger delete-answer" data-question-index="@i" data-answer-index="@k" style="display: none;">
+                                            <input asp-for="Questions[i].FillInTheBlankAnswers[k]" class="form-control mr-2 answer-text" readonly />
+                                            <button type="button" class="btn btn-outline-danger delete-answer" data-question-index="@i" data-answer-index="@k">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
                                         </div>
                                     }
                                 }
                             </div>
-                            <button type="button" class="btn btn-primary mb-3 add-answer" data-question-index="@i" style="display: none;">Add Answer</button>
+                            <button type="button" class="btn btn-primary mb-3 add-answer" data-question-index="@i">Add Answer</button>
                         }
                         else if (Model.Questions[i].Type == "True/False")
                         {
@@ -156,16 +159,19 @@
                                 {
                                     <div class="form-group d-flex align-items-center">
                                         <input type="hidden" asp-for="Questions[i].Options[0].OptionId" />
-                                        <input type="radio" name="Questions[@i].CorrectOptionIndex" value="0" @(Model.Questions[i].Options[0].IsCorrect ? "checked" : "") class="mr-2 correct-option-radio" data-question-index="@i" data-option-index="0" disabled />
-                                        <input type="hidden" asp-for="Questions[i].Options[0].Text" value="True" />
-                                        <input type="text" value="True" class="form-control mr-2" readonly />
+                                        <input type="radio" name="Questions[@i].CorrectOptionIndex" value="0"
+                                        @(Model.Questions[i].Options[0].IsCorrect ? "checked" : "")
+                                               class="mr-2 correct-option-radio" data-question-index="@i" data-option-index="0" />
+                                        <input type="text" asp-for="Questions[i].Options[0].Text" class="form-control mr-2" />
                                         <input type="hidden" asp-for="Questions[i].Options[0].IsCorrect" />
                                     </div>
+
                                     <div class="form-group d-flex align-items-center">
                                         <input type="hidden" asp-for="Questions[i].Options[1].OptionId" />
-                                        <input type="radio" name="Questions[@i].CorrectOptionIndex" value="1" @(Model.Questions[i].Options[1].IsCorrect ? "checked" : "") class="mr-2 correct-option-radio" data-question-index="@i" data-option-index="1" disabled />
-                                        <input type="hidden" asp-for="Questions[i].Options[1].Text" value="False" />
-                                        <input type="text" value="False" class="form-control mr-2" readonly />
+                                        <input type="radio" name="Questions[@i].CorrectOptionIndex" value="1"
+                                        @(Model.Questions[i].Options[1].IsCorrect ? "checked" : "")
+                                               class="mr-2 correct-option-radio" data-question-index="@i" data-option-index="1" />
+                                        <input type="text" asp-for="Questions[i].Options[1].Text" class="form-control mr-2" />
                                         <input type="hidden" asp-for="Questions[i].Options[1].IsCorrect" />
                                     </div>
                                 }
@@ -191,19 +197,58 @@
             var changedFields = {};
 
             // Add new option
-            $(document).on('click', '.add-option', function () {
-                var questionIndex = $(this).data('question-index');
-                var optionsContainer = $(this).siblings('.options-container');
-                var optionCount = optionsContainer.children().length;
-                var newOptionHtml = '<div class="form-group d-flex align-items-center">' +
-                    '<input type="radio" name="Questions[' + questionIndex + '].CorrectOptionIndex" value="' + optionCount + '" class="mr-2 correct-option-radio" data-question-index="' + questionIndex + '" data-option-index="' + optionCount + '" disabled />' +
-                    '<input class="form-control mr-2 option-text" placeholder="Option text" name="Questions[' + questionIndex + '].Options[' + optionCount + '].Text" />' +
-                    '<button type="button" class="btn btn-outline-danger delete-option" data-question-index="' + questionIndex + '" data-option-index="' + optionCount + '"><i class="fas fa-trash-alt"></i></button>' +
-                    '<input type="hidden" name="Questions[' + questionIndex + '].Options[' + optionCount + '].IsCorrect" value="false" />' +
-                    '</div>';
-                optionsContainer.append(newOptionHtml);
-                markChanged('Questions[' + questionIndex + '].Options[' + optionCount + '].Text');
+                    $(document).on('click', '.add-option', function () {
+            var questionIndex = $(this).data('question-index');
+            var optionsContainer = $(this).siblings('.options-container');
+            var optionCount = optionsContainer.children().length;
+
+            var newOptionHtml = `
+                <div class="form-group d-flex align-items-center">
+                    <input type="radio" name="Questions[${questionIndex}].CorrectOptionIndex" value="${optionCount}" class="mr-2 correct-option-radio" data-question-index="${questionIndex}" data-option-index="${optionCount}" />
+                    <input class="form-control mr-2 option-text" placeholder="Option text" name="Questions[${questionIndex}].Options[${optionCount}].Text" />
+                    <button type="button" class="btn btn-outline-danger delete-option" data-question-index="${questionIndex}" data-option-index="${optionCount}">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                    <input type="hidden" name="Questions[${questionIndex}].Options[${optionCount}].IsCorrect" value="false" />
+                </div>`;
+
+            optionsContainer.append(newOptionHtml);
+        });
+                $(document).on('click', '.delete-option', function () {
+            $(this).closest('.form-group').remove();
+        });
+
+                $(document).on('change', '.correct-option-radio', function () {
+            var questionIndex = $(this).data('question-index');
+            var optionIndex = $(this).data('option-index');
+
+            $(`input[name="Questions[${questionIndex}].CorrectOptionIndex"]`).val(optionIndex);
+
+            $(`input[name^="Questions[${questionIndex}].Options["][name$=".IsCorrect"]`).each(function () {
+                var currentOptionIndex = $(this).attr('name').match(/Options\[(\d+)\]/)[1];
+                $(this).val(currentOptionIndex == optionIndex);
             });
+        });
+
+                $(document).on('click', '.add-answer', function () {
+            var questionIndex = $(this).data('question-index');
+            var answersContainer = $(this).siblings('.answers-container');
+            var answerCount = answersContainer.children().length;
+
+            var newAnswerHtml = `
+                <div class="form-group d-flex align-items-center">
+                    <input class="form-control mr-2 answer-text" placeholder="Answer text" name="Questions[${questionIndex}].FillInTheBlankAnswers[${answerCount}]" readonly />
+                    <button type="button" class="btn btn-outline-danger delete-answer" data-question-index="${questionIndex}" data-answer-index="${answerCount}">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>`;
+
+            answersContainer.append(newAnswerHtml);
+        });
+
+                $(document).on('click', '.delete-answer', function () {
+            $(this).closest('.form-group').remove();
+        });
 
             // Delete option
             $(document).on('click', '.delete-option', function () {
@@ -291,29 +336,75 @@
             });
 
             // Save question without collapsing
-            $(document).on('click', '.save-question, .save-quiz', function () {
-                var isQuizSave = $(this).hasClass('save-quiz');
+                    $(document).on('click', '.save-question', function (event) {
+            let isValid = true;
+            let errorMessage = "";
+            let questionCard = $(this).closest('.question-card');
+            let questionIndex = questionCard.data("index");
 
-                if (isQuizSave) {
-                    $('input[name="Title"], input[name="Duration"]').prop('readonly', true);
-                    $('.save-quiz').hide();
-                    $('.edit-quiz').show();
-                } else {
-                    var questionIndex = $(this).data('index');
-                    var questionCard = $(this).closest('.question-card');
+            let questionText = questionCard.find('textarea[name="Questions[' + questionIndex + '].Text"]').val().trim();
+            let points = parseInt(questionCard.find('input[name="Questions[' + questionIndex + '].Points"]').val(), 10);
+            let questionType = questionCard.find('input[name="Questions[' + questionIndex + '].Type"]').val();
 
-                    questionCard.find('input, textarea').prop('readonly', true);
-                    questionCard.find('input[type="file"], .btn-outline-danger, .add-option, .add-answer').prop('disabled', true).hide();
-                    questionCard.find('.delete-option, .delete-answer').hide();
+            let existingOptions = questionCard.find('.options-container .option-instance').length; // New Options
+            let existingStoredOptions = questionCard.find('.options-container input[name^="Questions[' + questionIndex + '].Options"]').length / 3; // Stored Options from DB
+            let totalOptions = existingOptions + existingStoredOptions; // 🔥 Count Both!
 
-                    // Disable radio buttons for multiple choice and true/false
-                    questionCard.find('.correct-option-radio').prop('disabled', true);
+            let correctOption = questionCard.find('.correct-option-radio:checked').length;
+            let fillInTheBlankAnswers = questionCard.find('.answers-container .answer-text').length;
 
-                    // Show edit button and hide save button
-                    questionCard.find('.edit-question').show();
-                    questionCard.find('.save-question').hide();
+            // 🔹 Validate Question Text
+            if (questionText === "") {
+                isValid = false;
+                errorMessage += "❌ Question text cannot be empty.\n";
+            }
+
+            // 🔹 Validate Points
+            if (isNaN(points) || points <= 0) {
+                isValid = false;
+                errorMessage += "❌ Each question must have points greater than 0.\n";
+            }
+
+            // 🔹 Validate Multiple Choice Questions (Check Both Existing & New Options)
+            if (questionType === "Multiple Choice") {
+                if (totalOptions < 2) { // ✅ Count both new & existing
+                    isValid = false;
+                    errorMessage += "❌ Multiple Choice questions must have at least 2 options.\n";
                 }
-            });
+                if (correctOption !== 1) {
+                    isValid = false;
+                    errorMessage += "❌ Multiple Choice questions must have exactly one correct answer.\n";
+                }
+            }
+
+            // 🔹 Validate True/False Questions
+            if (questionType === "True/False" && correctOption !== 1) {
+                isValid = false;
+                errorMessage += "❌ True/False questions must have exactly one correct answer.\n";
+            }
+
+            // 🔹 Validate Fill in the Blank Questions
+            if (questionType === "Fill in the Blank" && fillInTheBlankAnswers === 0) {
+                isValid = false;
+                errorMessage += "❌ Fill in the Blank questions must have at least one answer.\n";
+            }
+
+            // 🔹 If Validation Fails, Show Alert & Prevent Save
+            if (!isValid) {
+                alert(errorMessage);
+                event.preventDefault(); // Stop saving this question
+            } else {
+                alert("✅ Question saved successfully!");
+
+                // Lock the question again (Make fields read-only)
+                questionCard.find('.edit-question').show();
+                questionCard.find('.save-question').hide();
+                questionCard.find('input, textarea').prop('readonly', true);
+                questionCard.find('input[type="file"], .btn-outline-danger, .add-option, .add-answer').prop('disabled', true).hide();
+                questionCard.find('.delete-option, .delete-answer').hide();
+                questionCard.find('.correct-option-radio').prop('disabled', true);
+            }
+        });
 
             // Delete question
             $(document).on('click', '.delete-question', function () {

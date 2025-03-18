@@ -174,30 +174,6 @@ namespace GraceProject.Controllers
         }
 
 
-        //private string UploadImage(IFormFile image)
-        //{
-            
-        //    if (image == null || image.Length == 0)
-        //    {
-        //        return null;
-        //    }
-
-        //    var directoryPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "PanelsTemplate", "images");
-        //    if (!Directory.Exists(directoryPath))
-        //    {
-        //        Directory.CreateDirectory(directoryPath);
-        //    }
-
-        //    var filePath = Path.Combine(directoryPath, image.FileName);
-
-        //    using (var stream = new FileStream(filePath, FileMode.Create))
-        //    {
-        //        image.CopyTo(stream);
-        //    }
-        //    var imageUrl = $"/PanelsTemplate/images/{image.FileName}";
-        //    return imageUrl;
-        //}
-
         [HttpGet]
         public async Task<IActionResult> Take(int id)
         {
@@ -273,6 +249,7 @@ namespace GraceProject.Controllers
             return View(quizViewModel);
         }
 
+
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Edit(QuizViewModel model, string userType = null)
@@ -300,7 +277,6 @@ namespace GraceProject.Controllers
                 {
                     quiz.Duration = model.Duration;
                 }
-
                 // ✅ Update Questions
                 foreach (var questionModel in model.Questions)
                 {
@@ -326,11 +302,31 @@ namespace GraceProject.Controllers
                             existingQuestion.ImageUrl = questionModel.ImageUrl;
                         }
 
-                        // ✅ Save Changes
-                        _context.Quizzes.Update(quiz);
-                        await _context.SaveChangesAsync();
+                        // ✅ Update Options for MCQ & True/False
+                        if (questionModel.Type == "Multiple Choice" || questionModel.Type == "True/False")
+                        {
+                            // Clear existing options and add updated ones
+                            existingQuestion.Options.Clear();
+                            existingQuestion.Options = questionModel.Options.Select(o => new Option
+                            {
+                                OptionId = o.OptionId, // Ensure the option ID is maintained
+                                Text = o.Text,
+                                IsCorrect = o.IsCorrect
+                            }).ToList();
+                        }
+
+                        // ✅ Update Fill in the Blank Answers
+                        if (questionModel.Type == "Fill in the Blank")
+                        {
+                            existingQuestion.FillInTheBlankAnswers.Clear();
+                            existingQuestion.FillInTheBlankAnswers = questionModel.FillInTheBlankAnswers.Select(a => new FillInTheBlankAnswer
+                            {
+                                Answer = a
+                            }).ToList();
+                        }
                     }
                 }
+                await _context.SaveChangesAsync();
 
                 if (userType == "educator")
                 {
