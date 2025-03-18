@@ -18,11 +18,21 @@ else
     <ul class="list-group">
         @foreach (var quiz in Model)
         {
+            var quizTaken = ViewBag.QuizTakenStatus != null && ((Dictionary<int, bool>)ViewBag.QuizTakenStatus).ContainsKey(quiz.QuizId)
+            ? ((Dictionary<int, bool>)ViewBag.QuizTakenStatus)[quiz.QuizId]
+            : false;
+
             <li class="list-group-item d-flex justify-content-between align-items-center">
                 <a>@quiz.Title</a>
                 <div>
-                    <a href="@Url.Action("Edit", "Quiz", new { id = quiz.QuizId, userType = "admin" })" class="btn btn-secondary">Edit</a>
-                    <button type="button" class="btn btn-danger" onclick="confirmDelete('@quiz.QuizId')">Delete</button>
+                    <a href="@Url.Action("Edit", "Quiz", new { id = quiz.QuizId, userType = "admin" })"
+                       class="btn btn-secondary @(quizTaken ? "disabled" : "")">
+                        Edit
+                    </a>
+                    <button type="button" class="btn btn-danger @(quizTaken ? "disabled" : "")"
+                            onclick="confirmDelete('@quiz.QuizId')" @(quizTaken ? "disabled" : "")>
+                        Delete
+                    </button>
                 </div>
             </li>
         }

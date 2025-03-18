@@ -228,9 +228,20 @@ namespace GraceProject.Controllers.Admin
         [Route("Quizzes/List/{courseId}")]
         public async Task<IActionResult> QuizzesList(string courseId)
         {
-            var quizzes = await _context.Quizzes.Where(q => q.CourseID == courseId).ToListAsync();
+            var quizzes = await _context.Quizzes
+                .Where(q => q.CourseID == courseId)
+                .ToListAsync();
+
+            // Create a dictionary to track whether each quiz has been taken
+            var quizTakenStatus = quizzes.ToDictionary(
+                q => q.QuizId,
+                q => _context.UserQuizzes.Any(uq => uq.QuizId == q.QuizId) // Check if the quiz has been taken
+            );
+
             ViewBag.CourseID = courseId;
-            return View("~/Views/Admin/Courses/QuizList.cshtml", quizzes);
+            ViewBag.QuizTakenStatus = quizTakenStatus; // Pass the dictionary to the view
+
+            return View("~/Views/Admin/Courses/QuizList.cshtml", quizzes); // ✅ Original return statement
         }
 
         [HttpGet]
