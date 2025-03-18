@@ -99,7 +99,7 @@
                             }
 
                             <div class="custom-file">
-                                <input type="file" class="custom-file-input" id="questionImage@(i)" name="Questions[@i].ImageFile" onchange="handleFileUpload(this, @i)">
+                                <input type="file" class="custom-file-input" id="questionImage@(i)" name="Questions[@i].ImageFile" onchange="handleFileUpload(this, @i)" disabled>
                                 <label class="custom-file-label" for="questionImage@(i)">Choose file</label>
                             </div>
 
@@ -120,8 +120,8 @@
                                             <input type="radio" name="Questions[@i].CorrectOptionIndex" value="@j"
                                             @(Model.Questions[i].Options[j].IsCorrect ? "checked" : "")
                                                    class="mr-2 correct-option-radio" data-question-index="@i" data-option-index="@j" />
-                                            <input asp-for="Questions[i].Options[j].Text" class="form-control mr-2 option-text" placeholder="Option text" />
-                                            <button type="button" class="btn btn-outline-danger delete-option" data-question-index="@i" data-option-index="@j">
+                                            <input asp-for="Questions[i].Options[j].Text" class="form-control mr-2 option-text" placeholder="Option text" readonly />
+                                            <button type="button" class="btn btn-outline-danger delete-option" data-question-index="@i" data-option-index="@j" disabled>
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
                                             <input type="hidden" asp-for="Questions[i].Options[j].IsCorrect" />
@@ -197,7 +197,7 @@
             var changedFields = {};
 
             // Add new option
-                    $(document).on('click', '.add-option', function () {
+            $(document).on('click', '.add-option', function () {
             var questionIndex = $(this).data('question-index');
             var optionsContainer = $(this).siblings('.options-container');
             var optionCount = optionsContainer.children().length;
@@ -336,7 +336,7 @@
             });
 
             // Save question without collapsing
-                    $(document).on('click', '.save-question', function (event) {
+            $(document).on('click', '.save-question', function (event) {
             let isValid = true;
             let errorMessage = "";
             let questionCard = $(this).closest('.question-card');
@@ -348,26 +348,26 @@
 
             let existingOptions = questionCard.find('.options-container .option-instance').length; // New Options
             let existingStoredOptions = questionCard.find('.options-container input[name^="Questions[' + questionIndex + '].Options"]').length / 3; // Stored Options from DB
-            let totalOptions = existingOptions + existingStoredOptions; // 🔥 Count Both!
+            let totalOptions = existingOptions + existingStoredOptions; 
 
             let correctOption = questionCard.find('.correct-option-radio:checked').length;
             let fillInTheBlankAnswers = questionCard.find('.answers-container .answer-text').length;
 
-            // 🔹 Validate Question Text
+            // Validate Question Text
             if (questionText === "") {
                 isValid = false;
                 errorMessage += "❌ Question text cannot be empty.\n";
             }
 
-            // 🔹 Validate Points
+            // Validate Points
             if (isNaN(points) || points <= 0) {
                 isValid = false;
                 errorMessage += "❌ Each question must have points greater than 0.\n";
             }
 
-            // 🔹 Validate Multiple Choice Questions (Check Both Existing & New Options)
+            // Validate Multiple Choice Questions (Check Both Existing & New Options)
             if (questionType === "Multiple Choice") {
-                if (totalOptions < 2) { // ✅ Count both new & existing
+                if (totalOptions < 2) { 
                     isValid = false;
                     errorMessage += "❌ Multiple Choice questions must have at least 2 options.\n";
                 }
@@ -377,22 +377,22 @@
                 }
             }
 
-            // 🔹 Validate True/False Questions
+            //  Validate True/False Questions
             if (questionType === "True/False" && correctOption !== 1) {
                 isValid = false;
                 errorMessage += "❌ True/False questions must have exactly one correct answer.\n";
             }
 
-            // 🔹 Validate Fill in the Blank Questions
+            // Validate Fill in the Blank Questions
             if (questionType === "Fill in the Blank" && fillInTheBlankAnswers === 0) {
                 isValid = false;
                 errorMessage += "❌ Fill in the Blank questions must have at least one answer.\n";
             }
 
-            // 🔹 If Validation Fails, Show Alert & Prevent Save
+            //  If Validation Fails, Show Alert & Prevent Save
             if (!isValid) {
                 alert(errorMessage);
-                event.preventDefault(); // Stop saving this question
+                event.preventDefault(); 
             } else {
                 alert("✅ Question saved successfully!");
 
@@ -448,7 +448,7 @@
             }
 
             // Handle file upload preview
-                   window.handleFileUpload = function (input, index) {
+            window.handleFileUpload = function (input, index) {
             const file = input.files[0];
             if (file) {
                 const formData = new FormData();
@@ -461,14 +461,14 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    // ✅ Update the image preview
+                    // Update the image preview
                     const imgPreview = document.getElementById(`questionImagePreview${index}`);
                     if (imgPreview) {
                         imgPreview.src = data.imageUrl;
                         imgPreview.style.display = 'block';
                     }
 
-                    // ✅ Store the new image URL in the hidden input field
+                    // Store the new image URL in the hidden input field
                     const hiddenImageUrl = document.getElementById(`hiddenImageUrl${index}`);
                     if (hiddenImageUrl) {
                         hiddenImageUrl.value = data.imageUrl;
@@ -477,8 +477,6 @@
                 .catch(error => console.error("Error uploading image:", error));
             }
         };
-
-
 
             // Redirect submit button to another page
             document.getElementById('submit-button').addEventListener('click', function () {
