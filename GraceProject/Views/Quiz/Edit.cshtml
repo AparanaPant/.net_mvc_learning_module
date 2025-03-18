@@ -478,10 +478,22 @@
             }
         };
 
-            // Redirect submit button to another page
-            document.getElementById('submit-button').addEventListener('click', function () {
-                window.location.href = '/Student/Home/studentreport.html';
+             $('form').on('submit', function (event) {
+            if (!validateAllQuestions()) {
+                event.preventDefault();
+                alert("❌ You haven't saved all edited questions! Please save each edited question first.");
+            }
+        });
+
+        function validateAllQuestions() {
+            let allSaved = true;
+            $('.question-card').each(function () {
+                if ($(this).find('.save-question').is(':visible')) {
+                    allSaved = false; // If any save button is still visible, user hasn't saved changes
+                }
             });
+            return allSaved;
+        }
         });
     </script>
 }
