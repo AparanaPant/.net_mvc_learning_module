@@ -1,4 +1,5 @@
-﻿@model GraceProject.Models.Report
+﻿﻿
+@model GraceProject.Models.Report
 
 @{
     ViewData["Title"] = "Admin Report";
@@ -180,7 +181,7 @@
         if (searchType === 'school' || searchType === 'student' || searchType === 'educator') {
             $('#dynamicDropdown').prop('disabled', false);
             dynamicDropdownLabel.text("Select Course");  // Show course selection
-            loadCourses();  // Load courses for schools, students, and educators
+            //loadCourses();  // Load courses for schools, students, and educators
         } else if (searchType === 'course') {
             dynamicDropdownLabel.text("Select Session");
         } else {
@@ -220,11 +221,18 @@
                 $('#searchValue').val(ui.item.label);
                 $('#selectedId').val(ui.item.value);
 
+                var name = $('#searchValue').val();
+                var url = "";
+                //loadCourses();
                 // Load courses for schools, students, and educators
-                if (searchType === 'student' || searchType === 'educator' || searchType === 'school') {
-                    loadCourses();
+                if (searchType === 'student'){
+                    url = '/Report/Report/GetStudentCourses';
+                    fetchData(url, name);
+                } else if (searchType === 'educator') {
+                    url = '/Report/Report/GetEducatorCourses';
+                    fetchData(url, name);
                 } else {
-                    loadSessions(ui.item.value);
+                    loadCourses();
                 }
 
                 return false;
@@ -232,16 +240,40 @@
         });
     }
 
-        function loadCourses() {
+        function fetchData(url, data){
+            //var UserId=$("selectedId").val();
+            //var searchType = $('#searchType').val();
+            debugger;
+            $.ajax({
+                url: url, // Fetch courses
+                type: 'POST',
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                //data: JSON.stringify({ keyword: "", UserId:UserId, SearchType:searchType }), // Fetch all courses
+                data: JSON.stringify({ keyword: data}),
+                success: function (data) {
+                    $('#dynamicDropdown').empty().append('<option value="">Please select</option>');
+                    $.each(data, function (index, item) {
+                        $('#dynamicDropdown').append(new Option(item.name, item.id));
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.error("Failed to load courses:", error);
+                }
+            });
+        }
 
-            var UserId=$("selectedId").val();
-            var searchType = $('#searchType').val();
+        function loadCourses() {
+            //var UserId=$("selectedId").val();
+            //var searchType = $('#searchType').val();
+
         $.ajax({
             url: '/Report/Report/GetCourseList', // Fetch courses
             type: 'POST',
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',
-            data: JSON.stringify({ keyword: "", UserId:UserId, SearchType:searchType }), // Fetch all courses
+            //data: JSON.stringify({ keyword: "", UserId:UserId, SearchType:searchType }), // Fetch all courses
+            data: JSON.stringify({ keyword: ""}),
             success: function (data) {
                 $('#dynamicDropdown').empty().append('<option value="">Please select</option>');
                 $.each(data, function (index, item) {
