@@ -221,7 +221,8 @@ namespace GraceProject.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("CourseID")
+                    b.Property<string>("CourseId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ModuleName")
@@ -240,7 +241,7 @@ namespace GraceProject.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CourseID");
+                    b.HasIndex("CourseId");
 
                     b.HasIndex("ParentModuleId");
 
@@ -494,6 +495,34 @@ namespace GraceProject.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Slide", (string)null);
+                });
+
+            modelBuilder.Entity("GraceProject.Models.SlideReadTracking", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DurationSeconds")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ReadDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("SlideId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SlideId");
+
+                    b.ToTable("SlideReadTracking", (string)null);
                 });
 
             modelBuilder.Entity("GraceProject.Models.SlideSection", b =>
@@ -881,7 +910,9 @@ namespace GraceProject.Migrations
                 {
                     b.HasOne("GraceProject.Models.Course", null)
                         .WithMany("Modules")
-                        .HasForeignKey("CourseID");
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("GraceProject.Models.Module", "ParentModule")
                         .WithMany("ChildModules")
@@ -966,6 +997,17 @@ namespace GraceProject.Migrations
                         .IsRequired();
 
                     b.Navigation("ApplicationUser");
+                });
+
+            modelBuilder.Entity("GraceProject.Models.SlideReadTracking", b =>
+                {
+                    b.HasOne("GraceProject.Models.Slide", "Slide")
+                        .WithMany("SlideReadTracking")
+                        .HasForeignKey("SlideId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Slide");
                 });
 
             modelBuilder.Entity("GraceProject.Models.SlideSection", b =>
@@ -1174,6 +1216,8 @@ namespace GraceProject.Migrations
 
             modelBuilder.Entity("GraceProject.Models.Slide", b =>
                 {
+                    b.Navigation("SlideReadTracking");
+
                     b.Navigation("SlideSections");
                 });
 

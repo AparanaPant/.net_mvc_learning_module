@@ -1,41 +1,51 @@
-﻿using GraceProject.Data;
-using GraceProject.Models;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
+using System.Threading.Tasks;
+using GraceProject.Models;
 
-namespace GraceProject.Controllers
+public class HomeController : Controller
 {
-    [Authorize]
-    public class HomeController : Controller
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
+
+    public HomeController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
     {
-        private readonly ILogger<HomeController> _logger;
-        private readonly UserManager<ApplicationUser> _userManager;
+        _userManager = userManager;
+        _signInManager = signInManager;
+    }
 
-        public HomeController(ILogger<HomeController> logger, UserManager<ApplicationUser> userManager)
+    public async Task<IActionResult> Index()
+    {
+        if (!_signInManager.IsSignedIn(User))
         {
-            _logger = logger;
-            this._userManager = userManager;
+            return RedirectToAction("Login", "Account"); // Redirect to Login if not logged in
         }
 
-        public IActionResult Index()
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
         {
-            if (!string.IsNullOrEmpty(_userManager.GetUserId(this.User)))
-                return View("~/views/Student/Home/Dashboard.cshtml");
-            else
-                return NotFound();
+            return RedirectToAction("Login", "Account");
         }
 
-        public IActionResult Privacy()
+        var roles = await _userManager.GetRolesAsync(user);
+
+        if (roles.Contains("Admin"))
         {
-            return View();
+            return RedirectToAction("Dashboard", "Admin");
+        }
+        else if (roles.Contains("Educator"))
+        {
+            return RedirectToAction("Dashboard", "Educator");
+        }
+        else if (roles.Contains("Student"))
+        {
+            return RedirectToAction("Dashboard", "Student");
+        }
+        else if (roles.Contains("Guest"))
+        {
+            return RedirectToAction("Dashboard", "Guest");
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
+        return RedirectToAction("Login", "Account"); // Fallback to login if no valid role
     }
 }

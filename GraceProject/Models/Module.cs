@@ -12,6 +12,9 @@ namespace GraceProject.Models
         [ForeignKey("ApplicationUser")]
         public string UserId { get; set; } // Foreign key to AspNetUsers table
 
+        [ForeignKey("Course")]
+        public string CourseId { get; set; } 
+
         public virtual ApplicationUser ApplicationUser { get; set; } // Navigation property
 
         [Required]

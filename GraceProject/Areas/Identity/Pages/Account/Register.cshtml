@@ -14,7 +14,7 @@
         </div>
         <div class="nav nav-tabs justify-content-center nav-green">
             <a class="nav-link active" data-bs-toggle="tab" href="#learner">Student</a>
-            <a class="nav-link" data-bs-toggle="tab" href="#teacher">Teacher</a> 
+            <a class="nav-link" data-bs-toggle="tab" href="#teacher">Teacher</a>
             <a class="nav-link" data-bs-toggle="tab" href="#parent">Guest Learner</a>
         </div>
 
@@ -54,7 +54,7 @@
                         <span asp-validation-for="Input.Email" class="text-danger"></span>
                     </div>
                     <div class="form-floating mb-3">
-                        <select asp-for="Input.SchoolID" class="form-select" id="schoolSelect" name="Input.SchoolID" asp-items="@(ViewData["Schools"] as SelectList)">
+                        <select asp-for="Input.SchoolID" class="form-select" required id="schoolSelect" name="Input.SchoolID" asp-items="@(ViewData["Schools"] as SelectList)">
                             <option value="">Select a school...</option>
                             <option value="other">Other (not listed)</option>
                         </select>
@@ -121,7 +121,7 @@
                     </div>
                     <!-- School Selection -->
                     <div class="form-floating mb-3">
-                        <select asp-for="Input.SchoolID" class="form-select" id="schoolSelect" name="Input.SchoolID" asp-items="@(ViewData["Schools"] as SelectList)">
+                        <select asp-for="Input.SchoolID" class="form-select" required id="schoolSelect" name="Input.SchoolID" asp-items="@(ViewData["Schools"] as SelectList )">
                             <option value="">Select a school...</option>
            
                         </select>
@@ -574,6 +574,13 @@
                         sessionStorage.clear();
                     }
                 });
+
+                    // 🔹 **Fix: Clear Errors on Page Refresh**
+            if (!sessionStorage.getItem("formSubmitted")) {
+                document.querySelectorAll(".text-danger").forEach(function (element) {
+                    element.innerHTML = "";
+                });
+            }
 
                 // Clear the active tab only if the form was submitted
                 if (sessionStorage.getItem('formSubmitted')) {

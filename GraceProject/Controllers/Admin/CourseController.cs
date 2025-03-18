@@ -229,7 +229,7 @@ namespace GraceProject.Controllers.Admin
         public async Task<IActionResult> QuizzesList(string courseId)
         {
             var quizzes = await _context.Quizzes.Where(q => q.CourseID == courseId).ToListAsync();
-            ViewBag.CourseID = courseId; 
+            ViewBag.CourseID = courseId;
             return View("~/Views/Admin/Courses/QuizList.cshtml", quizzes);
         }
 
@@ -237,11 +237,12 @@ namespace GraceProject.Controllers.Admin
         [Route("Modules/List/{courseId}")]
         public async Task<IActionResult> ModulesList(string courseId)
         {
-            var modules = await _context.Module.Where(m => m.UserId == courseId).ToListAsync();
+            var modules = await _context.Module.Where(m => m.CourseId == courseId).ToListAsync();
+
+            ViewBag.CourseId = courseId; // Pass courseId to ViewBag
+
             return View("~/Views/Admin/Courses/ModuleList.cshtml", modules);
         }
-
-
 
     }
 }

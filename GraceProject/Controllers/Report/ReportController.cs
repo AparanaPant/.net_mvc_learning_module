@@ -64,7 +64,62 @@ namespace GraceProject.Controllers.Report
             return Ok(students);
         }
 
+        // Courses by student name
+        [HttpPost("GetStudentCourses")]
+        public async Task<IActionResult> GetStudentCourses([FromBody] SearchModel searchData)
+        {
+            var name = searchData.Keyword.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            string firstName = name[0];
+            string lastName = name[1];
+            //string ID = searchData.Keyword;
 
+            // Use LINQ to join the tables and retrieve courses.
+            var courses = await (from user in _context.Users
+                                 where user.FirstName == firstName && user.LastName == lastName
+                                 join studentSession in _context.StudentSessions on user.Id equals studentSession.StudentID
+                                 join session in _context.Session on studentSession.SessionID equals session.SessionID
+                                 join course in _context.Course on session.CourseID equals course.CourseID
+                                 select new
+                                 {
+                                     name = course.Title + " (" + (course.Credits ?? 0) + " Credits)",
+                                     id = course.CourseID
+                                 })
+                         .Distinct()
+                         .ToListAsync();
+
+            // Log the result count for debugging
+            //Console.WriteLine("Courses Found: " + courses.Count);
+
+            return Ok(courses);
+        }
+
+        // Courses by educator name
+        [HttpPost("GetEducatorCourses")]
+        public async Task<IActionResult> GetEducatorCourses([FromBody] SearchModel searchData)
+        {
+            var name = searchData.Keyword.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            string firstName = name[0];
+            string lastName = name[1];
+
+            // Use LINQ to join the tables and retrieve courses.
+            var courses = await (from user in _context.Users
+                                 where user.FirstName == firstName && user.LastName == lastName
+                                 join educatorSession in _context.EducatorSession on user.Id equals educatorSession.EducatorID
+                                 join session in _context.Session on educatorSession.SessionID equals session.SessionID
+                                 join course in _context.Course on session.CourseID equals course.CourseID
+                                 select new
+                                 {
+                                     name = course.Title + " (" + (course.Credits ?? 0) + " Credits)",
+                                     id = course.CourseID
+                                 })
+                         .Distinct()
+                         .ToListAsync();
+
+            // Log the result count for debugging
+            //Console.WriteLine("Courses Found: " + courses.Count);
+
+            return Ok(courses);
+        }
 
         // Get Course List
         [HttpPost("GetCourseList")]

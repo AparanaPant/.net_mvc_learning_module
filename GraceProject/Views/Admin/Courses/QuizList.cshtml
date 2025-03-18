@@ -19,7 +19,7 @@ else
         @foreach (var quiz in Model)
         {
             <li class="list-group-item d-flex justify-content-between align-items-center">
-                <a href="~/Admin/Quizzes/Details/@quiz.QuizId">@quiz.Title</a>
+                <a>@quiz.Title</a>
                 <div>
                     <a href="@Url.Action("Edit", "Quiz", new { id = quiz.QuizId, userType = "admin" })" class="btn btn-secondary">Edit</a>
                     <button type="button" class="btn btn-danger" onclick="confirmDelete('@quiz.QuizId')">Delete</button>

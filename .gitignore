@@ -364,3 +364,6 @@ FodyWeavers.xsd
 
 #Project
 GraceProject/AppLogs/
+
+# Ignore EF Migrations folder
+GraceProject/Migrations/

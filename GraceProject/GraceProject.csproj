@@ -39,7 +39,6 @@
     <None Include="Views\Admin\Modules\Delete.cshtml" />
     <None Include="Views\Admin\Modules\Details.cshtml" />
     <None Include="Views\Admin\Modules\Edit.cshtml" />
-    <None Include="Views\Admin\Modules\Index.cshtml" />
     <None Include="Views\Admin\Slides\Index.cshtml" />
     <None Include="Views\Admin\Slides\SlideInfo.cshtml" />
     <None Include="Views\Home\Index.cshtml" />

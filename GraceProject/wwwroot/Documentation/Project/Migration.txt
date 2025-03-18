@@ -1,0 +1,9 @@
+﻿
+Crate Migration:
+Once you add a table or made any changes in Models, you should create a new migration, helping other developer to update their DB
+Add-Migration MigrationName -Context GraceDbContext -OutputDir Migrations
+
+
+Update DB:
+Once we downloaded the project from a repository or pull the project from github, we should update DB using the code below in Package Manager Console:
+Update-Database -Context GraceDbContext

@@ -29,6 +29,20 @@ namespace GraceProject.Controllers.Admin
             return View("~/views/Admin/Modules/Index.cshtml", Module);
         }
 
+        [Route("ManageModule/{courseId}")]
+        public async Task<IActionResult> ManageModule(string courseId)
+        {
+            var Module = _context.Module
+                .Where(m => m.CourseId == courseId)
+                .Include(m => m.ApplicationUser)
+                .ToList();
+
+            ViewData["Course"] = _context.Course.FirstOrDefault(c => c.CourseID == courseId);
+
+            return View("~/views/Admin/Modules/ManageModule.cshtml", Module);
+
+        }
+
         // GET: Modules/Details/5
         [Route("Details")]
         public async Task<IActionResult> Details(int? id)
@@ -50,14 +64,23 @@ namespace GraceProject.Controllers.Admin
         }
 
         // GET: Modules/Create
-        [Route("Create")]
-        public IActionResult Create()
+        [Route("Create/{courseId}")]
+        public IActionResult Create(string courseId)
         {
-            ViewData["ModuleList"] = _context.Module.Select(m => new SelectListItem
+            ViewData["ModuleList"] = _context.Module.Where(m=>m.CourseId==courseId).Select(m => new SelectListItem
             {
                 Value = m.Id.ToString(),
                 Text = m.ModuleName
             }).ToList();
+
+            ViewData["CourseList"] = _context.Course.Select(c => new SelectListItem
+            {
+                Value = c.CourseID.ToString(),
+                Text = c.Title
+            }).ToList();
+
+            ViewData["Course"] = _context.Course.FirstOrDefault(c=>c.CourseID==courseId);
+
 
             ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id");
             return View("~/views/Admin/Modules/Create.cshtml");
@@ -69,7 +92,7 @@ namespace GraceProject.Controllers.Admin
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Route("Create")]
-        public async Task<IActionResult> Create([Bind("Id,UserId,ModuleName,ParentModuleId,SavedDateTime")] Module @module)
+        public async Task<IActionResult> CreateModule([Bind("Id,UserId,ModuleName,CourseId,ParentModuleId,SavedDateTime")] Module @module)
         {
             @module.SavedDateTime = System.DateTime.Now;
             @module.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -79,10 +102,9 @@ namespace GraceProject.Controllers.Admin
 
             _context.Add(@module);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
 
             ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", @module.UserId);
-            return View("~/views/Admin/Modules/Create.cshtml", @module);
+            return Redirect("~/Admin/Modules/ManageModule/" + module.CourseId);
         }
 
         // GET: Modules/Edit/5
@@ -100,7 +122,9 @@ namespace GraceProject.Controllers.Admin
                 return NotFound();
             }
 
-            ViewData["ModuleList"] = _context.Module.Select(m => new SelectListItem
+            ViewData["Course"] = _context.Course.FirstOrDefault(c => c.CourseID == @module.CourseId);
+
+            ViewData["ModuleList"] = _context.Module.Where(m=>m.CourseId== @module.CourseId).Select(m => new SelectListItem
             {
                 Value = m.Id.ToString(),
                 Text = m.ModuleName
@@ -116,7 +140,7 @@ namespace GraceProject.Controllers.Admin
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Route("Edit")]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,UserId,ModuleName,ParentModuleId,SavedDateTime")] Module @module)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,UserId,ModuleName,CourseId,ParentModuleId,SavedDateTime")] Module @module)
         {
             if (id != @module.Id)
             {
@@ -142,10 +166,9 @@ namespace GraceProject.Controllers.Admin
                     throw;
                 }
             }
-            return RedirectToAction(nameof(Index));
-
             ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", @module.UserId);
-            return View("~/views/Admin/Modules/Edit.cshtml", @module);
+            return Redirect("~/Admin/Modules/ManageModule/"+ module.CourseId);
+
         }
 
         // GET: Modules/Delete/5
@@ -163,6 +186,9 @@ namespace GraceProject.Controllers.Admin
             {
                 return NotFound();
             }
+
+            ViewData["Course"] = _context.Course.FirstOrDefault(c => c.CourseID == @module.CourseId);
+
 
             return View("~/views/Admin/Modules/Delete.cshtml", @module);
         }
@@ -184,7 +210,9 @@ namespace GraceProject.Controllers.Admin
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+
+            return Redirect("~/Admin/Modules/ManageModule/" + module.CourseId);
+
         }
 
         private bool ModuleExists(int id)

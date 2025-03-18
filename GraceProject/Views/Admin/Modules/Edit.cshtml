@@ -1,21 +1,32 @@
-﻿@model GraceProject.Models.Module
-
-@{
-    ViewData["Title"] = "Edit";
-    //Layout = "~/Views/Shared/_AdminLayout.cshtml";
+﻿@{
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+    ViewData["Title"] = "Editing a Module";
 
 }
+@model GraceProject.Models.Module
+@{
+    GraceProject.Models.Course Course = new Course();
+    if (ViewData["Course"] != null)
+        Course = (GraceProject.Models.Course)ViewData["Course"];
+}
 
-<h1>Edit</h1>
+<h2>Edit</h2>
 
-<h4>Module</h4>
 <hr />
 <div class="row">
+  
+
     <div class="col-md-4">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
             
+            <div class="form-group">
+                <label class="control-label">Course</label>
+                <input type="text" class="form-control" value="@Course.Title" disabled />
+                <input type="hidden" asp-for="CourseId" value="@Course.CourseID" />
+                <span asp-validation-for="CourseId" class="text-danger"></span>
+            </div>
 
 
             <div class="form-group">
@@ -44,7 +55,7 @@
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a href="ManageModule/@Course.CourseID">Back to List</a>
 </div>
 
 @section Scripts {
