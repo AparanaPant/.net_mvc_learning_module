@@ -442,15 +442,14 @@ namespace GraceProject.Controllers
 
             return View("Result", userQuiz);
         }
-
         [Route("Quiz/Details/{quizId}")]
         public async Task<IActionResult> Details(int quizId)
         {
             var quiz = await _context.Quizzes
                 .Include(q => q.Questions)
-                .ThenInclude(q => q.Options) // Include multiple-choice options
+                .ThenInclude(q => q.Options)
                 .Include(q => q.Questions)
-                .ThenInclude(q => q.FillInTheBlankAnswers) // Include fill-in-the-blank answers
+                .ThenInclude(q => q.FillInTheBlankAnswers)
                 .FirstOrDefaultAsync(q => q.QuizId == quizId);
 
             if (quiz == null)
@@ -458,8 +457,32 @@ namespace GraceProject.Controllers
                 return NotFound("Quiz not found.");
             }
 
-            return View("~/Views/Quiz/Details.cshtml", quiz);
+            // ✅ Convert Quiz Model to QuizViewModel
+            var quizViewModel = new QuizViewModel
+            {
+                QuizId = quiz.QuizId,
+                Title = quiz.Title,
+                Duration = quiz.Duration,
+                Questions = quiz.Questions.Select(q => new QuestionViewModel
+                {
+                    QuestionId = q.QuestionId,
+                    Type = q.Type,
+                    Text = q.Text,
+                    Points = q.Points,
+                    ImageUrl = q.ImageUrl,
+                    Options = q.Options.Select(o => new OptionViewModel
+                    {
+                        OptionId = o.OptionId,
+                        Text = o.Text,
+                        IsCorrect = o.IsCorrect
+                    }).ToList(),
+                    FillInTheBlankAnswers = q.FillInTheBlankAnswers.Select(a => a.Answer).ToList()
+                }).ToList()
+            };
+
+            return View("~/Views/Quiz/Details.cshtml", quizViewModel);
         }
+
 
         // Display quiz result
         public async Task<IActionResult> ReviewQuiz(int userQuizId)

@@ -1,135 +1,116 @@
-﻿@model GraceProject.Models.Quiz
+﻿@model GraceProject.ViewModels.QuizViewModel
 
 @{
     ViewData["Title"] = "Quiz Details";
     Layout = "~/Views/Shared/_StudentLayout.cshtml";
 }
 
-<div class="container mt-5">
-    <div class="quiz-header text-center mb-4">
-        <h1 class="display-4">📖 @Model.Title</h1>
-        <p class="text-muted">
-            <strong>⏳ Duration:</strong> @Model.Duration minutes |
-            <strong>📅 Created:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")
-        </p>
+<h2>Quiz Details</h2>
+
+<form>
+    <div class="form-group">
+        <label class="control-label">Title</label>
+        <input value="@Model.Title" class="form-control" readonly />
     </div>
 
-    <div class="quiz-body">
-        <h2 class="mb-4 text-primary">📜 Quiz Questions</h2>
+    <div class="form-group">
+        <label class="control-label">Duration (in minutes)</label>
+        <input value="@Model.Duration" class="form-control" type="number" readonly />
+    </div>
 
-        @if (Model.Questions.Any())
+    <h3>Questions</h3>
+    <div id="questions-container">
+        @for (int i = 0; i < Model.Questions.Count; i++)
         {
-            <div class="accordion" id="quizQuestions">
-                @foreach (var question in Model.Questions)
-                {
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-header bg-light" id="heading-@question.QuestionId">
-                            <h5 class="mb-0">
-                                <button class="btn btn-link text-dark font-weight-bold" type="button" data-toggle="collapse"
-                                        data-target="#collapse-@question.QuestionId" aria-expanded="true" aria-controls="collapse-@question.QuestionId">
-                                    ❓ <span class="question-text">@question.Text</span>
-                                </button>
-                            </h5>
-                        </div>
+            <div class="card mb-3 question-card" data-index="@i">
+                <div class="card-header">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        Question @(i + 1): @(Model.Questions[i].Text ?? "undefined")
+                    </h5>
+                </div>
 
-                        <div id="collapse-@question.QuestionId" class="collapse show" aria-labelledby="heading-@question.QuestionId" data-parent="#quizQuestions">
-                            <div class="card-body">
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="control-label">Question Type</label>
+                        <input value="@Model.Questions[i].Type" class="form-control" readonly />
+                    </div>
 
-                                <!-- Display Question Image -->
-                                @if (!string.IsNullOrEmpty(question.ImageUrl))
-                                {
-                                    <div class="text-center mb-3">
-                                        <img src="@question.ImageUrl" class="img-thumbnail rounded shadow-sm"
-                                             alt="Question Image" style="max-width: 350px; height: auto;">
-                                    </div>
-                                }
+                    <div class="form-group">
+                        <label class="control-label">Points</label>
+                        <input value="@Model.Questions[i].Points" class="form-control" readonly />
+                    </div>
 
-                                <!-- Display Answer Section -->
-                                <div class="answers-section">
-                                    <h5 class="text-secondary font-weight-bold">📝 Answers:</h5>
+                    <div class="form-group">
+                        <label class="control-label">Question Text</label>
+                        <textarea class="form-control" rows="3" readonly>@Model.Questions[i].Text</textarea>
+                    </div>
 
-                                    @if (question.Type == "Fill in the Blank")
-                                    {
-                                        <div class="alert alert-info">
-                                            <ul class="mb-0">
-                                                @foreach (var answer in question.FillInTheBlankAnswers)
-                                                {
-                                                    <li><strong>@answer.Answer</strong></li>
-                                                }
-                                            </ul>
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <ul class="list-group">
-                                            @foreach (var option in question.Options)
-                                            {
-                                                <li class="list-group-item d-flex justify-content-between align-items-center
-                                                    @(option.IsCorrect ? "list-group-item-success font-weight-bold" : "list-group-item-light")">
-                                                    @option.Text
-                                                    @if (option.IsCorrect)
-                                                    {
-                                                        <span class="badge badge-success">✅ Correct</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="badge badge-danger">❌ Incorrect</span>
-                                                    }
-                                                </li>
-                                            }
-                                        </ul>
-                                    }
-                                </div>
+                    @if (!string.IsNullOrEmpty(Model.Questions[i].ImageUrl))
+                    {
+                        <div class="form-group">
+                            <label class="control-label">Question Image</label>
+                            <div>
+                                <img src="@Model.Questions[i].ImageUrl" alt="Question Image" class="img-fluid mb-2" style="max-width: 300px;" />
                             </div>
                         </div>
-                    </div>
-                }
-            </div>
-        }
-        else
-        {
-            <div class="alert alert-warning text-center">
-                ⚠ No questions available in this quiz.
+                    }
+
+                    @if (Model.Questions[i].Type == "Multiple Choice")
+                    {
+                        <h5>Options</h5>
+                        <ul class="list-group">
+                            @foreach (var option in Model.Questions[i].Options)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center
+                                    @(option.IsCorrect ? "list-group-item-success" : "")">
+                                    @option.Text
+                                    @if (option.IsCorrect)
+                                    {
+                                        <span class="badge badge-success">✅ Correct</span>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else if (Model.Questions[i].Type == "Fill in the Blank")
+                    {
+                        <h5>Answers</h5>
+                        <ul class="list-group">
+                            @foreach (var answer in Model.Questions[i].FillInTheBlankAnswers)
+                            {
+                                <li class="list-group-item list-group-item-info">
+                                    @answer
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else if (Model.Questions[i].Type == "True/False")
+                    {
+                        <h5>Options</h5>
+                        <ul class="list-group">
+                            <li class="list-group-item @(Model.Questions[i].Options[0].IsCorrect ? "list-group-item-success" : "")">
+                                True @if (Model.Questions[i].Options[0].IsCorrect)
+                                {
+                                    <span class="badge badge-success">✅</span>
+                                }
+                            </li>
+                            <li class="list-group-item @(Model.Questions[i].Options[1].IsCorrect ? "list-group-item-success" : "")">
+                                False @if (Model.Questions[i].Options[1].IsCorrect)
+                                {
+                                    <span class="badge badge-success">✅</span>
+                                }
+                            </li>
+                        </ul>
+                    }
+                </div>
             </div>
         }
     </div>
-</div>
-
-@section Scripts {
-    <script>
-        $(document).ready(function () {
-            $(".collapse").collapse();
-        });
-    </script>
-}
+</form>
 
 <style>
-    .quiz-header {
-        padding: 20px;
-        border-bottom: 2px solid #ddd;
-    }
-
-    .quiz-body {
-        max-width: 800px;
-        margin: 0 auto;
-    }
-
-    .card {
+    .question-card {
         border-radius: 8px;
-    }
-
-    .card-header {
-        background-color: #f8f9fa;
-        border-bottom: 1px solid #ddd;
-    }
-
-    .question-text {
-        font-size: 18px;
-    }
-
-    .list-group-item {
-        font-size: 16px;
-        padding: 10px;
     }
 
     .list-group-item-success {
@@ -137,12 +118,13 @@
         color: #155724;
     }
 
-    .list-group-item-light {
-        background-color: #f8f9fa;
+    .list-group-item-info {
+        background-color: #d1ecf1;
+        color: #0c5460;
     }
 
-    .badge {
-        font-size: 14px;
-        padding: 5px 10px;
+    .img-fluid {
+        max-width: 100%;
+        height: auto;
     }
 </style>

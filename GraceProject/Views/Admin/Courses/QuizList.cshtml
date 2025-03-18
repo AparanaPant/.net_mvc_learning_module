@@ -23,7 +23,8 @@ else
             : false;
 
             <li class="list-group-item d-flex justify-content-between align-items-center">
-                <a>@quiz.Title</a>
+                <a href="~/Quiz/Details/@quiz.QuizId">@quiz.Title</a>
+
                 <div>
                     <a href="@Url.Action("Edit", "Quiz", new { id = quiz.QuizId, userType = "admin" })"
                        class="btn btn-secondary @(quizTaken ? "disabled" : "")">
