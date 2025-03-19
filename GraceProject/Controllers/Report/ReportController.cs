@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using GraceProject.Models;
 using GraceProject.ViewModels;
+using Newtonsoft.Json.Linq;
 
 
 namespace GraceProject.Controllers.Report
@@ -529,6 +530,42 @@ namespace GraceProject.Controllers.Report
             return Ok(modules);
         }
 
+        [HttpPost("GetStudentSlideTime")]
+        public async Task<IActionResult> GetStudentSlideTime([FromBody] StudentSlideTimeRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.StudentID)
+             || string.IsNullOrWhiteSpace(request.CourseID)
+             || request.ModuleID == 0)
+                return BadRequest("Invalid request parameters.");
+
+            var dateRange = GetDateRange(request.DateFilter, request.StartDate, request.EndDate);
+            if (dateRange == null)
+                return BadRequest("Invalid or missing date range.");
+
+            var (start, end) = dateRange.Value;
+
+            var perSlide = await _context.SlideReadTracking
+                .Include(srt => srt.Slide)
+                .Where(srt =>
+                    srt.UserId == request.StudentID &&
+                    srt.Slide.ModuleId == request.ModuleID &&
+                    srt.ReadDateTime >= start &&
+                    srt.ReadDateTime <= end)
+                .GroupBy(srt => new { srt.SlideId, srt.Slide.Title })
+                .Select(g => new {
+                    SlideId = g.Key.SlideId,
+                    SlideTitle = g.Key.Title,
+                    TimeSpent = g.Sum(x => x.DurationSeconds)
+                })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                TotalTimeSpent = perSlide.Sum(x => x.TimeSpent),
+                Slides = perSlide
+            });
+        }
+
 
         [HttpPost("GetEducatorCourseGrades")]
         public async Task<IActionResult> GetEducatorCourseGrades([FromBody] EducatorCourseModel model)
@@ -657,6 +694,15 @@ namespace GraceProject.Controllers.Report
         public string Keyword { get; set; }
         string UserId { get; set; }
         string SearchType { get; set; }
+    }
+    public class StudentSlideTimeRequest
+    {
+        public string StudentID { get; set; }
+        public string CourseID { get; set; }
+        public int ModuleID { get; set; }
+        public string DateFilter { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
     }
 
     public class IdModel
