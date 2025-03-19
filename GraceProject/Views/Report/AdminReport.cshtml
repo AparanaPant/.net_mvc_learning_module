@@ -171,8 +171,6 @@
                 searchForDropdown.append(new Option("Grades", "grades"));
             } else if (searchType === 'school') {  // New condition for School
                 searchForDropdown.append(new Option("Grades", "grades"));
-                searchForDropdown.append(new Option("Time Spent on Slides", "timeSpent"));
-                searchForDropdown.append(new Option("Number of Slides Viewed", "slidesViewed"));
             } else {
                 searchForDropdown.append(new Option("Please select", ""));
             }
@@ -249,42 +247,59 @@
     }
 
          $('#dynamicDropdown').on('change', function () {
-            let searchFor = $('#searchFor').val();
-            // Check if the search option requires module selection
-            if (searchFor === 'timeSpent' || searchFor === 'slidesViewed') {
-                let courseId = $(this).val();
-                if (courseId) {
-                    loadModules(courseId);
-                } else {
-                    $('#moduleDropdownContainer').hide();
-                }
+        let searchFor = $('#searchFor').val();
+        if (searchFor === 'timeSpent' || searchFor === 'slidesViewed') {
+            let courseId = $(this).val();
+            if (courseId) {
+                loadModules(courseId);
             } else {
-                // Hide module dropdown if not applicable
                 $('#moduleDropdownContainer').hide();
             }
-        });
+        } else {
+            $('#moduleDropdownContainer').hide();
+        }
+         });
+
+        $('#searchFor').on('change', function() {
+        let searchFor = $(this).val();
+        if (searchFor === 'timeSpent' || searchFor === 'slidesViewed') {
+            let courseId = $('#dynamicDropdown').val();
+            if (courseId) {
+                loadModules(courseId);
+            } else {
+                // Optionally show the module container with a default message or leave it hidden.
+                $('#moduleDropdownContainer').hide();
+            }
+        } else {
+            $('#moduleDropdownContainer').hide();
+        }
+    });
 
         function loadModules(courseId) {
-            $.ajax({
-                url: '/Report/Report/GetModulesByCourse', // Backend endpoint to fetch modules
-                type: 'POST',
-                contentType: 'application/json; charset=utf-8',
-                dataType: 'json',
-                data: JSON.stringify({ courseId: courseId }),
-                success: function (data) {
-                    let moduleDropdown = $('#moduleDropdown');
-                    moduleDropdown.empty().append('<option value="">Please select</option>');
+        $.ajax({
+            url: '/Report/Report/GetModulesByCourse', // Ensure the URL and property names match your API
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            data: JSON.stringify({ Id: courseId }), // Note: using "Id" to match your model
+            success: function (data) {
+                let moduleDropdown = $('#moduleDropdown');
+                moduleDropdown.empty();
+                moduleDropdown.append('<option value="">Please select</option>');
+                if (data && data.length > 0) {
                     $.each(data, function (index, module) {
                         moduleDropdown.append(new Option(module.moduleName, module.id));
                     });
-                    $('#moduleDropdownContainer').show();
-                },
-                error: function (xhr, status, error) {
-                    console.error("Failed to load modules:", error);
-                    $('#moduleDropdownContainer').hide();
                 }
-            });
-        }
+                // Always show the dropdown container regardless of whether data was returned.
+                $('#moduleDropdownContainer').show();
+            },
+            error: function (xhr, status, error) {
+                console.error("Failed to load modules:", error);
+                $('#moduleDropdownContainer').hide();
+            }
+        });
+    }
 
         function fetchData(url, data){
             //var UserId=$("selectedId").val();
