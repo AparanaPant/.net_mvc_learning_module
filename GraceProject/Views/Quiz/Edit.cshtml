@@ -328,6 +328,8 @@
             let questionCard = $(this).closest('.question-card');
             let questionIndex = questionCard.data("index");
 
+            
+
             let questionText = questionCard.find('textarea[name="Questions[' + questionIndex + '].Text"]').val().trim();
             let points = parseInt(questionCard.find('input[name="Questions[' + questionIndex + '].Points"]').val(), 10);
             let questionType = questionCard.find('input[name="Questions[' + questionIndex + '].Type"]').val();
@@ -347,6 +349,7 @@
                 isValid = false;
                 errorMessage += "❌ Each question must have points greater than 0.\n";
             }
+                    
 
             // Validate Multiple Choice Questions (Check Both Existing & New Options)
             if (questionType === "Multiple Choice") {
@@ -387,6 +390,8 @@
                 questionCard.find('.delete-option, .delete-answer').hide();
                 questionCard.find('.correct-option-radio').prop('disabled', true);
             }
+
+                   
         });
 
             $(document).on('click', '.delete-question', function () {
@@ -558,7 +563,7 @@
                                 <button type="button" class="btn btn-secondary btn-sm edit-question" data-index="${questionCount}" style="display: none;">
                                     <i class="fas fa-edit"></i> Edit
                                 </button>
-                                <button type="button" class="btn btn-success btn-sm save-question" data-index="${questionCount}">
+                                        <button type="button" class="btn btn-success btn-sm .save-question-new" data-index="${questionCount}">
                                     <i class="fas fa-save"></i> Save
                                 </button>
                             </div>
@@ -599,6 +604,78 @@
             $('#questions-container').append(newQuestionHtml);
             // Use the new answer section function for new questions
             changeAnswerSectionNew($('#questions-container .question-card').last().find('.question-type')[0], questionCount);
+        });
+
+                $(document).on('click', '.save-question-new', function (event) {
+            let isValid = true;
+            let errorMessage = "";
+            let questionCard = $(this).closest('.question-card');
+            let questionIndex = questionCard.data("index");
+
+            console.log('Save question validation ---111111111111111');
+
+            let questionText = questionCard.find('textarea[name="Questions[' + questionIndex + '].Text"]').val().trim();
+            let points = parseInt(questionCard.find('input[name="Questions[' + questionIndex + '].Points"]').val(), 10);
+            // Get question type from select, not input
+            let questionType = questionCard.find('select[name="Questions[' + questionIndex + '].Type"]').val();
+
+            // For new questions, count options by direct children of the options container
+            let totalOptions = questionCard.find('.options-container > div').length;
+            let correctOption = questionCard.find('.correct-option-radio:checked').length;
+            let fillInTheBlankAnswers = questionCard.find('.answers-container .answer-text').length;
+
+            // Validate Question Text
+            if (questionText === "") {
+                isValid = false;
+                errorMessage += "❌ Question text cannot be empty.\n";
+            }
+
+            // Validate Points
+            if (isNaN(points) || points <= 0) {
+                isValid = false;
+                errorMessage += "❌ Each question must have points greater than 0.\n";
+            }
+
+            // Validate Multiple Choice Questions
+            if (questionType === "Multiple Choice") {
+                if (totalOptions < 2) {
+                    isValid = false;
+                    errorMessage += "❌ Multiple Choice questions must have at least 2 options.\n";
+                }
+                if (correctOption !== 1) {
+                    isValid = false;
+                    errorMessage += "❌ Multiple Choice questions must have exactly one correct answer.\n";
+                }
+            }
+
+            // Validate True/False Questions
+            if (questionType === "True/False" && correctOption !== 1) {
+                isValid = false;
+                errorMessage += "❌ True/False questions must have exactly one correct answer.\n";
+            }
+
+            // Validate Fill in the Blank Questions
+            if (questionType === "Fill in the Blank" && fillInTheBlankAnswers === 0) {
+                isValid = false;
+                errorMessage += "❌ Fill in the Blank questions must have at least one answer.\n";
+            }
+
+            if (!isValid) {
+                alert(errorMessage);
+                event.preventDefault();
+            } else {
+                alert("✅ Question saved successfully!");
+
+                // Lock the question (make fields read-only and disable buttons)
+                questionCard.find('.edit-question').show();
+                questionCard.find('.save-question').hide();
+                questionCard.find('input, textarea, select').prop('readonly', true);
+                questionCard.find('input[type="file"], .btn-outline-danger, .add-option, .add-answer').prop('disabled', true).hide();
+                questionCard.find('.delete-option, .delete-answer').hide();
+                questionCard.find('.correct-option-radio').prop('disabled', true);
+            }
+
+            console.log('Save question validation ---333333333333333');
         });
 
                 function changeAnswerSectionNew(selectElement, questionIndex) {
