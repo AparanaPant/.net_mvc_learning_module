@@ -182,6 +182,9 @@
             </div>
         }
     </div>
+    <div class="form-group">
+        <button type="button" id="add-question-btn" class="btn btn-primary mb-3">Add Question</button>
+    </div>
 
     <div class="form-group">
         <input type="submit" value="Save Changes" class="btn btn-primary" />
@@ -530,5 +533,198 @@
             return allSaved;
         }
         });
+
+
+                      $(document).on('click', '#add-question-btn', function () {
+            var questionCount = $('#questions-container .question-card').length;
+            var newQuestionHtml = `
+                <div class="card mb-3 question-card" data-index="${questionCount}">
+                    <div class="card-header" id="heading${questionCount}">
+                        <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                            <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse${questionCount}" aria-expanded="true" aria-controls="collapse${questionCount}">
+                                Question ${questionCount + 1}: New Question
+                            </button>
+                            <div>
+                                <button type="button" class="btn btn-secondary btn-sm toggle-collapse" data-toggle="collapse" data-target="#collapse${questionCount}">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <button type="button" class="btn btn-danger btn-sm delete-question" data-index="${questionCount}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </h5>
+                    </div>
+                    <div id="collapse${questionCount}" class="collapse" aria-labelledby="heading${questionCount}">
+                        <div class="card-body">
+                            <input type="hidden" name="Questions[${questionCount}].QuestionId" value="0" />
+                            <!-- Button group: include both edit (hidden initially) and save -->
+                            <div class="d-flex justify-content-end mb-2">
+                                <button type="button" class="btn btn-secondary btn-sm edit-question" data-index="${questionCount}" style="display: none;">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button type="button" class="btn btn-success btn-sm save-question" data-index="${questionCount}">
+                                    <i class="fas fa-save"></i> Save
+                                </button>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-md-6">
+                                    <label>Question Type</label>
+                                    <select name="Questions[${questionCount}].Type" class="form-control question-type" onchange="changeAnswerSectionNew(this, ${questionCount})">
+                                        <option value="Multiple Choice">Multiple Choice</option>
+                                        <option value="True/False">True/False</option>
+                                        <option value="Fill in the Blank">Fill in the Blank</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label>Points</label>
+                                    <input type="number" name="Questions[${questionCount}].Points" class="form-control" min="1" value="1" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Question Text</label>
+                                <textarea name="Questions[${questionCount}].Text" class="form-control" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Question Image</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="questionImage${questionCount}" name="Questions[${questionCount}].ImageFile" onchange="handleFileUpload(this, ${questionCount})">
+                                    <label class="custom-file-label" for="questionImage${questionCount}">Choose file</label>
+                                </div>
+                                <input type="hidden" id="hiddenImageUrl${questionCount}" name="Questions[${questionCount}].ImageUrl" value="" />
+                            </div>
+                            <div class="answer-section" id="answerSection${questionCount}">
+                                <!-- Answer section will be built dynamically using new functions -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $('#questions-container').append(newQuestionHtml);
+            // Use the new answer section function for new questions
+            changeAnswerSectionNew($('#questions-container .question-card').last().find('.question-type')[0], questionCount);
+        });
+
+            function changeAnswerSectionNew(selectElement, questionIndex) {
+            var questionType = $(selectElement).val();
+            var answerSection = $(`#answerSection${questionIndex}`);
+            answerSection.empty();
+            if (questionType === "Multiple Choice") {
+                answerSection.append(`
+                    <label>Options</label>
+                    <div class="options-container"></div>
+                    <button type="button" class="btn btn-secondary add-option-new" data-question-index="${questionIndex}" onclick="addOptionNew(${questionIndex})">Add Option</button>
+                `);
+            } else if (questionType === "True/False") {
+                answerSection.append(`
+                    <label>Options</label>
+                    <div class="options-container">
+                        <div class="form-group d-flex align-items-center">
+                            <input type="radio" name="Questions[${questionIndex}].CorrectOptionIndex" value="0" class="mr-2 correct-option-radio" checked />
+                            <input type="text" class="form-control mr-2" readonly value="True" />
+                            <input type="hidden" name="Questions[${questionIndex}].Options[0].Text" value="True" />
+                            <input type="hidden" name="Questions[${questionIndex}].Options[0].IsCorrect" value="false" />
+                        </div>
+                        <div class="form-group d-flex align-items-center">
+                            <input type="radio" name="Questions[${questionIndex}].CorrectOptionIndex" value="1" class="mr-2 correct-option-radio" />
+                            <input type="text" class="form-control mr-2" readonly value="False" />
+                            <input type="hidden" name="Questions[${questionIndex}].Options[1].Text" value="False" />
+                            <input type="hidden" name="Questions[${questionIndex}].Options[1].IsCorrect" value="false" />
+                        </div>
+                    </div>
+                `);
+            } else if (questionType === "Fill in the Blank") {
+                answerSection.append(`
+                    <label>Answers</label>
+                    <div class="answers-container"></div>
+                    <button type="button" class="btn btn-secondary add-answer-new" data-question-index="${questionIndex}" onclick="addAnswerNew(${questionIndex})">Add Answer</button>
+                `);
+            }
+        }
+
+
+        // New function to add an option for new questions
+        function addOptionNew(questionIndex) {
+            var optionsContainer = $(`#answerSection${questionIndex} .options-container`);
+            var optionCount = optionsContainer.children('.form-group').length;
+            var optionHtml = `
+                <div class="form-group d-flex align-items-center">
+                    <input type="radio" name="Questions[${questionIndex}].CorrectOptionIndex" value="${optionCount}" class="mr-2 correct-option-radio" data-question-index="${questionIndex}" data-option-index="${optionCount}" />
+                    <input type="text" class="form-control mr-2" name="Questions[${questionIndex}].Options[${optionCount}].Text" placeholder="Option text" />
+                    <button type="button" class="btn btn-outline-danger delete-option-new" data-question-index="${questionIndex}" data-option-index="${optionCount}" onclick="deleteOptionNew(this, ${questionIndex})">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                    <input type="hidden" name="Questions[${questionIndex}].Options[${optionCount}].IsCorrect" value="false" />
+                </div>
+            `;
+            optionsContainer.append(optionHtml);
+        }
+
+        // New function to delete an option for new questions
+        function deleteOptionNew(button, questionIndex) {
+            $(button).closest('.form-group').remove();
+            reindexOptionsNew(questionIndex);
+        }
+
+        // New function to add an answer for new questions
+        function addAnswerNew(questionIndex) {
+            var answersContainer = $(`#answerSection${questionIndex} .answers-container`);
+            var answerCount = answersContainer.children('.form-group').length;
+            var answerHtml = `
+                <div class="form-group d-flex align-items-center">
+                    <input type="text" class="form-control mr-2" name="Questions[${questionIndex}].FillInTheBlankAnswers[${answerCount}]" placeholder="Answer text" />
+                    <button type="button" class="btn btn-outline-danger delete-answer-new" data-question-index="${questionIndex}" data-answer-index="${answerCount}" onclick="deleteAnswerNew(this, ${questionIndex})">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            `;
+            answersContainer.append(answerHtml);
+        }
+
+        // New function to delete an answer for new questions
+        function deleteAnswerNew(button, questionIndex) {
+            $(button).closest('.form-group').remove();
+            reindexAnswersNew(questionIndex);
+        }
+
+        // New reindex functions for options and answers in new questions
+        function reindexOptionsNew(questionIndex) {
+            var optionsContainer = $(`#answerSection${questionIndex} .options-container`);
+            optionsContainer.find('div.form-group').each(function(newIndex) {
+                $(this).find('input[type="text"]').attr('name', `Questions[${questionIndex}].Options[${newIndex}].Text`);
+                $(this).find('input[type="radio"]').val(newIndex);
+                $(this).find('button.delete-option-new').attr('data-option-index', newIndex);
+                $(this).find('input[type="hidden"]').attr('name', `Questions[${questionIndex}].Options[${newIndex}].IsCorrect`);
+            });
+        }
+
+        function reindexAnswersNew(questionIndex) {
+            var answersContainer = $(`#answerSection${questionIndex} .answers-container`);
+            answersContainer.find('div.form-group').each(function(newIndex) {
+                $(this).find('input[type="text"]').attr('name', `Questions[${questionIndex}].FillInTheBlankAnswers[${newIndex}]`);
+                $(this).find('button.delete-answer-new').attr('data-answer-index', newIndex);
+            });
+        }
+
+        // Handle file upload and update hidden image URL
+        function handleFileUpload(input, questionIndex) {
+            const file = input.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append("ImageFile", file);
+                formData.append("questionIndex", questionIndex);
+
+                fetch('/Quiz/UploadImage', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Update the hidden input with the image URL
+                    $(`#hiddenImageUrl${questionIndex}`).val(data.imageUrl);
+                })
+                .catch(error => console.error("Error uploading image:", error));
+            }
+        }
+
     </script>
 }

@@ -340,6 +340,33 @@ namespace GraceProject.Controllers
                             }).ToList();
                         }
                     }
+                    else
+                    {
+                        // This is a new question; add it to the quiz
+                        var newQuestion = new Question
+                        {
+                            Text = questionModel.Text,
+                            Points = questionModel.Points,
+                            Type = questionModel.Type,
+                            ImageUrl = questionModel.ImageUrl,
+                            // Initialize collections if needed
+                            Options = (questionModel.Type == "Multiple Choice" || questionModel.Type == "True/False")
+                                ? questionModel.Options.Select(o => new Option
+                                {
+                                    OptionId = o.OptionId,
+                                    Text = o.Text,
+                                    IsCorrect = o.IsCorrect
+                                }).ToList()
+                                : new List<Option>(),
+                            FillInTheBlankAnswers = (questionModel.Type == "Fill in the Blank")
+                                ? questionModel.FillInTheBlankAnswers.Select(a => new FillInTheBlankAnswer
+                                {
+                                    Answer = a
+                                }).ToList()
+                                : new List<FillInTheBlankAnswer>()
+                        };
+                        quiz.Questions.Add(newQuestion);
+                    }
                 }
 
                 await _context.SaveChangesAsync();
