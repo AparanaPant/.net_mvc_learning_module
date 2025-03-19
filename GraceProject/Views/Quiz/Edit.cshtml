@@ -331,10 +331,7 @@
             let questionText = questionCard.find('textarea[name="Questions[' + questionIndex + '].Text"]').val().trim();
             let points = parseInt(questionCard.find('input[name="Questions[' + questionIndex + '].Points"]').val(), 10);
             let questionType = questionCard.find('input[name="Questions[' + questionIndex + '].Type"]').val();
-
-            let existingOptions = questionCard.find('.options-container .option-instance').length; // New Options
-            let existingStoredOptions = questionCard.find('.options-container input[name^="Questions[' + questionIndex + '].Options"]').length / 3; // Stored Options from DB
-            let totalOptions = existingOptions + existingStoredOptions; 
+            let totalOptions = questionCard.find('.options-container > div').length;
 
             let correctOption = questionCard.find('.correct-option-radio:checked').length;
             let fillInTheBlankAnswers = questionCard.find('.answers-container .answer-text').length;
@@ -534,8 +531,7 @@
         }
         });
 
-
-                      $(document).on('click', '#add-question-btn', function () {
+                $(document).on('click', '#add-question-btn', function () {
             var questionCount = $('#questions-container .question-card').length;
             var newQuestionHtml = `
                 <div class="card mb-3 question-card" data-index="${questionCount}">
@@ -586,12 +582,13 @@
                             </div>
                             <div class="form-group">
                                 <label>Question Image</label>
-                                <div class="custom-file">
+                                       <div class="custom-file">
                                     <input type="file" class="custom-file-input" id="questionImage${questionCount}" name="Questions[${questionCount}].ImageFile" onchange="handleFileUpload(this, ${questionCount})">
                                     <label class="custom-file-label" for="questionImage${questionCount}">Choose file</label>
                                 </div>
                                 <input type="hidden" id="hiddenImageUrl${questionCount}" name="Questions[${questionCount}].ImageUrl" value="" />
-                            </div>
+                                <img id="questionImagePreview${questionCount}" class="img-fluid mb-2 img-small" style="display:none;" alt="Question Preview" />
+
                             <div class="answer-section" id="answerSection${questionCount}">
                                 <!-- Answer section will be built dynamically using new functions -->
                             </div>
@@ -604,7 +601,7 @@
             changeAnswerSectionNew($('#questions-container .question-card').last().find('.question-type')[0], questionCount);
         });
 
-            function changeAnswerSectionNew(selectElement, questionIndex) {
+                function changeAnswerSectionNew(selectElement, questionIndex) {
             var questionType = $(selectElement).val();
             var answerSection = $(`#answerSection${questionIndex}`);
             answerSection.empty();
@@ -618,7 +615,7 @@
                 answerSection.append(`
                     <label>Options</label>
                     <div class="options-container">
-                        <div class="form-group d-flex align-items-center">
+                        <div class="form-group d-flex align-items-center option-instance">
                             <input type="radio" name="Questions[${questionIndex}].CorrectOptionIndex" value="0" class="mr-2 correct-option-radio" checked />
                             <input type="text" class="form-control mr-2" readonly value="True" />
                             <input type="hidden" name="Questions[${questionIndex}].Options[0].Text" value="True" />
@@ -640,6 +637,7 @@
                 `);
             }
         }
+
 
 
         // New function to add an option for new questions
@@ -707,24 +705,31 @@
 
         // Handle file upload and update hidden image URL
         function handleFileUpload(input, questionIndex) {
-            const file = input.files[0];
-            if (file) {
-                const formData = new FormData();
-                formData.append("ImageFile", file);
-                formData.append("questionIndex", questionIndex);
+    const file = input.files[0];
+    if (file) {
+        const formData = new FormData();
+        formData.append("ImageFile", file);
+        formData.append("questionIndex", questionIndex);
 
-                fetch('/Quiz/UploadImage', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // Update the hidden input with the image URL
-                    $(`#hiddenImageUrl${questionIndex}`).val(data.imageUrl);
-                })
-                .catch(error => console.error("Error uploading image:", error));
+        fetch('/Quiz/UploadImage', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Update the hidden input with the image URL
+            $(`#hiddenImageUrl${questionIndex}`).val(data.imageUrl);
+            // Also update the preview image if present
+            const imgPreview = document.getElementById(`questionImagePreview${questionIndex}`);
+            if (imgPreview) {
+                imgPreview.src = data.imageUrl;
+                imgPreview.style.display = 'block';
             }
-        }
+        })
+        .catch(error => console.error("Error uploading image:", error));
+    }
+}
+
 
     </script>
 }
