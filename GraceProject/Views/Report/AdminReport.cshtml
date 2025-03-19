@@ -46,6 +46,14 @@
             </select>
         </div>
 
+        <!-- New Module Dropdown (hidden by default) -->
+        <div class="col-md-3" id="moduleDropdownContainer" style="display: none;">
+            <label for="moduleDropdown" class="form-label">Select Module</label>
+            <select id="moduleDropdown" class="form-control">
+                <option value="">Please select</option>
+            </select>
+        </div>
+
         <!-- Date Range Selection -->
         <div class="col-md-3">
             <label for="dateFilterType" class="form-label">Date Filter</label>
@@ -172,7 +180,7 @@
 
 
                 // Setup autocomplete based on search type
-            function setupAutocomplete() {
+        function setupAutocomplete() {
         let searchType = $('#searchType').val();
         let dynamicDropdownLabel = $("#dynamicDropdownLabel");
         let dynamicDropdown = $('#dynamicDropdown');
@@ -239,6 +247,44 @@
             }
         });
     }
+
+         $('#dynamicDropdown').on('change', function () {
+            let searchFor = $('#searchFor').val();
+            // Check if the search option requires module selection
+            if (searchFor === 'timeSpent' || searchFor === 'slidesViewed') {
+                let courseId = $(this).val();
+                if (courseId) {
+                    loadModules(courseId);
+                } else {
+                    $('#moduleDropdownContainer').hide();
+                }
+            } else {
+                // Hide module dropdown if not applicable
+                $('#moduleDropdownContainer').hide();
+            }
+        });
+
+        function loadModules(courseId) {
+            $.ajax({
+                url: '/Report/Report/GetModulesByCourse', // Backend endpoint to fetch modules
+                type: 'POST',
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                data: JSON.stringify({ courseId: courseId }),
+                success: function (data) {
+                    let moduleDropdown = $('#moduleDropdown');
+                    moduleDropdown.empty().append('<option value="">Please select</option>');
+                    $.each(data, function (index, module) {
+                        moduleDropdown.append(new Option(module.moduleName, module.id));
+                    });
+                    $('#moduleDropdownContainer').show();
+                },
+                error: function (xhr, status, error) {
+                    console.error("Failed to load modules:", error);
+                    $('#moduleDropdownContainer').hide();
+                }
+            });
+        }
 
         function fetchData(url, data){
             //var UserId=$("selectedId").val();

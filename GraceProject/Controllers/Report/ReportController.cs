@@ -508,6 +508,28 @@ namespace GraceProject.Controllers.Report
             return Ok(result);
         }
 
+        [HttpPost("GetModulesByCourse")]
+        public async Task<IActionResult> GetModulesByCourse([FromBody] CourseIdModel model)
+        {
+            if (string.IsNullOrEmpty(model.Id))
+            {
+                return BadRequest("Course Id is required.");
+            }
+
+            // Query modules for the given course
+            var modules = await _context.Module
+                .Where(m => m.CourseId == model.Id)
+                .Select(m => new
+                {
+                    id = m.Id,
+                    moduleName = m.ModuleName
+                })
+                .ToListAsync();
+
+            return Ok(modules);
+        }
+
+
         [HttpPost("GetEducatorCourseGrades")]
         public async Task<IActionResult> GetEducatorCourseGrades([FromBody] EducatorCourseModel model)
         {
