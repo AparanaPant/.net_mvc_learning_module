@@ -404,6 +404,9 @@
             fetchCourseGrades(selectedDropdownValue, dateFilter, startDate, endDate);
         } else if (searchType === 'school' && searchFor === 'grades' && selectedDropdownValue) {
             fetchSchoolGrades(selectedId, selectedDropdownValue, dateFilter, startDate, endDate);
+        }else if (searchType === 'student' && searchFor === 'slidesViewed' && selectedDropdownValue && moduleId) {
+            // fetchSlidesViewedCount(selectedId, selectedDropdownValue, moduleId, dateFilter, startDate, endDate);
+            fetchSlidesViewedDetails(selectedId, selectedDropdownValue, moduleId, dateFilter, startDate, endDate);
         } else {
             $('#resultsContent').text('Please select a valid search option.');
         }
@@ -535,22 +538,25 @@
                 StartDate: dateFilter === 'custom' ? startDate : null,
                 EndDate: dateFilter === 'custom' ? endDate : null
             }),
-            success: function (data) {
+               success: function (data) {
                 const results = $('#resultsContent').empty();
 
-                if (!data.Slides || data.Slides.length === 0) {
+                if (!data.slides || data.slides.length === 0) {
                     return results.html("<div class='alert alert-warning'>No slide time data available.</div>");
                 }
 
-                // Summary
-                results.append(`<p><strong>Total Time Spent:</strong> ${data.TotalTimeSpent} seconds</p>`);
+                // Overall total
+                results.append(`<p><strong>Total Time Spent:</strong> ${data.totalTimeSpent} seconds</p>`);
 
-                // Per‑slide table
+                // Build per‑slide table
                 let html = `<table class="table table-striped table-bordered mt-3">
                     <thead><tr><th>Slide Title</th><th>Time Spent (seconds)</th></tr></thead><tbody>`;
 
-                data.Slides.forEach(slide => {
-                    html += `<tr><td>${slide.SlideTitle}</td><td>${slide.TimeSpent}</td></tr>`;
+                data.slides.forEach(slide => {
+                    html += `<tr>
+                                <td>${slide.slideTitle}</td>
+                                <td>${slide.timeSpent}</td>
+                             </tr>`;
                 });
 
                 html += `</tbody></table>`;
@@ -562,6 +568,91 @@
             }
         });
     }
+
+         function fetchSlidesViewedDetails(studentId, courseId, moduleId, dateFilter, startDate, endDate) {
+        $('#resultsContent').html("<div class='text-center'><span class='spinner-border'></span> Loading slide details...</div>");
+
+        $.ajax({
+            url: '/Report/Report/GetStudentSlidesViewedDetails',
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            data: JSON.stringify({
+                StudentID: studentId,
+                CourseID: courseId,
+                ModuleID: parseInt(moduleId),
+                DateFilter: dateFilter,
+                StartDate: dateFilter === 'custom' ? startDate : null,
+                EndDate: dateFilter === 'custom' ? endDate : null
+            }),
+               success: function(data) {
+                const results = $('#resultsContent').empty();
+
+                // Ensure the data exists and has at least one viewed slide
+                if (!data.viewedSlides || data.viewedSlides.length === 0) {
+                    return results.html("<div class='alert alert-warning'>No slides viewed in this module.</div>");
+                }
+
+                // Summary
+                results.append(`<p><strong>Total Slides in Module:</strong> ${data.totalSlidesInModule}</p>`);
+                results.append(`<p><strong>Slides Viewed:</strong> ${data.slidesViewedCount}</p>`);
+                results.append(`<p><strong>Progress:</strong> ${data.percentageViewed}%</p>`);
+
+                // Last viewed slide
+                if (data.lastViewedSlide) {
+                    results.append(`<p><strong>Last Viewed Slide:</strong> ${data.lastViewedSlide.slideTitle} on ${new Date(data.lastViewedSlide.lastViewed).toLocaleString()}</p>`);
+                }
+
+                // Per-slide breakdown
+                let html = `<table class="table table-striped mt-3">
+                    <thead><tr><th>Slide Title</th><th>Time Spent (sec)</th><th>Last Viewed</th></tr></thead><tbody>`;
+
+                data.viewedSlides.forEach(slide => {
+                    html += `<tr>
+                        <td>${slide.slideTitle}</td>
+                        <td>${slide.timeSpent}</td>
+                        <td>${new Date(slide.lastViewed).toLocaleString()}</td>
+                    </tr>`;
+                });
+
+                html += `</tbody></table>`;
+                results.append(html);
+            },
+            error: function(xhr, status, error) {
+                console.error("❌ Failed to fetch slide details:", error);
+                $('#resultsContent').html("<div class='alert alert-danger'>Failed to load slide details.</div>");
+            }
+        });
+    }
+
+
+    //    function fetchSlidesViewedCount(studentId, courseId, moduleId, dateFilter, startDate, endDate) {
+    //     $('#resultsContent').html("<div class='text-center'><span class='spinner-border'></span> Loading slide count...</div>");
+
+    //     $.ajax({
+    //         url: '/Report/Report/GetStudentSlidesViewedCount',
+    //         type: 'POST',
+    //         contentType: 'application/json; charset=utf-8',
+    //         dataType: 'json',
+    //         data: JSON.stringify({
+    //             StudentID: studentId,
+    //             CourseID: courseId,
+    //             ModuleID: parseInt(moduleId),
+    //             DateFilter: dateFilter,
+    //             StartDate: dateFilter === 'custom' ? startDate : null,
+    //             EndDate: dateFilter === 'custom' ? endDate : null
+    //         }),
+    //         success: function(data) {
+    //             $('#resultsContent').html(`<p><strong>Slides Viewed:</strong> ${data.SlidesViewedCount}</p>`);
+    //         },
+    //         error: function(xhr, status, error) {
+    //             console.error("❌ Failed to fetch slide‑view count:", error);
+    //             $('#resultsContent').html("<div class='alert alert-danger'>Failed to load slide count.</div>");
+    //         }
+    //     });
+    // }
+
+
 
           function fetchEducatorCourseGrades(educatorId, courseId, dateFilter, startDate, endDate) {
         $('#resultsContent').html("<div class='text-center'><span class='spinner-border'></span> Loading grades...</div>");
