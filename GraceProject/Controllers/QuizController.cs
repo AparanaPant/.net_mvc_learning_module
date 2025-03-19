@@ -258,9 +258,9 @@ namespace GraceProject.Controllers
             {
                 var quiz = await _context.Quizzes
                     .Include(q => q.Questions)
-                    .ThenInclude(q => q.Options)
+                        .ThenInclude(q => q.Options)
                     .Include(q => q.Questions)
-                    .ThenInclude(q => q.FillInTheBlankAnswers)
+                        .ThenInclude(q => q.FillInTheBlankAnswers)
                     .FirstOrDefaultAsync(q => q.QuizId == model.QuizId);
 
                 if (quiz == null)
@@ -268,7 +268,7 @@ namespace GraceProject.Controllers
                     return NotFound();
                 }
 
-                // ✅ Update Quiz Details
+                // Update Quiz Details (existing code)
                 if (!string.IsNullOrEmpty(model.Title))
                 {
                     quiz.Title = model.Title;
@@ -277,7 +277,27 @@ namespace GraceProject.Controllers
                 {
                     quiz.Duration = model.Duration;
                 }
-                // ✅ Update Questions
+
+                // Process deletions for questions marked for deletion.
+                // Assuming "QuestionsToDelete" is posted as multiple hidden inputs.
+                var questionsToDelete = Request.Form["QuestionsToDelete"];
+                if (!string.IsNullOrEmpty(questionsToDelete))
+                {
+                    foreach (var questionIdStr in questionsToDelete)
+                    {
+                        if (int.TryParse(questionIdStr, out int questionId))
+                        {
+                            var question = quiz.Questions.FirstOrDefault(q => q.QuestionId == questionId);
+                            if (question != null)
+                            {
+                                // Remove the question from the context (and from the quiz collection if necessary)
+                                _context.Questions.Remove(question);
+                            }
+                        }
+                    }
+                }
+
+                // Update or add/update remaining questions
                 foreach (var questionModel in model.Questions)
                 {
                     var existingQuestion = quiz.Questions.FirstOrDefault(q => q.QuestionId == questionModel.QuestionId);
@@ -295,27 +315,22 @@ namespace GraceProject.Controllers
                         {
                             existingQuestion.Type = questionModel.Type;
                         }
-
-                        // ✅ Image Handling: If a new image URL exists, update it
                         if (!string.IsNullOrEmpty(questionModel.ImageUrl))
                         {
                             existingQuestion.ImageUrl = questionModel.ImageUrl;
                         }
 
-                        // ✅ Update Options for MCQ & True/False
                         if (questionModel.Type == "Multiple Choice" || questionModel.Type == "True/False")
                         {
-                            // Clear existing options and add updated ones
                             existingQuestion.Options.Clear();
                             existingQuestion.Options = questionModel.Options.Select(o => new Option
                             {
-                                OptionId = o.OptionId, // Ensure the option ID is maintained
+                                OptionId = o.OptionId,
                                 Text = o.Text,
                                 IsCorrect = o.IsCorrect
                             }).ToList();
                         }
 
-                        // ✅ Update Fill in the Blank Answers
                         if (questionModel.Type == "Fill in the Blank")
                         {
                             existingQuestion.FillInTheBlankAnswers.Clear();
@@ -326,6 +341,7 @@ namespace GraceProject.Controllers
                         }
                     }
                 }
+
                 await _context.SaveChangesAsync();
 
                 if (userType == "educator")
@@ -344,7 +360,6 @@ namespace GraceProject.Controllers
 
             return View(model);
         }
-
 
         [HttpPost]
         public async Task<IActionResult> Delete(int id)

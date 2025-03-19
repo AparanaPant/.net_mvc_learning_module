@@ -195,7 +195,7 @@
     <script>
         $(document).ready(function () {
             var changedFields = {};
-
+          
             // Add new option
             $(document).on('click', '.add-option', function () {
             var questionIndex = $(this).data('question-index');
@@ -214,11 +214,9 @@
 
             optionsContainer.append(newOptionHtml);
         });
-                $(document).on('click', '.delete-option', function () {
-            $(this).closest('.form-group').remove();
-        });
+            
 
-                $(document).on('change', '.correct-option-radio', function () {
+            $(document).on('change', '.correct-option-radio', function () {
             var questionIndex = $(this).data('question-index');
             var optionIndex = $(this).data('option-index');
 
@@ -230,28 +228,9 @@
             });
         });
 
-                $(document).on('click', '.add-answer', function () {
-            var questionIndex = $(this).data('question-index');
-            var answersContainer = $(this).siblings('.answers-container');
-            var answerCount = answersContainer.children().length;
-
-            var newAnswerHtml = `
-                <div class="form-group d-flex align-items-center">
-                    <input class="form-control mr-2 answer-text" placeholder="Answer text" name="Questions[${questionIndex}].FillInTheBlankAnswers[${answerCount}]" readonly />
-                    <button type="button" class="btn btn-outline-danger delete-answer" data-question-index="${questionIndex}" data-answer-index="${answerCount}">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </div>`;
-
-            answersContainer.append(newAnswerHtml);
-        });
-
-                $(document).on('click', '.delete-answer', function () {
-            $(this).closest('.form-group').remove();
-        });
-
             // Delete option
             $(document).on('click', '.delete-option', function () {
+                  
                 var questionIndex = $(this).data('question-index');
                 var optionIndex = $(this).data('option-index');
                 var optionId = $(this).siblings('input[name="Questions[' + questionIndex + '].Options[' + optionIndex + '].OptionId"]').val();
@@ -264,10 +243,13 @@
 
                 $(this).closest('.form-group').remove();
                 markChanged('Questions[' + questionIndex + '].Options[' + optionIndex + '].Text');
+                reindexOptions(questionIndex);
+                console.log('delete option clicked');
             });
 
             // Add new answer
             $(document).on('click', '.add-answer', function () {
+                 console.log('add answer added');
                 var questionIndex = $(this).data('question-index');
                 var answersContainer = $(this).siblings('.answers-container');
                 var answerCount = answersContainer.children().length;
@@ -285,6 +267,7 @@
                 var answerIndex = $(this).data('answer-index');
                 $(this).closest('.form-group').remove();
                 markChanged('Questions[' + questionIndex + '].FillInTheBlankAnswers[' + answerIndex + ']');
+                reindexAnswers(questionIndex);
             });
 
             // Mark field as changed
@@ -406,12 +389,23 @@
             }
         });
 
-            // Delete question
             $(document).on('click', '.delete-question', function () {
-                var questionIndex = $(this).data('index');
-                $(this).closest('.question-card').remove();
-                updateQuestionIndices();
-            });
+            var $questionCard = $(this).closest('.question-card');
+            var questionIndex = $(this).data('index');
+            var questionId = $questionCard.find('input[name="Questions[' + questionIndex + '].QuestionId"]').val();
+
+            // If the question has an ID, mark it for deletion
+            if (questionId) {
+                var deleteQuestionHtml = '<input type="hidden" name="QuestionsToDelete" value="' + questionId + '" />';
+                $('form').append(deleteQuestionHtml);
+            }
+
+            // Remove the question card from the DOM
+            $questionCard.remove();
+
+            updateQuestionIndices();
+        });
+
 
             function markChanged(name) {
                 changedFields[name] = true;
@@ -446,6 +440,47 @@
                     });
                 });
             }
+                    function reindexOptions(questionIndex) {
+            var $optionsContainer = $(`#questions-container .question-card[data-index="${questionIndex}"] .options-container`);
+            $optionsContainer.find('div.form-group').each(function (newOptionIndex) {
+                // Update data attributes
+                $(this).find('.delete-option').attr('data-option-index', newOptionIndex);
+                $(this).find('.correct-option-radio')
+                       .attr('data-option-index', newOptionIndex)
+                       .attr('name', `Questions[${questionIndex}].CorrectOptionIndex`)
+                       .val(newOptionIndex);
+
+                // Update input names and IDs
+                $(this).find('[name^="Questions["]').each(function () {
+                    // e.g. "Questions[0].Options[2].Text" => "Questions[0].Options[newOptionIndex].Text"
+                    let oldName = $(this).attr('name');
+                    let newName = oldName.replace(/Options\[\d+\]/, `Options[${newOptionIndex}]`);
+                    $(this).attr('name', newName).attr('id', newName.replace(/\./g, '_'));
+                });
+            });
+        }
+
+                function reindexAnswers(questionIndex) {
+            // Find the answers container for this question
+            var $answersContainer = $(`#questions-container .question-card[data-index="${questionIndex}"] .answers-container`);
+
+            // Reindex each .form-group in the answers container
+            $answersContainer.find('div.form-group').each(function (newAnswerIndex) {
+                // Update data attributes on the delete button
+                $(this).find('.delete-answer').attr('data-answer-index', newAnswerIndex);
+
+                // Update the name (and id) attributes of any inputs inside this form-group
+                $(this).find('[name^="Questions["]').each(function () {
+                    // Example: "Questions[0].FillInTheBlankAnswers[2]" → "Questions[0].FillInTheBlankAnswers[newAnswerIndex]"
+                    let oldName = $(this).attr('name');
+                    let newName = oldName.replace(/FillInTheBlankAnswers\[\d+\]/, `FillInTheBlankAnswers[${newAnswerIndex}]`);
+
+                    // Update both the name and id attributes
+                    $(this).attr('name', newName).attr('id', newName.replace(/\./g, '_'));
+                });
+            });
+        }
+
 
             // Handle file upload preview
             window.handleFileUpload = function (input, index) {
