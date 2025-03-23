@@ -8,7 +8,7 @@
 <h2>Create Quiz</h2>
 
 <div class="quiz-creation-section">
-    <form asp-action="Create" method="post" enctype="multipart/form-data">
+    <form id="createQuizForm" asp-action="Create" method="post" enctype="multipart/form-data">
         <input type="hidden" asp-for="CourseID" />
         <input type="hidden" asp-for="SessionID" />
         <div class="total-score-section">
@@ -458,6 +458,18 @@
             document.getElementById("TotalScore").value = totalScore;
             document.getElementById("displayTotalScore").innerText = totalScore;  // Update displayed score
         }
+
+         $(document).ready(function () {
+            $("#createQuizForm").on("submit", function (event) {
+                // Check if any unsaved questions exist by looking for the "Update Question" button
+                if ($(".question-div .update-question").length > 0) {
+                    event.preventDefault();
+                    alert("❌ You haven't saved all questions! Please update each question first.");
+                    return; // Stop form submission
+                }
+                // If all questions are saved, the form will submit as normal.
+            });
+        });
 
     </script>
     @{
