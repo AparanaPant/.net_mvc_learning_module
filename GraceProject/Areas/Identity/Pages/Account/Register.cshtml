@@ -121,7 +121,7 @@
                     </div>
                     <!-- School Selection -->
                     <div class="form-floating mb-3">
-                        <select asp-for="Input.SchoolID" class="form-select" required id="schoolSelect" name="Input.SchoolID" asp-items="@(ViewData["Schools"] as SelectList )">
+                        <select asp-for="Input.SchoolID" class="form-select" id="schoolSelect" name="Input.SchoolID" asp-items="@(ViewData["Schools"] as SelectList )">
                             <option value="">Select a school...</option>
            
                         </select>
