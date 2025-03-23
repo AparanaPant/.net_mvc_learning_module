@@ -13,5 +13,6 @@ public class QuizResultViewModel
     public string QuizTitle { get; set; }
     public int TotalScore { get; set; }
     public int ObtainedScore { get; set; }
+    public bool IsAttempted { get; set; }
     public double Percentage => TotalScore > 0 ? Math.Round((double)ObtainedScore / TotalScore * 100, 2) : 0;
 }

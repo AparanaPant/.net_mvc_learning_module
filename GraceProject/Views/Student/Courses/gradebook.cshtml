@@ -19,17 +19,47 @@
         {
             <tr>
                 <td>@quiz.QuizTitle</td>
-                <td>@quiz.ObtainedScore / @quiz.TotalScore</td>
-                <td>@quiz.Percentage %</td>
+                <td>
+                    @if (quiz.IsAttempted)
+                    {
+                        @($"{quiz.ObtainedScore} / {quiz.TotalScore}")
+                    }
+                    else
+                    {
+                        <span class="not-attempted">Not Attempted</span>
+                    }
+                </td>
+                <td>
+                    @if (quiz.IsAttempted && quiz.TotalScore > 0)
+                    {
+                        @($"{quiz.Percentage}%")
+                    }
+                    else
+                    {
+                        <span class="not-attempted">-</span>
+                    }
+                </td>
             </tr>
         }
-        <tr>a
+        <tr>
             <td><strong>Total</strong></td>
-            <td><strong>@Model.ObtainedScore / @Model.TotalScore</strong></td>
-            <td><strong>@Model.Percentage %</strong></td>
+            <td>
+                <strong>@Model.ObtainedScore / @Model.TotalScore</strong>
+            </td>
+            <td>
+                @if (Model.TotalScore > 0)
+                {
+                    <strong>@(Math.Round((double)Model.ObtainedScore / Model.TotalScore * 100))%</strong>
+                }
+                else
+                {
+                    <strong>-</strong>
+                }
+            </td>
         </tr>
     </tbody>
 </table>
+
 <style>
     .table {
         width: 80%;
@@ -37,13 +67,18 @@
         border-collapse: collapse;
     }
 
-    .table th, .table td {
-        padding: 8px;
-        text-align: center;
-        border: 1px solid #ddd;
-    }
+        .table th, .table td {
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
 
-    .table th {
-        background-color: #f2f2f2;
+        .table th {
+            background-color: #f2f2f2;
+        }
+
+    .not-attempted {
+        color: #999;
+        font-style: italic;
     }
 </style>

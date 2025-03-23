@@ -22,7 +22,8 @@ namespace GraceProject.Controllers.Student
             {
                 return NotFound("Courses table is not available.");
             }
-            var course = _context?.Course?.FirstOrDefault(c => c.CourseID == courseId);
+            var course = _context.Course.FirstOrDefault(c => c.CourseID == courseId);
+
             var quizzes = _context.Quizzes
                 .Where(q =>
                     (!string.IsNullOrWhiteSpace(courseId) && q.CourseID == courseId) ||
@@ -34,23 +35,26 @@ namespace GraceProject.Controllers.Student
                     TotalScore = q.TotalScore ?? 0,
                     ObtainedScore = q.UserQuizzes
                         .Where(uq => uq.UserId == studentId)
-                        .Sum(uq => uq.Score.GetValueOrDefault())
-                }).ToList();
+                        .Sum(uq => uq.Score.GetValueOrDefault()),
+                    // Set the flag based on whether the student has any quiz attempts
+                    IsAttempted = q.UserQuizzes.Any(uq => uq.UserId == studentId)
+                })
+                .ToList();
 
-
+            // Filter out unattempted quizzes for overall total calculations
+            var attemptedQuizzes = quizzes.Where(q => q.IsAttempted).ToList();
 
             var model = new GradebookViewModel
             {
                 CourseTitle = course?.Title ?? "Unknown Course",
                 Quizzes = quizzes,
-                TotalScore = quizzes.Sum(q => q.TotalScore),
-                ObtainedScore = quizzes.Sum(q => q.ObtainedScore)
+                // Only sum totals for quizzes that were attempted
+                TotalScore = attemptedQuizzes.Sum(q => q.TotalScore),
+                ObtainedScore = attemptedQuizzes.Sum(q => q.ObtainedScore)
             };
 
             return View("~/Views/Student/Courses/gradebook.cshtml", model);
-
         }
-
 
 
     }
