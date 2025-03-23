@@ -9,7 +9,7 @@
     <h1 class="display-4 text-center">📖 Quizzes - @Model.Course.Title</h1>
     <p class="text-center"><strong>Course ID:</strong> @Model.Course.CourseID</p>
 
-    <h2>📌 Default Quizzes</h2>
+    <h2>Quizzes</h2>
     @if (Model.DefaultQuizzes.Any())
     {
         <table class="table table-striped">
@@ -48,42 +48,42 @@
         <p class="text-warning">⚠ No default quizzes available.</p>
     }
 
-    <h2>🎯 Session Quizzes</h2>
-    @if (Model.SessionQuizzes.Any())
-    {
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Duration</th>
-                    <th>Start Time (CST)</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var quiz in Model.SessionQuizzes)
-                {
-                    <tr>
-                        <td>@quiz.Title</td>
-                        <td>@quiz.Duration minutes</td>
-                        <td>@quiz.StartTimeCST.ToString("yyyy-MM-dd HH:mm")</td>
-                        <td>
-                            @if (Model.CurrentTimeCST >= quiz.StartTimeCST)
-                            {
-                                <a href="~/Quiz/Take/@quiz.QuizId" class="btn btn-success">▶ Start Quiz</a>
-                            }
-                            else
-                            {
-                                <span class="text-danger">⏳ Not Available Yet</span>
-                            }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
-    else
-    {
-        <p class="text-warning">⚠ No session quizzes available.</p>
-    }
+    @* <h2>🎯 Session Quizzes</h2> *@
+    @* @if (Model.SessionQuizzes.Any()) *@
+    @* { *@
+    @*     <table class="table table-striped"> *@
+    @*         <thead> *@
+    @*             <tr> *@
+    @*                 <th>Title</th> *@
+    @*                 <th>Duration</th> *@
+    @*                 <th>Start Time (CST)</th> *@
+    @*                 <th>Actions</th> *@
+    @*             </tr> *@
+    @*         </thead> *@
+    @*         <tbody> *@
+    @*             @foreach (var quiz in Model.SessionQuizzes) *@
+    @*             { *@
+    @*                 <tr> *@
+    @*                     <td>@quiz.Title</td> *@
+    @*                     <td>@quiz.Duration minutes</td> *@
+    @*                     <td>@quiz.StartTimeCST.ToString("yyyy-MM-dd HH:mm")</td> *@
+    @*                     <td> *@
+    @*                         @if (Model.CurrentTimeCST >= quiz.StartTimeCST) *@
+    @*                         { *@
+    @*                             <a href="~/Quiz/Take/@quiz.QuizId" class="btn btn-success">▶ Start Quiz</a> *@
+    @*                         } *@
+    @*                         else *@
+    @*                         { *@
+    @*                             <span class="text-danger">⏳ Not Available Yet</span> *@
+    @*                         } *@
+    @*                     </td> *@
+    @*                 </tr> *@
+    @*             } *@
+    @*         </tbody> *@
+    @*     </table> *@
+    @* } *@
+    @* else *@
+    @* { *@
+    @*     <p class="text-warning">⚠ No session quizzes available.</p> *@
+    @* } *@
 </div>
