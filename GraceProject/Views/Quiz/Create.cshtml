@@ -333,62 +333,93 @@
         }
 
 
-        function editQuestion(button) {
+                function editQuestion(button) {
             const questionDiv = button.closest('.question-div');
             const questionIndex = questionDiv.dataset.index;
-
             const question = questions[questionIndex];
+
             questionDiv.innerHTML = `
-                        <div class="card mb-3">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between">
-                                    <div>
-                                        <label>Question Type</label>
-                                        <select class="form-control question-type" style="width: auto;" onchange="changeAnswerSection(this)" name="Questions[${questionIndex}].Type">
-                                            <option value="Multiple Choice" ${question.Type === "Multiple Choice" ? 'selected' : ''}>Multiple Choice</option>
-                                            <option value="True/False" ${question.Type === "True/False" ? 'selected' : ''}>True/False</option>
-                                            <option value="Fill in the Blank" ${question.Type === "Fill in the Blank" ? 'selected' : ''}>Fill in the Blank</option>
-                                            // <option value="Matching" ${question.Type === "Matching" ? 'selected' : ''}>Matching</option>
-                                            // <option value="File Upload Question" ${question.Type === "File Upload Question" ? 'selected' : ''}>File Upload Question</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label>Points</label>
-                                        <input type="number" class="form-control question-points" value="${question.Points}" style="width: auto;" name="Questions[${questionIndex}].Points" />
-                                    </div>
-                                </div>
-                                <div class="question-attributes">
-                                    <label>Question Text</label>
-                                    <textarea class="form-control question-text" style="width: 100%;" name="Questions[${questionIndex}].Text">${question.Text}</textarea>
-                                           <label>Question Image</label>
-                                            <input type="file" class="form-control question-image" style="width: 100%;"
-                                                   name="Questions[${questionIndex}].Image" onchange="previewImage(this)" />
-                                            <img src="" class="img-preview" style="width: 100px; height: auto; display: none;" />
-                                            <input type="hidden" class="img-url" name="Questions[${questionIndex}].ImageUrl" value="" />
-                                </div>
-                                <div class="answer-section mt-3">
-                                    <!-- Answer input section will be dynamically inserted here -->
-                                </div>
-                                <div class="d-flex justify-content-end mt-3">
-                                    <button type="button" class="btn btn-primary update-question" onclick="updateQuestion(this)">Update Question</button>
-                                </div>
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <label>Question Type</label>
+                                <select class="form-control question-type" style="width: auto;" onchange="changeAnswerSection(this)" name="Questions[${questionIndex}].Type">
+                                    <option value="Multiple Choice" ${question.Type === "Multiple Choice" ? 'selected' : ''}>Multiple Choice</option>
+                                    <option value="True/False" ${question.Type === "True/False" ? 'selected' : ''}>True/False</option>
+                                    <option value="Fill in the Blank" ${question.Type === "Fill in the Blank" ? 'selected' : ''}>Fill in the Blank</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>Points</label>
+                                <input type="number" class="form-control question-points" value="${question.Points}" style="width: auto;" name="Questions[${questionIndex}].Points" />
                             </div>
                         </div>
-                    `;
+                        <div class="question-attributes">
+                            <label>Question Text</label>
+                            <textarea class="form-control question-text" style="width: 100%;" name="Questions[${questionIndex}].Text">${question.Text}</textarea>
+                            <label>Question Image</label>
+                            <input type="file" class="form-control question-image" style="width: 100%;" name="Questions[${questionIndex}].Image" onchange="previewImage(this, ${questionIndex})" />
+                            <img src="" class="img-preview" style="width: 100px; height: auto; display: none;" />
+                            <input type="hidden" class="img-url" name="Questions[${questionIndex}].ImageUrl" value="" />
+                        </div>
+                        <div class="answer-section mt-3">
+                            <!-- Answer input section will be dynamically inserted here -->
+                        </div>
+                        <div class="d-flex justify-content-end mt-3">
+                            <button type="button" class="btn btn-primary update-question" onclick="updateQuestion(this)">Update Question</button>
+                        </div>
+                    </div>
+                </div>
+            `;
 
+            // Call changeAnswerSection to insert the proper answer inputs for the type
             changeAnswerSection(questionDiv.querySelector(".question-type"));
 
-            // Restore options
-            const answerSection = questionDiv.querySelector('.answer-section');
+            // Restore the image preview (if an image URL exists)
+            const imgPreview = questionDiv.querySelector('.img-preview');
+            const imgUrlInput = questionDiv.querySelector('.img-url');
+            if (question.ImageUrl) {
+                imgPreview.src = question.ImageUrl;
+                imgPreview.style.display = 'block';
+                imgUrlInput.value = question.ImageUrl;
+            }
+
+            // Restore the answer data based on question type
             if (question.Type === "Multiple Choice") {
+                // Repopulate options for Multiple Choice
+                const answerSection = questionDiv.querySelector('.answer-section');
+                // Ensure you have an "Add Option" button reference; if not, pass the current button or similar reference.
                 question.Options.forEach((option, index) => {
-                    addOption(answerSection.querySelector('.add-option-button'), questionIndex);
+                    // If the addOption function requires a button, pass one from the answerSection.
+                    addOption(answerSection.querySelector('.add-option-button') || button, questionIndex);
                     const optionDiv = answerSection.querySelectorAll('.option-instance')[index];
                     optionDiv.querySelector('.option-text').value = option.Text;
                     optionDiv.querySelector('.is-correct-checkbox').checked = option.IsCorrect;
                 });
+            } else if (question.Type === "Fill in the Blank") {
+                // Repopulate Fill in the Blank answers
+                const answerSection = questionDiv.querySelector('.answer-section');
+                const fitbAnswerList = answerSection.querySelector('.fitb-answer-list');
+                fitbAnswerList.innerHTML = ''; // Clear any pre-existing answers
+                question.FillInTheBlankAnswers.forEach((answer, index) => {
+                    const answerDiv = document.createElement('div');
+                    answerDiv.classList.add('fitb-answer-instance');
+                    answerDiv.innerHTML = `<input type="text" class="form-control fitb-answer-text" name="Questions[${questionIndex}].FillInTheBlankAnswers[${index}]" value="${answer}" />`;
+                    fitbAnswerList.appendChild(answerDiv);
+                });
+            } else if (question.Type === "True/False") {
+                // Repopulate True/False selected option
+                const trueOption = questionDiv.querySelector(`#true-option-${questionIndex}`);
+                const falseOption = questionDiv.querySelector(`#false-option-${questionIndex}`);
+                if (question.Options && question.Options[0] && question.Options[0].IsCorrect) {
+                    trueOption.checked = true;
+                } else if (question.Options && question.Options[1] && question.Options[1].IsCorrect) {
+                    falseOption.checked = true;
+                }
             }
         }
+
 
         document.querySelector("form").addEventListener("submit", function (event) {
             event.preventDefault();
