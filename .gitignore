@@ -364,3 +364,6 @@ FodyWeavers.xsd
 
 #Project
 GraceProject/AppLogs/
+GraceProject/wwwroot/quiz-images/
+GraceProject/Migrations/
+
