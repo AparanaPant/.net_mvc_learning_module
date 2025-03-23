@@ -46,6 +46,14 @@
             </select>
         </div>
 
+        <!-- New Module Dropdown (hidden by default) -->
+        <div class="col-md-3" id="moduleDropdownContainer" style="display: none;">
+            <label for="moduleDropdown" class="form-label">Select Module</label>
+            <select id="moduleDropdown" class="form-control">
+                <option value="">Please select</option>
+            </select>
+        </div>
+
         <!-- Date Range Selection -->
         <div class="col-md-3">
             <label for="dateFilterType" class="form-label">Date Filter</label>
@@ -163,16 +171,14 @@
                 searchForDropdown.append(new Option("Grades", "grades"));
             } else if (searchType === 'school') {  // New condition for School
                 searchForDropdown.append(new Option("Grades", "grades"));
-                searchForDropdown.append(new Option("Time Spent on Slides", "timeSpent"));
-                searchForDropdown.append(new Option("Number of Slides Viewed", "slidesViewed"));
             } else {
                 searchForDropdown.append(new Option("Please select", ""));
             }
         }
 
 
-                // Setup autocomplete based on search type
-            function setupAutocomplete() {
+        // Setup autocomplete based on search type
+        function setupAutocomplete() {
         let searchType = $('#searchType').val();
         let dynamicDropdownLabel = $("#dynamicDropdownLabel");
         let dynamicDropdown = $('#dynamicDropdown');
@@ -236,6 +242,61 @@
                 }
 
                 return false;
+            }
+        });
+    }
+
+         $('#dynamicDropdown').on('change', function () {
+        let searchFor = $('#searchFor').val();
+        if (searchFor === 'timeSpent' || searchFor === 'slidesViewed') {
+            let courseId = $(this).val();
+            if (courseId) {
+                loadModules(courseId);
+            } else {
+                $('#moduleDropdownContainer').hide();
+            }
+        } else {
+            $('#moduleDropdownContainer').hide();
+        }
+         });
+
+        $('#searchFor').on('change', function() {
+        let searchFor = $(this).val();
+        if (searchFor === 'timeSpent' || searchFor === 'slidesViewed') {
+            let courseId = $('#dynamicDropdown').val();
+            if (courseId) {
+                loadModules(courseId);
+            } else {
+                // Optionally show the module container with a default message or leave it hidden.
+                $('#moduleDropdownContainer').hide();
+            }
+        } else {
+            $('#moduleDropdownContainer').hide();
+        }
+    });
+
+        function loadModules(courseId) {
+        $.ajax({
+            url: '/Report/Report/GetModulesByCourse', // Ensure the URL and property names match your API
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            data: JSON.stringify({ Id: courseId }), // Note: using "Id" to match your model
+            success: function (data) {
+                let moduleDropdown = $('#moduleDropdown');
+                moduleDropdown.empty();
+                moduleDropdown.append('<option value="">Please select</option>');
+                if (data && data.length > 0) {
+                    $.each(data, function (index, module) {
+                        moduleDropdown.append(new Option(module.moduleName, module.id));
+                    });
+                }
+                // Always show the dropdown container regardless of whether data was returned.
+                $('#moduleDropdownContainer').show();
+            },
+            error: function (xhr, status, error) {
+                console.error("Failed to load modules:", error);
+                $('#moduleDropdownContainer').hide();
             }
         });
     }
@@ -315,7 +376,9 @@
             // Handle Search Button Click
     $('#searchBtn').off('click').on('click', function () {
         console.log("Search Button Clicked");
-
+        let studentId = $('#selectedId').val();  
+        let courseId = $('#dynamicDropdown').val();  
+        let moduleId = $('#moduleDropdown').val();   
         let selectedDropdownValue = $('#dynamicDropdown').val(); // This is the CourseID
         let searchType = $('#searchType').val();
         let searchFor = $('#searchFor').val();
@@ -333,19 +396,24 @@
 
         if (searchType === 'student' && searchFor === 'grades' && selectedDropdownValue) {
             fetchGrades(selectedId, selectedDropdownValue, dateFilter, startDate, endDate);
-        } else if (searchType === 'educator' && searchFor === 'grades' && selectedDropdownValue) {
+        } else  if (searchFor === 'timeSpent' && courseId && moduleId) {
+        fetchSlideTimeSpent(studentId, courseId, moduleId, dateFilter, startDate, endDate);
+         }else if (searchType === 'educator' && searchFor === 'grades' && selectedDropdownValue) {
             fetchEducatorCourseGrades(selectedId, selectedDropdownValue, dateFilter, startDate, endDate);
         } else if (searchType === 'course' && searchFor === 'grades' && selectedDropdownValue) {
             fetchCourseGrades(selectedDropdownValue, dateFilter, startDate, endDate);
         } else if (searchType === 'school' && searchFor === 'grades' && selectedDropdownValue) {
             fetchSchoolGrades(selectedId, selectedDropdownValue, dateFilter, startDate, endDate);
+        }else if (searchType === 'student' && searchFor === 'slidesViewed' && selectedDropdownValue && moduleId) {
+            // fetchSlidesViewedCount(selectedId, selectedDropdownValue, moduleId, dateFilter, startDate, endDate);
+            fetchSlidesViewedDetails(selectedId, selectedDropdownValue, moduleId, dateFilter, startDate, endDate);
         } else {
             $('#resultsContent').text('Please select a valid search option.');
         }
     });
 
 
-           function fetchSchoolGrades(schoolId, courseId, dateFilter, startDate, endDate) {
+       function fetchSchoolGrades(schoolId, courseId, dateFilter, startDate, endDate) {
         $.ajax({
             url: '/Report/Report/GetSchoolGrades',
             type: 'POST',
@@ -453,6 +521,138 @@
             }
         });
     }
+
+            function fetchSlideTimeSpent(studentId, courseId, moduleId, dateFilter, startDate, endDate) {
+        $('#resultsContent').html("<div class='text-center'><span class='spinner-border'></span> Loading slide time...</div>");
+
+        $.ajax({
+            url: '/Report/Report/GetStudentSlideTime',
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            data: JSON.stringify({
+                StudentID: studentId,
+                CourseID: courseId,
+                ModuleID: parseInt(moduleId),
+                DateFilter: dateFilter,
+                StartDate: dateFilter === 'custom' ? startDate : null,
+                EndDate: dateFilter === 'custom' ? endDate : null
+            }),
+               success: function (data) {
+                const results = $('#resultsContent').empty();
+
+                if (!data.slides || data.slides.length === 0) {
+                    return results.html("<div class='alert alert-warning'>No slide time data available.</div>");
+                }
+
+                // Overall total
+                results.append(`<p><strong>Total Time Spent:</strong> ${data.totalTimeSpent} seconds</p>`);
+
+                // Build per‑slide table
+                let html = `<table class="table table-striped table-bordered mt-3">
+                    <thead><tr><th>Slide Title</th><th>Time Spent (seconds)</th></tr></thead><tbody>`;
+
+                data.slides.forEach(slide => {
+                    html += `<tr>
+                                <td>${slide.slideTitle}</td>
+                                <td>${slide.timeSpent}</td>
+                             </tr>`;
+                });
+
+                html += `</tbody></table>`;
+                results.append(html);
+            },
+            error: function (xhr, status, error) {
+                console.error("❌ Failed to fetch slide time:", error);
+                $('#resultsContent').html("<div class='alert alert-danger'>Failed to load slide time data.</div>");
+            }
+        });
+    }
+
+         function fetchSlidesViewedDetails(studentId, courseId, moduleId, dateFilter, startDate, endDate) {
+        $('#resultsContent').html("<div class='text-center'><span class='spinner-border'></span> Loading slide details...</div>");
+
+        $.ajax({
+            url: '/Report/Report/GetStudentSlidesViewedDetails',
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            data: JSON.stringify({
+                StudentID: studentId,
+                CourseID: courseId,
+                ModuleID: parseInt(moduleId),
+                DateFilter: dateFilter,
+                StartDate: dateFilter === 'custom' ? startDate : null,
+                EndDate: dateFilter === 'custom' ? endDate : null
+            }),
+               success: function(data) {
+                const results = $('#resultsContent').empty();
+
+                // Ensure the data exists and has at least one viewed slide
+                if (!data.viewedSlides || data.viewedSlides.length === 0) {
+                    return results.html("<div class='alert alert-warning'>No slides viewed in this module.</div>");
+                }
+
+                // Summary
+                results.append(`<p><strong>Total Slides in Module:</strong> ${data.totalSlidesInModule}</p>`);
+                results.append(`<p><strong>Slides Viewed:</strong> ${data.slidesViewedCount}</p>`);
+                results.append(`<p><strong>Progress:</strong> ${data.percentageViewed}%</p>`);
+
+                // Last viewed slide
+                if (data.lastViewedSlide) {
+                    results.append(`<p><strong>Last Viewed Slide:</strong> ${data.lastViewedSlide.slideTitle} on ${new Date(data.lastViewedSlide.lastViewed).toLocaleString()}</p>`);
+                }
+
+                // Per-slide breakdown
+                let html = `<table class="table table-striped mt-3">
+                    <thead><tr><th>Slide Title</th><th>Time Spent (sec)</th><th>Last Viewed</th></tr></thead><tbody>`;
+
+                data.viewedSlides.forEach(slide => {
+                    html += `<tr>
+                        <td>${slide.slideTitle}</td>
+                        <td>${slide.timeSpent}</td>
+                        <td>${new Date(slide.lastViewed).toLocaleString()}</td>
+                    </tr>`;
+                });
+
+                html += `</tbody></table>`;
+                results.append(html);
+            },
+            error: function(xhr, status, error) {
+                console.error("❌ Failed to fetch slide details:", error);
+                $('#resultsContent').html("<div class='alert alert-danger'>Failed to load slide details.</div>");
+            }
+        });
+    }
+
+
+    //    function fetchSlidesViewedCount(studentId, courseId, moduleId, dateFilter, startDate, endDate) {
+    //     $('#resultsContent').html("<div class='text-center'><span class='spinner-border'></span> Loading slide count...</div>");
+
+    //     $.ajax({
+    //         url: '/Report/Report/GetStudentSlidesViewedCount',
+    //         type: 'POST',
+    //         contentType: 'application/json; charset=utf-8',
+    //         dataType: 'json',
+    //         data: JSON.stringify({
+    //             StudentID: studentId,
+    //             CourseID: courseId,
+    //             ModuleID: parseInt(moduleId),
+    //             DateFilter: dateFilter,
+    //             StartDate: dateFilter === 'custom' ? startDate : null,
+    //             EndDate: dateFilter === 'custom' ? endDate : null
+    //         }),
+    //         success: function(data) {
+    //             $('#resultsContent').html(`<p><strong>Slides Viewed:</strong> ${data.SlidesViewedCount}</p>`);
+    //         },
+    //         error: function(xhr, status, error) {
+    //             console.error("❌ Failed to fetch slide‑view count:", error);
+    //             $('#resultsContent').html("<div class='alert alert-danger'>Failed to load slide count.</div>");
+    //         }
+    //     });
+    // }
+
+
 
           function fetchEducatorCourseGrades(educatorId, courseId, dateFilter, startDate, endDate) {
         $('#resultsContent').html("<div class='text-center'><span class='spinner-border'></span> Loading grades...</div>");
