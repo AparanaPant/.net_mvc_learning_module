@@ -843,6 +843,17 @@
     
 });
 
+               $(document).on('mousedown', '.toggle-collapse, .btn-link[data-toggle="collapse"]', function (event) {
+            const $questionCard = $(this).closest('.question-card');
+            const $saveButton = $questionCard.find('.save-question:visible');
+
+            if ($saveButton.length > 0) {
+                event.preventDefault();
+                alert("⚠️ Please save your changes before collapsing the question.");
+                return false;
+            }
+        });
+
 
 
     </script>
