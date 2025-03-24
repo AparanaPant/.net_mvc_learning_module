@@ -25,7 +25,11 @@ namespace GraceProject.ViewModels
         public List<QuestionViewModel> Questions { get; set; } = new List<QuestionViewModel>();
 
         public string? CourseID { get; set; }  
-        public int? SessionID { get; set; }  
+        public int? SessionID { get; set; }
+
+        public DateTime? DueDate { get; set; }
+        public int NoOfAttempts { get; set; }
+
     }
 
     //public class SubmitQuizViewModel

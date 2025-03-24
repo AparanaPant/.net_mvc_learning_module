@@ -120,6 +120,8 @@ namespace GraceProject.Controllers
                     CourseID = quizViewModel.CourseID,
                     SessionID = quizViewModel.SessionID,
                     TotalScore = quizViewModel.TotalScore,
+                    DueDate = quizViewModel.DueDate,            
+                    NoOfAttempts = quizViewModel.NoOfAttempts,  
                     Questions = quizViewModel.Questions.Select(q => new Question
                     {
                         Text = q.Text,
