@@ -199,6 +199,7 @@ namespace GraceProject.Controllers
                     QuestionId = q.QuestionId,
                     Type = q.Type,
                     Text = q.Text,
+                    Points = q.Points,
                     Options = q.Options.Select(o => new OptionViewModel
                     {
                         OptionId = o.OptionId,
@@ -254,7 +255,7 @@ namespace GraceProject.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public async Task<IActionResult> Edit(QuizViewModel model, string userType = null)
+        public async Task<IActionResult> Edit(QuizViewModel model, string? userType)
         {
             if (ModelState.IsValid)
             {
@@ -373,18 +374,17 @@ namespace GraceProject.Controllers
 
                 await _context.SaveChangesAsync();
 
-                if (userType == "educator")
+                var user = await _userManager.GetUserAsync(User);
+                if (user != null)
                 {
-                    return Redirect($"/Educator/Quizzes/{quiz.CourseID}");
+                    if (await _userManager.IsInRoleAsync(user, "Admin"))
+                        return Redirect($"/Admin/Courses/Quizzes/List/{quiz.CourseID}");
+
+                    if (await _userManager.IsInRoleAsync(user, "Educator"))
+                        return Redirect($"/Educator/Quizzes/{quiz.CourseID}");
                 }
-                else if (userType == "admin")
-                {
-                    return Redirect($"/Admin/Courses/Quizzes/List/{quiz.CourseID}");
-                }
-                else
-                {
-                    return RedirectToAction(nameof(Index));
-                }
+
+                return RedirectToAction(nameof(Index));
             }
 
             return View(model);
@@ -405,7 +405,9 @@ namespace GraceProject.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> Submit(QuizViewModel submitQuizViewModel)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Submit([FromForm] QuizViewModel submitQuizViewModel)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized();
@@ -482,6 +484,7 @@ namespace GraceProject.Controllers
 
             return View("Result", userQuiz);
         }
+
         [Route("Quiz/Details/{quizId}")]
         public async Task<IActionResult> Details(int quizId)
         {
@@ -619,6 +622,16 @@ namespace GraceProject.Controllers
             await _context.SaveChangesAsync();
             return Ok();
         }
+
+            [Authorize]
+            [HttpGet]
+            public IActionResult KeepAlive()
+            {
+                return Ok();
+            }
+       
+
+
 
         [HttpPost]
         public async Task<IActionResult> UpdateAttempts(int id, [FromForm] int attempts)

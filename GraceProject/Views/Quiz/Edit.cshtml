@@ -675,7 +675,7 @@
                 questionCard.find('.correct-option-radio').prop('disabled', true);
             }
 
-            console.log('Save question validation ---333333333333333');
+          
         });
 
                 function changeAnswerSectionNew(selectElement, questionIndex) {
@@ -806,6 +806,18 @@
         .catch(error => console.error("Error uploading image:", error));
     }
 }
+
+
+    $(document).on('click', '.save-quiz', function () {
+    
+            $('input[name="Title"], input[name="Duration"]').prop('readonly', true);
+
+            $('.save-quiz').hide();
+            $('.edit-quiz').show();
+
+    
+});
+
 
 
     </script>

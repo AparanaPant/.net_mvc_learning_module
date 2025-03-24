@@ -1,8 +1,10 @@
 ﻿@model GraceProject.ViewModels.QuizViewModel
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
 
 @{
     ViewData["Title"] = "Take Quiz";
     Layout = "~/Views/Shared/_StudentLayout.cshtml";
+    var tokens = Antiforgery.GetAndStoreTokens(Context);
 }
 
 <style>
@@ -64,8 +66,11 @@
 
 <div class="container mt-4">
     <form asp-action="Submit" asp-controller="Quiz" method="post">
+        @Html.AntiForgeryToken()
         <!-- Hidden QuizId to ensure it gets submitted -->
-        <input type="hidden" name="QuizId" value="@Model.QuizId" />
+       <input type="hidden" id="RequestVerificationToken" name="__RequestVerificationToken" value="@tokens.RequestToken" />
+
+        <input type="hidden" name="QuizId" value="@Model.QuizId"/>
 
         <h2 class="text-center mb-4">@Model.Title</h2>
 
@@ -162,6 +167,104 @@
         let currentQuestionIndex = 0;
         const totalQuestions = @Model.Questions.Count;
 
+        let totalTimeInSeconds = @Model.Duration * 60; // Duration is in minutes
+        let remainingSeconds = totalTimeInSeconds;
+        let timerInterval;
+        let reminderShown = false;
+
+        function formatTime(seconds) {
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${hrs}h ${mins}m ${secs.toFixed(0)}s`;
+        }
+
+        function updateTimerDisplay() {
+            document.getElementById("time-elapsed").textContent = `Time Left: ${formatTime(remainingSeconds)}`;
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                remainingSeconds--;
+
+                updateTimerDisplay();
+
+                if (!reminderShown && remainingSeconds === 180) {
+                    alert("⏳ Reminder: Only 3 minutes remaining!");
+                    reminderShown = true;
+                }
+
+                if (remainingSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    showFinalCountdown();
+                }
+            }, 1000);
+        }
+
+            function showFinalCountdown() {
+            let counter = 5;
+            const overlay = document.createElement("div");
+            overlay.style.position = "fixed";
+            overlay.style.top = 0;
+            overlay.style.left = 0;
+            overlay.style.width = "100%";
+            overlay.style.height = "100%";
+            overlay.style.backgroundColor = "rgba(0,0,0,0.7)";
+            overlay.style.display = "flex";
+            overlay.style.justifyContent = "center";
+            overlay.style.alignItems = "center";
+            overlay.style.color = "#fff";
+            overlay.style.fontSize = "2rem";
+            overlay.style.zIndex = 9999;
+            overlay.innerHTML = `⏱ Time's up! Submitting in <span id="final-countdown">${counter}</span> seconds...`;
+            document.body.appendChild(overlay);
+
+            const finalInterval = setInterval(() => {
+                counter--;
+                document.getElementById("final-countdown").textContent = counter;
+
+                if (counter <= 0) {
+                    clearInterval(finalInterval);
+                    overlay.remove();
+                    submitQuizAjax(); // 👇 AJAX submit
+                }
+            }, 1000);
+        }
+
+           function submitQuizAjax() {
+            const form = document.querySelector("form");
+            const formData = new FormData(form);
+
+            // Get anti-forgery token by name, not id
+            const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+            if (tokenInput) {
+                formData.append("__RequestVerificationToken", tokenInput.value);
+            }
+
+            fetch('/Quiz/Submit', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'RequestVerificationToken': tokenInput?.value
+                }
+            })
+            .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url;
+                } else {
+                    return response.text().then(html => {
+                        document.open();
+                        document.write(html);
+                        document.close();
+                    });
+                }
+            })
+            .catch(err => {
+                alert("❌ Failed to auto-submit quiz. Please try again.");
+                console.error(err);
+            });
+        }
+
         function navigateQuestions(direction) {
             document.getElementById(`question-${currentQuestionIndex}`).style.display = "none";
             currentQuestionIndex += direction;
@@ -177,6 +280,13 @@
             document.getElementById('prev-button').style.display = "none";
             document.getElementById('next-button').style.display = totalQuestions > 1 ? "inline-block" : "none";
             document.getElementById('submit-button').style.display = totalQuestions === 1 ? "inline-block" : "none";
+            updateTimerDisplay();
+            startTimer(); //Start the countdown
         };
+
+                  setInterval(() => {
+            fetch('/Quiz/KeepAlive');
+        }, 20000); // 20 seconds
+
     </script>
 }
