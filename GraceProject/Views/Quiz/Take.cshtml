@@ -201,7 +201,7 @@
             }, 1000);
         }
 
-            function showFinalCountdown() {
+          function showFinalCountdown() {
             let counter = 5;
             const overlay = document.createElement("div");
             overlay.style.position = "fixed";
@@ -226,7 +226,7 @@
                 if (counter <= 0) {
                     clearInterval(finalInterval);
                     overlay.remove();
-                    submitQuizAjax(); // 👇 AJAX submit
+                    document.querySelector("form").submit(); // 🔥 Native form submit
                 }
             }, 1000);
         }
