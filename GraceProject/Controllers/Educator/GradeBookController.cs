@@ -49,8 +49,10 @@ namespace GraceProject.Controllers.Educator
                             QuizTitle = q.Title,
                             TotalScore = q.TotalScore ?? 0,
                             ObtainedScore = q.UserQuizzes
-                                .Where(uq => uq.UserId == ss.StudentID)
-                                .Sum(uq => uq.Score) ?? 0,
+                            .Where(uq => uq.UserId == ss.StudentID)
+                            .OrderByDescending(uq => uq.CompletedAt)
+                            .Select(uq => uq.Score ?? 0)
+                            .FirstOrDefault(),
                             IsAttempted = q.UserQuizzes.Any(uq => uq.UserId == ss.StudentID),
                             DueDate = q.DueDate,
                             IsPastDue = q.DueDate.HasValue && q.DueDate <= now
