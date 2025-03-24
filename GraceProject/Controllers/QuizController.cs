@@ -629,6 +629,19 @@ namespace GraceProject.Controllers
             return Ok();
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ToggleArchive(int id)
+        {
+            var quiz = await _context.Quizzes.FindAsync(id);
+            if (quiz == null) return NotFound();
+
+            quiz.IsArchived = !quiz.IsArchived;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { archived = quiz.IsArchived });
+        }
+
+
 
     }
 }
