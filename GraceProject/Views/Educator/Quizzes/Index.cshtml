@@ -7,7 +7,6 @@
 
 <div class="container">
     <h1 class="display-4 text-center">📖 Quizzes - @Model.Course.Title</h1>
-    <p class="text-center"><strong>Course ID:</strong> @Model.Course.CourseID</p>
 
     <!-- Button to Create a New Quiz for Session -->
     @* <div class="text-right mb-3"> *@
@@ -25,7 +24,7 @@
                 <tr>
                     <th>Title</th>
                     <th>Duration</th>
-                    <th>Created At</th>
+                    @* <th>Created At</th> *@
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -35,7 +34,7 @@
                     <tr>
                         <td>@quiz.Title</td>
                         <td>@quiz.Duration minutes</td>
-                        <td>@quiz.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                        @* <td>@quiz.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td> *@
                         <td>
                             <a href="~/Quiz/Details/@quiz.QuizId" class="btn btn-info">🔍 View</a>
                         </td>

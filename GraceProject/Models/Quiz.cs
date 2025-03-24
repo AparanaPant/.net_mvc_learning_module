@@ -43,6 +43,9 @@ namespace GraceProject.Models
         [NotMapped]
         public int AttemptsUsed { get; set; }
 
+        public bool IsArchived { get; set; } = false;
+
+
     }
 
     public class Question
