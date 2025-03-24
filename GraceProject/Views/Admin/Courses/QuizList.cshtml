@@ -9,7 +9,7 @@
     ➕ Create New Quiz
 </a>
 
-@if (!Model.Any())
+@if (!Model.Any(q => !q.IsArchived))
 {
     <p>No quizzes available.</p>
 }
@@ -26,7 +26,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var quiz in Model)
+            @foreach (var quiz in Model.Where(q => !q.IsArchived))
             {
                 var quizTaken = ViewBag.QuizTakenStatus != null && ((Dictionary<int, bool>)ViewBag.QuizTakenStatus)[quiz.QuizId];
 
@@ -70,6 +70,7 @@ else
             <li class="list-group-item d-flex justify-content-between align-items-center">
                 <span>@quiz.Title (Archived)</span>
                 <div>
+                    <a href="~/Quiz/Details/@quiz.QuizId" class="btn btn-primary">View</a>
                     <button class="btn btn-warning" onclick="toggleArchive(@quiz.QuizId)">Unarchive</button>
                 </div>
             </li>

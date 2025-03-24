@@ -27,13 +27,17 @@
                     @foreach (var quiz in student.Quizzes)
                     {
                         <td>
-                            @if (quiz.TotalScore > 0)
+                            @if (quiz.IsAttempted)
                             {
                                 @($"{quiz.ObtainedScore}/{quiz.TotalScore}")
                             }
+                            else if (quiz.IsPastDue)
+                            {
+                                @($"0/{quiz.TotalScore}")
+                            }
                             else
                             {
-                                <text>N / A</text>
+                                <span class="text-muted">- / @quiz.TotalScore</span>
                             }
                         </td>
                     }

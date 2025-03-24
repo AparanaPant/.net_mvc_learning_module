@@ -479,14 +479,22 @@ namespace GraceProject.Controllers.Report
                         .Select(u => u.FirstName + " " + u.LastName)
                         .FirstOrDefault() ?? "Unknown Student",
                     Quizzes = quizzes
-                        .Select(q => new EducatorQuizResultViewModel
+                    .Select(q =>
+                    {
+                        var attempted = userQuizzes.Any(uq => uq.UserId == ss.StudentID && uq.QuizId == q.QuizId);
+                        var dueDatePassed = q.DueDate.HasValue && q.DueDate.Value <= DateTime.Now;
+
+                        return new EducatorQuizResultViewModel
                         {
                             QuizTitle = q.Title,
                             TotalScore = q.TotalScore ?? 0,
-                            ObtainedScore = userQuizzes
-                                .Where(uq => uq.UserId == ss.StudentID && uq.QuizId == q.QuizId)
-                                .Sum(uq => uq.Score) ?? 0
-                        }).ToList()
+                            ObtainedScore = attempted
+                                ? userQuizzes
+                                    .Where(uq => uq.UserId == ss.StudentID && uq.QuizId == q.QuizId)
+                                    .Sum(uq => uq.Score) ?? 0
+                                : (dueDatePassed ? 0 : -1) // -1 will help identify that this quiz shouldn't be counted
+                        };
+                    }).ToList()
                 }).ToList();
 
             // Calculate total and grade for each student
@@ -693,32 +701,46 @@ namespace GraceProject.Controllers.Report
 
             // Process and group student results
             var students = studentSessions
-                .Select(ss => new StudentQuizResultViewModel
-                {
-                    StudentId = ss.StudentID,
-                    StudentName = users
-                        .Where(u => u.Id.ToString() == ss.StudentID)
-                        .Select(u => u.FirstName + " " + u.LastName)
-                        .FirstOrDefault() ?? "Unknown Student",
-                    Quizzes = quizzes
-                        .Select(q => new EducatorQuizResultViewModel
-                        {
-                            QuizTitle = q.Title,
-                            TotalScore = q.TotalScore ?? 0,
-                            ObtainedScore = userQuizzes
-                            //    .Where(uq => uq.UserId == ss.StudentID && uq.QuizId == q.QuizId)
-                            //.Sum(uq => uq.Score) ?? 0
-                                .LastOrDefault(uq => uq.UserId == ss.StudentID && uq.QuizId == q.QuizId)?.Score ?? 0
+             .Select(ss => new StudentQuizResultViewModel
+             {
+                 StudentId = ss.StudentID,
+                 StudentName = users
+                     .Where(u => u.Id.ToString() == ss.StudentID)
+                     .Select(u => u.FirstName + " " + u.LastName)
+                     .FirstOrDefault() ?? "Unknown Student",
 
-                        }).ToList()
-                }).ToList();
+                 Quizzes = quizzes
+                     .Select(q =>
+                     {
+                         var attempted = userQuizzes.Any(uq => uq.UserId == ss.StudentID && uq.QuizId == q.QuizId);
+                         var dueDatePassed = q.DueDate.HasValue && q.DueDate <= DateTime.Now;
 
-            // 🔹 Calculate total score, obtained score, percentage, and grade per student
+                         var obtainedScore = attempted
+                             ? userQuizzes
+                                 .Where(uq => uq.UserId == ss.StudentID && uq.QuizId == q.QuizId)
+                                 .Sum(uq => uq.Score ?? 0)
+                             : (dueDatePassed ? 0 : -1); // -1 means not attempted but not past due
+
+                         return new EducatorQuizResultViewModel
+                         {
+                             QuizTitle = q.Title,
+                             TotalScore = q.TotalScore ?? 0,
+                             ObtainedScore = obtainedScore
+                         };
+                     }).ToList()
+             }).ToList();
+
             foreach (var student in students)
             {
-                student.TotalScore = student.Quizzes.Sum(q => q.TotalScore);
-                student.ObtainedScore = student.Quizzes.Sum(q => q.ObtainedScore);
-                student.Percentage = student.TotalScore > 0 ? (student.ObtainedScore / (double)student.TotalScore) * 100 : 0;
+                var consideredQuizzes = student.Quizzes
+                    .Where(q => q.ObtainedScore >= 0) // Ignore unattempted and not-due quizzes
+                    .ToList();
+
+                student.TotalScore = consideredQuizzes.Sum(q => q.TotalScore);
+                student.ObtainedScore = consideredQuizzes.Sum(q => q.ObtainedScore);
+                student.Percentage = student.TotalScore > 0
+                    ? (student.ObtainedScore / (double)student.TotalScore) * 100
+                    : 0;
                 student.Grade = GetGrade(student.Percentage);
             }
 
