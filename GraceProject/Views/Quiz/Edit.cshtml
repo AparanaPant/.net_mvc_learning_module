@@ -518,12 +518,37 @@
             }
         };
 
-             $('form').on('submit', function (event) {
+          $('form').on('submit', function (event) {
+            const totalQuestions = $('#questions-container .question-card').length;
+            let totalScore = 0;
+
+            // Sum all question points
+            $('#questions-container .question-card').each(function () {
+                const points = parseInt($(this).find('input[name$=".Points"]').val(), 10);
+                if (!isNaN(points)) {
+                    totalScore += points;
+                }
+            });
+
             if (!validateAllQuestions()) {
                 event.preventDefault();
                 alert("❌ You haven't saved all edited questions! Please save each edited question first.");
+                return;
+            }
+
+            if (totalQuestions === 0) {
+                event.preventDefault();
+                alert("❌ You must have at least one question in the quiz.");
+                return;
+            }
+
+            if (totalScore === 0) {
+                event.preventDefault();
+                alert("❌ Total score cannot be zero. Please assign points to your questions.");
+                return;
             }
         });
+
 
         function validateAllQuestions() {
             let allSaved = true;

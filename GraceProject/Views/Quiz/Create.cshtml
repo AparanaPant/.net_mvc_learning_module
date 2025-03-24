@@ -472,17 +472,34 @@
             document.getElementById("displayTotalScore").innerText = totalScore;  // Update displayed score
         }
 
-         $(document).ready(function () {
+                 $(document).ready(function () {
             $("#createQuizForm").on("submit", function (event) {
-                // Check if any unsaved questions exist by looking for the "Update Question" button
-                if ($(".question-div .update-question").length > 0) {
+                const unsavedQuestions = $(".question-div .update-question").length;
+                const totalQuestions = questions.length;
+                const totalScore = parseInt($("#TotalScore").val(), 10) || 0;
+
+                if (unsavedQuestions > 0) {
                     event.preventDefault();
                     alert("❌ You haven't saved all questions! Please update each question first.");
-                    return; // Stop form submission
+                    return;
                 }
-                // If all questions are saved, the form will submit as normal.
+
+                if (totalQuestions === 0) {
+                    event.preventDefault();
+                    alert("❌ You must add at least one question before creating the quiz.");
+                    return;
+                }
+
+                if (totalScore === 0) {
+                    event.preventDefault();
+                    alert("❌ Total score cannot be zero. Please assign points to your questions.");
+                    return;
+                }
+
+                // If all checks pass, allow form submission
             });
         });
+        ;
 
     </script>
     @{
