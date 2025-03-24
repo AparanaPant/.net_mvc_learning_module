@@ -38,7 +38,7 @@ namespace GraceProject.Models
         public DateTime? DueDate { get; set; }
         public int? NoOfAttempts { get; set; }
 
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; } = false;
 
         [NotMapped]
         public int AttemptsUsed { get; set; }
