@@ -44,19 +44,19 @@ namespace GraceProject.Controllers.Student
                 .Select(ss => ss.SessionID)
                 .FirstOrDefaultAsync();
 
-            // Get Default Quizzes (Created by Admin) and include UserQuizzes to count attempts.
+            // Get Default Quizzes (Created by Admin), filter by active + not archived, include attempts
             var defaultQuizzes = await _context.Quizzes
-                .Where(q => q.CourseID == courseId && q.IsActive)
+                .Where(q => q.CourseID == courseId && q.IsActive && !q.IsArchived)
                 .Include(q => q.UserQuizzes)
                 .ToListAsync();
 
-            // Get Session Quizzes (Created by Educator) and include UserQuizzes.
+            // Get Session Quizzes (Created by Educator), filter by active + not archived, include attempts
             var sessionQuizzes = await _context.Quizzes
-                .Where(q => q.SessionID == studentSessionId && q.IsActive)
+                .Where(q => q.SessionID == studentSessionId && q.IsActive && !q.IsArchived)
                 .Include(q => q.UserQuizzes)
                 .ToListAsync();
 
-            // Populate the AttemptsUsed property for each quiz.
+            // Populate AttemptsUsed for each quiz
             foreach (var quiz in defaultQuizzes)
             {
                 quiz.AttemptsUsed = quiz.UserQuizzes.Count(uq => uq.UserId == user.Id);
@@ -66,7 +66,7 @@ namespace GraceProject.Controllers.Student
                 quiz.AttemptsUsed = quiz.UserQuizzes.Count(uq => uq.UserId == user.Id);
             }
 
-            // Convert current UTC time to CST.
+            // Current CST time
             var currentTimeCST = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, cstZone);
 
             var model = new QuizzesViewModel
@@ -74,7 +74,7 @@ namespace GraceProject.Controllers.Student
                 Course = course,
                 DefaultQuizzes = defaultQuizzes,
                 SessionQuizzes = sessionQuizzes,
-                CurrentTimeCST = currentTimeCST // Pass the current CST time to view.
+                CurrentTimeCST = currentTimeCST
             };
 
             return View("~/Views/Student/Quizzes/Index.cshtml", model);
