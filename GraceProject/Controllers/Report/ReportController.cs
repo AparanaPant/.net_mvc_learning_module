@@ -708,7 +708,7 @@ namespace GraceProject.Controllers.Report
                             ObtainedScore = userQuizzes
                             //    .Where(uq => uq.UserId == ss.StudentID && uq.QuizId == q.QuizId)
                             //.Sum(uq => uq.Score) ?? 0
-                                .LastOrDefault(uq => uq.UserId == ss.StudentID && uq.QuizId == q.QuizId).Score ?? 0
+                                .LastOrDefault(uq => uq.UserId == ss.StudentID && uq.QuizId == q.QuizId)?.Score ?? 0
 
                         }).ToList()
                 }).ToList();
