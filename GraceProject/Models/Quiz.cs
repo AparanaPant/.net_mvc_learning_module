@@ -36,7 +36,7 @@ namespace GraceProject.Models
         public virtual Session? Session { get; set; }
 
         public DateTime? DueDate { get; set; }
-        public int? NoOfAttempts { get; set; }
+        public int? NoOfAttempts { get; set; } = 2;
 
         public bool IsActive { get; set; } = false;
 

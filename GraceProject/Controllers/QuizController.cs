@@ -594,6 +594,40 @@ namespace GraceProject.Controllers
             return View(userQuizzes);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ToggleActive(int id, bool isActive)
+        {
+            var quiz = await _context.Quizzes.FindAsync(id);
+            if (quiz == null) return NotFound();
+
+            quiz.IsActive = isActive;
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateDueDate(int id, [FromForm] string dueDate)
+        {
+            var quiz = await _context.Quizzes.FindAsync(id);
+            if (quiz == null) return NotFound();
+
+            if (DateTime.TryParse(dueDate, out var parsedDate))
+                quiz.DueDate = parsedDate;
+
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateAttempts(int id, [FromForm] int attempts)
+        {
+            var quiz = await _context.Quizzes.FindAsync(id);
+            if (quiz == null) return NotFound();
+
+            quiz.NoOfAttempts = Math.Max(1, attempts); // At least 1
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
 
 
     }
