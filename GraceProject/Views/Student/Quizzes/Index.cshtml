@@ -6,8 +6,7 @@
 }
 
 <div class="container">
-    <h1 class="display-4 text-center">📖 Quizzes - @Model.Course.Title</h1>
-    <p class="text-center"><strong>Course ID:</strong> @Model.Course.CourseID</p>
+    <h1 class="display-4 text-center">Quizzes - @Model.Course.Title</h1>
 
     <h2>Quizzes</h2>
     @if (Model.DefaultQuizzes.Any())
@@ -18,6 +17,7 @@
                     <th>Title</th>
                     <th>Duration</th>
                     <th>Start Time (CST)</th>
+                    <th>Due Date (CST)</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -29,13 +29,39 @@
                         <td>@quiz.Duration minutes</td>
                         <td>@quiz.StartTimeCST.ToString("yyyy-MM-dd HH:mm")</td>
                         <td>
-                            @if (Model.CurrentTimeCST >= quiz.StartTimeCST)
+                            @if (quiz.DueDate.HasValue)
                             {
-                                <a href="~/Quiz/Take/@quiz.QuizId" class="btn btn-success">▶ Start Quiz</a>
+                                @quiz.DueDate.Value.ToString("yyyy-MM-dd HH:mm")
                             }
                             else
                             {
+                                <span>N/A</span>
+                            }
+                        </td>
+                        <td>
+                            @{
+                                // Evaluate conditions for enabling the quiz.
+                                bool hasStarted = (Model.CurrentTimeCST >= quiz.StartTimeCST);
+                                bool isPastDue = (quiz.DueDate.HasValue && quiz.DueDate.Value <= Model.CurrentTimeCST);
+                                bool hasAttemptsLeft = !quiz.NoOfAttempts.HasValue || quiz.AttemptsUsed < quiz.NoOfAttempts.Value;
+                            }
+
+                            @if (!hasStarted)
+                            {
                                 <span class="text-danger">⏳ Not Available Yet</span>
+                            }
+                            else if (isPastDue)
+                            {
+                                <span class="text-danger">⏳ Past Due</span>
+                            }
+                            else if (!hasAttemptsLeft)
+                            {
+                                <span class="text-danger">No Attempts Left</span>
+                            }
+                            else
+                            {
+                                <!-- Quiz is open, not past due, and attempts remain -->
+                                <a href="~/Quiz/Take/@quiz.QuizId" class="btn btn-success">▶ Start Quiz</a>
                             }
                         </td>
                     </tr>

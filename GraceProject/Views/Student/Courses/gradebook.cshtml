@@ -18,7 +18,15 @@
         @foreach (var quiz in Model.Quizzes)
         {
             <tr>
-                <td>@quiz.QuizTitle</td>
+                <td>
+                    @quiz.QuizTitle
+                    @if (quiz.DueDate.HasValue)
+                    {
+                        <br />
+
+                        <small>Due: @quiz.DueDate.Value.ToShortDateString()</small>
+                    }
+                </td>
                 <td>
                     @if (quiz.IsAttempted)
                     {
@@ -26,13 +34,17 @@
                     }
                     else
                     {
-                        <span class="not-attempted">Not Attempted</span>
+                        @($"N/A / {quiz.TotalScore}")
                     }
                 </td>
                 <td>
                     @if (quiz.IsAttempted && quiz.TotalScore > 0)
                     {
                         @($"{quiz.Percentage}%")
+                    }
+                    else if (!quiz.IsAttempted && quiz.DueDate.HasValue && quiz.DueDate.Value < DateTime.Now)
+                    {
+                        <span>0%</span>
                     }
                     else
                     {

@@ -44,17 +44,29 @@ namespace GraceProject.Controllers.Student
                 .Select(ss => ss.SessionID)
                 .FirstOrDefaultAsync();
 
-            // Get Default Quizzes (Created by Admin)
+            // Get Default Quizzes (Created by Admin) and include UserQuizzes to count attempts.
             var defaultQuizzes = await _context.Quizzes
-                .Where(q => q.CourseID == courseId)
+                .Where(q => q.CourseID == courseId && q.IsActive)
+                .Include(q => q.UserQuizzes)
                 .ToListAsync();
 
-            // Get Session Quizzes (Created by Educator)
+            // Get Session Quizzes (Created by Educator) and include UserQuizzes.
             var sessionQuizzes = await _context.Quizzes
-                .Where(q => q.SessionID == studentSessionId)
+                .Where(q => q.SessionID == studentSessionId && q.IsActive)
+                .Include(q => q.UserQuizzes)
                 .ToListAsync();
 
-            // Convert current UTC time to CST
+            // Populate the AttemptsUsed property for each quiz.
+            foreach (var quiz in defaultQuizzes)
+            {
+                quiz.AttemptsUsed = quiz.UserQuizzes.Count(uq => uq.UserId == user.Id);
+            }
+            foreach (var quiz in sessionQuizzes)
+            {
+                quiz.AttemptsUsed = quiz.UserQuizzes.Count(uq => uq.UserId == user.Id);
+            }
+
+            // Convert current UTC time to CST.
             var currentTimeCST = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, cstZone);
 
             var model = new QuizzesViewModel
@@ -62,7 +74,7 @@ namespace GraceProject.Controllers.Student
                 Course = course,
                 DefaultQuizzes = defaultQuizzes,
                 SessionQuizzes = sessionQuizzes,
-                CurrentTimeCST = currentTimeCST // Pass the current CST time to view
+                CurrentTimeCST = currentTimeCST // Pass the current CST time to view.
             };
 
             return View("~/Views/Student/Quizzes/Index.cshtml", model);

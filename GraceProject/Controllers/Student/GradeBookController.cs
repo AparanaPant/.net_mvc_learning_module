@@ -24,6 +24,8 @@ namespace GraceProject.Controllers.Student
             }
             var course = _context.Course.FirstOrDefault(c => c.CourseID == courseId);
 
+            var now = DateTime.Now; // current date for comparison
+
             var quizzes = _context.Quizzes
                 .Where(q =>
                     (!string.IsNullOrWhiteSpace(courseId) && q.CourseID == courseId) ||
@@ -36,26 +38,25 @@ namespace GraceProject.Controllers.Student
                     ObtainedScore = q.UserQuizzes
                         .Where(uq => uq.UserId == studentId)
                         .Sum(uq => uq.Score.GetValueOrDefault()),
-                    // Set the flag based on whether the student has any quiz attempts
-                    IsAttempted = q.UserQuizzes.Any(uq => uq.UserId == studentId)
+                    IsAttempted = q.UserQuizzes.Any(uq => uq.UserId == studentId),
+                    DueDate = q.DueDate,
+                    IsPastDue = q.DueDate.HasValue && q.DueDate <= now
                 })
                 .ToList();
 
-            // Filter out unattempted quizzes for overall total calculations
-            var attemptedQuizzes = quizzes.Where(q => q.IsAttempted).ToList();
+            // Include all quizzes that were attempted OR are past due date in the totals.
+            var quizzesToCount = quizzes.Where(q => q.IsAttempted || q.IsPastDue).ToList();
 
             var model = new GradebookViewModel
             {
                 CourseTitle = course?.Title ?? "Unknown Course",
                 Quizzes = quizzes,
-                // Only sum totals for quizzes that were attempted
-                TotalScore = attemptedQuizzes.Sum(q => q.TotalScore),
-                ObtainedScore = attemptedQuizzes.Sum(q => q.ObtainedScore)
+                TotalScore = quizzesToCount.Sum(q => q.TotalScore),
+                ObtainedScore = quizzesToCount.Sum(q => q.IsAttempted ? q.ObtainedScore : 0)
             };
 
             return View("~/Views/Student/Courses/gradebook.cshtml", model);
         }
-
 
     }
 }
