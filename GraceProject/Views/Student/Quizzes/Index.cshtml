@@ -16,7 +16,7 @@
                 <tr>
                     <th>Title</th>
                     <th>Duration</th>
-                    <th>Start Time (CST)</th>
+                    @* <th>Start Time (CST)</th> *@
                     <th>Due Date (CST)</th>
                     <th>Actions</th>
                 </tr>
@@ -27,7 +27,7 @@
                     <tr>
                         <td>@quiz.Title</td>
                         <td>@quiz.Duration minutes</td>
-                        <td>@quiz.StartTimeCST.ToString("yyyy-MM-dd HH:mm")</td>
+                        @* <td>@quiz.StartTimeCST.ToString("yyyy-MM-dd HH:mm")</td> *@
                         <td>
                             @if (quiz.DueDate.HasValue)
                             {
