@@ -406,7 +406,7 @@ namespace GraceProject.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         public async Task<IActionResult> Submit([FromForm] QuizViewModel submitQuizViewModel)
         {
             var user = await _userManager.GetUserAsync(User);
