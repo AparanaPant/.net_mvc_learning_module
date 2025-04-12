@@ -369,7 +369,7 @@
 
                     data.courses.forEach(function (course) {
                         content += `<h4 class="mt-3">${course.courseTitle}</h4>`;
-                        content += `<table class="table table-bordered">
+                        content += `<table id= "schoolTable" class="table table-bordered">
                             <thead>
                                 <tr>
                                     <th>Student Name</th>
@@ -385,7 +385,8 @@
                             if (student.quizzes.length > 0) {
                                 student.quizzes.forEach(function (quiz, index) {
                                     content += `<tr>
-                                        ${index === 0 ? `<td rowspan="${student.quizzes.length}">${student.studentName}</td>` : ""}
+                                        
+                                        <td>${student.studentName}</td>
                                         <td>${quiz.quizTitle}</td>
                                         <td>${quiz.score}</td>
                                         <td>${quiz.fullMarks}</td>
@@ -404,6 +405,12 @@
                     });
 
                     resultsContent.html(content);
+
+                    new DataTable('#schoolTable', {
+                        rowReorder: true,
+                        paging: true
+                        // You can add other options here if needed (e.g., ordering, info, lengthChange, etc.)
+                    });
 
                     let quizScores = {};
                     let gradeCounts = { A: 0, B: 0, C: 0, D: 0, F: 0 };
@@ -496,7 +503,7 @@
                 </table>`;
 
                 // 🔹 Student Performance Table (Grouped by Student)
-                let studentTable = `<table class="table table-bordered mt-4">
+                let studentTable = `<table id="studentTable" class="table table-bordered mt-4">
                     <thead>
                         <tr>
                             <th>Student Name</th>
@@ -520,6 +527,12 @@
                 studentTable += `</tbody></table>`;
 
                 resultsContent.html(summaryTable + studentTable);
+
+                new DataTable('#studentTable', {
+                        rowReorder: true,
+                        paging: true
+                        // You can add other options here if needed (e.g., ordering, info, lengthChange, etc.)
+                    });
 
                 let quizScores = {};
                 let gradeCounts = { A: 0, B: 0, C: 0, D: 0, F: 0 };

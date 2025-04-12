@@ -70,6 +70,9 @@
     <!-- Store slide reading info -->
     <script src="~/panelstemplate/build/slide/files/custome/SlideReadTracking/SlideReadTracking.js"></script>
 
+    <!-- DataTables CSS (for Bootstrap styling) -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.bootstrap.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/rowreorder/1.5.0/css/rowReorder.bootstrap.css">
 
 </head>
 <body class="nav-sm">
@@ -336,6 +339,24 @@
     <!-- Bootstrap Select Picker -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.14/css/bootstrap-select.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.14/js/bootstrap-select.min.js"></script>
+
+    <!-- DataTables JavaScript -->
+    <script src="https://cdn.datatables.net/2.2.2/js/dataTables.js"></script>
+    <script src="https://cdn.datatables.net/2.2.2/js/dataTables.bootstrap.js"></script>
+    <script src="https://cdn.datatables.net/rowreorder/1.5.0/js/dataTables.rowReorder.js"></script>
+    <script src="https://cdn.datatables.net/rowreorder/1.5.0/js/rowReorder.bootstrap.js"></script>
+
+    <!-- Initialize DataTables -->
+    <script>
+        $(document).ready(function () {
+            if ($('#studentTable').length) {
+                new DataTable('#studentTable', {
+                    rowReorder: true,
+                    paging: true
+                });
+            }
+        });
+    </script>
 
 </body>
 </html>
