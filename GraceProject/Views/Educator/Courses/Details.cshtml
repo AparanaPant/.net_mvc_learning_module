@@ -8,12 +8,11 @@
 
 <div class="container">
     <h1 class="display-4 text-center">@Model?.Title</h1>
-    <p class="text-center"><strong>Course ID:</strong> @Model?.CourseID</p>
 
     <h2>Manage Course</h2>
     <div class="list-group">
         <a href="~/Educator/Quizzes/@Model?.CourseID" class="list-group-item list-group-item-action">📖 Quizzes</a>
-        <a href="~/Educator/Modules/@Model?.CourseID" class="list-group-item list-group-item-action">📚 Modules</a>
+        <a href="~/Student/Modules/Index/@Model?.CourseID" class="list-group-item list-group-item-action">📚 Modules</a>
         <a href="~/educator/courses/Gradebook/@Model?.CourseID/@sessionId" class="list-group-item list-group-item-action">📊 Grade Book</a>
     </div>
 

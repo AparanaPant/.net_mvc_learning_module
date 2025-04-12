@@ -104,10 +104,10 @@
                                 </li>
 
                                 <li role="presentation" class="nav-item dropdown">
-                                    <a href="javascript:;" class="dropdown-toggle info-number" id="navbarDropdown1" data-toggle="dropdown" aria-expanded="false">
-                                        <i class="fa fa-envelope-o"></i>
-                                        <span class="badge bg-green">6</span>
-                                    </a>
+                                    @* <a href="javascript:;" class="dropdown-toggle info-number" id="navbarDropdown1" data-toggle="dropdown" aria-expanded="false"> *@
+                                    @*     <i class="fa fa-envelope-o"></i> *@
+                                    @*     <span class="badge bg-green">6</span> *@
+                                    @* </a> *@
                                     <ul class="dropdown-menu list-unstyled msg_list" role="menu" aria-labelledby="navbarDropdown1">
                                         <li class="nav-item">
                                             <a class="dropdown-item">
@@ -206,7 +206,7 @@
                                         {
                                             <li><a href="~/Student/Dashboard"><i class="fa fa-home"></i> Home</a></li>
                                             <li><a href="~/Student/Courses"><i class="fa fa-book"></i> Courses</a></li>     
-                                            <li><a asp-controller="Quiz" asp-action="QuizResults"><i class="fa fa-bar-chart-o"></i> Grades</a></li>
+                                            @* <li><a asp-controller="Quiz" asp-action="QuizResults"><i class="fa fa-bar-chart-o"></i> Grades</a></li> *@
                                             <li><a href="~/Student/Profile/profile"><i class="fa fa-user"></i> Profile</a></li>
                                         }
                                         else if (roles.Contains("Educator"))
@@ -233,15 +233,15 @@
                             <!-- /sidebar menu -->
                             <!-- /menu footer buttons -->
                             <div class="sidebar-footer hidden-small">
-                                <a data-toggle="tooltip" data-placement="top" title="Settings">
-                                    <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
-                                </a>
-                                <a data-toggle="tooltip" data-placement="top" title="FullScreen">
-                                    <span class="glyphicon glyphicon-fullscreen" aria-hidden="true"></span>
-                                </a>
-                                <a data-toggle="tooltip" data-placement="top" title="Lock">
-                                    <span class="glyphicon glyphicon-eye-close" aria-hidden="true"></span>
-                                </a>
+                                @* <a data-toggle="tooltip" data-placement="top" title="Settings"> *@
+                                @*     <span class="glyphicon glyphicon-cog" aria-hidden="true"></span> *@
+                                @* </a> *@
+                                @* <a data-toggle="tooltip" data-placement="top" title="FullScreen"> *@
+                                @*     <span class="glyphicon glyphicon-fullscreen" aria-hidden="true"></span> *@
+                                @* </a> *@
+                                @* <a data-toggle="tooltip" data-placement="top" title="Lock"> *@
+                                @*     <span class="glyphicon glyphicon-eye-close" aria-hidden="true"></span> *@
+                                @* </a> *@
                                 <form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
                                     <button id="logout" type="submit" class="nav-link btn btn-link text-dark border-0">Logout</button>
                                 </form>

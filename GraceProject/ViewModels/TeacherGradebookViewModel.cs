@@ -23,5 +23,10 @@
         public string QuizTitle { get; set; }
         public double TotalScore { get; set; } = 0;
         public double ObtainedScore { get; set; } = 0;
+
+        public DateTime? DueDate { get; set; }
+        public bool IsAttempted { get; set; }
+        public bool IsPastDue { get; set; }
     }
+
 }

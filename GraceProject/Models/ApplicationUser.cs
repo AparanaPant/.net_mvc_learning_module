@@ -50,6 +50,8 @@ public class ApplicationUser : IdentityUser
     public Gender Gender { get; set; }
     public virtual Address Address { get; set; }
 
+    public string? ProfilePictureUrl { get; set; }
+
     public int? SchoolID { get; set; }    
 
     [ForeignKey("SchoolID")]

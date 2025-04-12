@@ -35,6 +35,17 @@ namespace GraceProject.Models
         public virtual Course? Course { get; set; }
         public virtual Session? Session { get; set; }
 
+        public DateTime? DueDate { get; set; }
+        public int? NoOfAttempts { get; set; } = 2;
+
+        public bool IsActive { get; set; } = false;
+
+        [NotMapped]
+        public int AttemptsUsed { get; set; }
+
+        public bool IsArchived { get; set; } = false;
+
+
     }
 
     public class Question

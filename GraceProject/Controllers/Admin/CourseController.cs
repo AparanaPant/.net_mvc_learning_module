@@ -238,8 +238,13 @@ namespace GraceProject.Controllers.Admin
                 q => _context.UserQuizzes.Any(uq => uq.QuizId == q.QuizId) // Check if the quiz has been taken
             );
 
+            var archivedQuizzes = await _context.Quizzes
+            .Where(q => q.CourseID == courseId && q.IsArchived)
+            .ToListAsync();
+
             ViewBag.CourseID = courseId;
-            ViewBag.QuizTakenStatus = quizTakenStatus; // Pass the dictionary to the view
+            ViewBag.QuizTakenStatus = quizTakenStatus;
+            ViewBag.ArchivedQuizzes = archivedQuizzes;
 
             return View("~/Views/Admin/Courses/QuizList.cshtml", quizzes); // ✅ Original return statement
         }

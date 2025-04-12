@@ -120,6 +120,8 @@ namespace GraceProject.Controllers
                     CourseID = quizViewModel.CourseID,
                     SessionID = quizViewModel.SessionID,
                     TotalScore = quizViewModel.TotalScore,
+                    DueDate = quizViewModel.DueDate,            
+                    NoOfAttempts = quizViewModel.NoOfAttempts,  
                     Questions = quizViewModel.Questions.Select(q => new Question
                     {
                         Text = q.Text,
@@ -197,6 +199,7 @@ namespace GraceProject.Controllers
                     QuestionId = q.QuestionId,
                     Type = q.Type,
                     Text = q.Text,
+                    Points = q.Points,
                     Options = q.Options.Select(o => new OptionViewModel
                     {
                         OptionId = o.OptionId,
@@ -252,15 +255,15 @@ namespace GraceProject.Controllers
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public async Task<IActionResult> Edit(QuizViewModel model, string userType = null)
+        public async Task<IActionResult> Edit(QuizViewModel model, string? userType)
         {
             if (ModelState.IsValid)
             {
                 var quiz = await _context.Quizzes
                     .Include(q => q.Questions)
-                    .ThenInclude(q => q.Options)
+                        .ThenInclude(q => q.Options)
                     .Include(q => q.Questions)
-                    .ThenInclude(q => q.FillInTheBlankAnswers)
+                        .ThenInclude(q => q.FillInTheBlankAnswers)
                     .FirstOrDefaultAsync(q => q.QuizId == model.QuizId);
 
                 if (quiz == null)
@@ -268,7 +271,7 @@ namespace GraceProject.Controllers
                     return NotFound();
                 }
 
-                // ✅ Update Quiz Details
+                // Update Quiz Details (existing code)
                 if (!string.IsNullOrEmpty(model.Title))
                 {
                     quiz.Title = model.Title;
@@ -277,7 +280,27 @@ namespace GraceProject.Controllers
                 {
                     quiz.Duration = model.Duration;
                 }
-                // ✅ Update Questions
+
+                // Process deletions for questions marked for deletion.
+                // Assuming "QuestionsToDelete" is posted as multiple hidden inputs.
+                var questionsToDelete = Request.Form["QuestionsToDelete"];
+                if (!string.IsNullOrEmpty(questionsToDelete))
+                {
+                    foreach (var questionIdStr in questionsToDelete)
+                    {
+                        if (int.TryParse(questionIdStr, out int questionId))
+                        {
+                            var question = quiz.Questions.FirstOrDefault(q => q.QuestionId == questionId);
+                            if (question != null)
+                            {
+                                // Remove the question from the context (and from the quiz collection if necessary)
+                                _context.Questions.Remove(question);
+                            }
+                        }
+                    }
+                }
+
+                // Update or add/update remaining questions
                 foreach (var questionModel in model.Questions)
                 {
                     var existingQuestion = quiz.Questions.FirstOrDefault(q => q.QuestionId == questionModel.QuestionId);
@@ -295,27 +318,22 @@ namespace GraceProject.Controllers
                         {
                             existingQuestion.Type = questionModel.Type;
                         }
-
-                        // ✅ Image Handling: If a new image URL exists, update it
                         if (!string.IsNullOrEmpty(questionModel.ImageUrl))
                         {
                             existingQuestion.ImageUrl = questionModel.ImageUrl;
                         }
 
-                        // ✅ Update Options for MCQ & True/False
                         if (questionModel.Type == "Multiple Choice" || questionModel.Type == "True/False")
                         {
-                            // Clear existing options and add updated ones
                             existingQuestion.Options.Clear();
                             existingQuestion.Options = questionModel.Options.Select(o => new Option
                             {
-                                OptionId = o.OptionId, // Ensure the option ID is maintained
+                                OptionId = o.OptionId,
                                 Text = o.Text,
                                 IsCorrect = o.IsCorrect
                             }).ToList();
                         }
 
-                        // ✅ Update Fill in the Blank Answers
                         if (questionModel.Type == "Fill in the Blank")
                         {
                             existingQuestion.FillInTheBlankAnswers.Clear();
@@ -325,26 +343,52 @@ namespace GraceProject.Controllers
                             }).ToList();
                         }
                     }
+                    else
+                    {
+                        // This is a new question; add it to the quiz
+                        var newQuestion = new Question
+                        {
+                            Text = questionModel.Text,
+                            Points = questionModel.Points,
+                            Type = questionModel.Type,
+                            ImageUrl = questionModel.ImageUrl,
+                            // Initialize collections if needed
+                            Options = (questionModel.Type == "Multiple Choice" || questionModel.Type == "True/False")
+                                ? questionModel.Options.Select(o => new Option
+                                {
+                                    OptionId = o.OptionId,
+                                    Text = o.Text,
+                                    IsCorrect = o.IsCorrect
+                                }).ToList()
+                                : new List<Option>(),
+                            FillInTheBlankAnswers = (questionModel.Type == "Fill in the Blank")
+                                ? questionModel.FillInTheBlankAnswers.Select(a => new FillInTheBlankAnswer
+                                {
+                                    Answer = a
+                                }).ToList()
+                                : new List<FillInTheBlankAnswer>()
+                        };
+                        quiz.Questions.Add(newQuestion);
+                    }
                 }
+
                 await _context.SaveChangesAsync();
 
-                if (userType == "educator")
+                var user = await _userManager.GetUserAsync(User);
+                if (user != null)
                 {
-                    return Redirect($"/Educator/Quizzes/{quiz.CourseID}");
+                    if (await _userManager.IsInRoleAsync(user, "Admin"))
+                        return Redirect($"/Admin/Courses/Quizzes/List/{quiz.CourseID}");
+
+                    if (await _userManager.IsInRoleAsync(user, "Educator"))
+                        return Redirect($"/Educator/Quizzes/{quiz.CourseID}");
                 }
-                else if (userType == "admin")
-                {
-                    return Redirect($"/Admin/Courses/Quizzes/List/{quiz.CourseID}");
-                }
-                else
-                {
-                    return RedirectToAction(nameof(Index));
-                }
+
+                return RedirectToAction(nameof(Index));
             }
 
             return View(model);
         }
-
 
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
@@ -361,7 +405,9 @@ namespace GraceProject.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> Submit(QuizViewModel submitQuizViewModel)
+        [HttpPost]
+        //[ValidateAntiForgeryToken]
+        public async Task<IActionResult> Submit([FromForm] QuizViewModel submitQuizViewModel)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized();
@@ -438,6 +484,7 @@ namespace GraceProject.Controllers
 
             return View("Result", userQuiz);
         }
+
         [Route("Quiz/Details/{quizId}")]
         public async Task<IActionResult> Details(int quizId)
         {
@@ -550,6 +597,63 @@ namespace GraceProject.Controllers
             }
 
             return View(userQuizzes);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ToggleActive(int id, bool isActive)
+        {
+            var quiz = await _context.Quizzes.FindAsync(id);
+            if (quiz == null) return NotFound();
+
+            quiz.IsActive = isActive;
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateDueDate(int id, [FromForm] string dueDate)
+        {
+            var quiz = await _context.Quizzes.FindAsync(id);
+            if (quiz == null) return NotFound();
+
+            if (DateTime.TryParse(dueDate, out var parsedDate))
+                quiz.DueDate = parsedDate;
+
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+            [Authorize]
+            [HttpGet]
+            public IActionResult KeepAlive()
+            {
+                return Ok();
+            }
+       
+
+
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateAttempts(int id, [FromForm] int attempts)
+        {
+            var quiz = await _context.Quizzes.FindAsync(id);
+            if (quiz == null) return NotFound();
+
+            quiz.NoOfAttempts = Math.Max(1, attempts); // At least 1
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ToggleArchive(int id)
+        {
+            var quiz = await _context.Quizzes.FindAsync(id);
+            if (quiz == null) return NotFound();
+
+            quiz.IsArchived = !quiz.IsArchived;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { archived = quiz.IsArchived });
         }
 
 

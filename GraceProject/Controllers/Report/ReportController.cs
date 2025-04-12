@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using GraceProject.Models;
 using GraceProject.ViewModels;
+using Newtonsoft.Json.Linq;
 
 
 namespace GraceProject.Controllers.Report
@@ -478,14 +479,22 @@ namespace GraceProject.Controllers.Report
                         .Select(u => u.FirstName + " " + u.LastName)
                         .FirstOrDefault() ?? "Unknown Student",
                     Quizzes = quizzes
-                        .Select(q => new EducatorQuizResultViewModel
+                    .Select(q =>
+                    {
+                        var attempted = userQuizzes.Any(uq => uq.UserId == ss.StudentID && uq.QuizId == q.QuizId);
+                        var dueDatePassed = q.DueDate.HasValue && q.DueDate.Value <= DateTime.Now;
+
+                        return new EducatorQuizResultViewModel
                         {
                             QuizTitle = q.Title,
                             TotalScore = q.TotalScore ?? 0,
-                            ObtainedScore = userQuizzes
-                                .Where(uq => uq.UserId == ss.StudentID && uq.QuizId == q.QuizId)
-                                .Sum(uq => uq.Score) ?? 0
-                        }).ToList()
+                            ObtainedScore = attempted
+                                ? userQuizzes
+                                    .Where(uq => uq.UserId == ss.StudentID && uq.QuizId == q.QuizId)
+                                    .Sum(uq => uq.Score) ?? 0
+                                : (dueDatePassed ? 0 : -1) // -1 will help identify that this quiz shouldn't be counted
+                        };
+                    }).ToList()
                 }).ToList();
 
             // Calculate total and grade for each student
@@ -507,6 +516,146 @@ namespace GraceProject.Controllers.Report
 
             return Ok(result);
         }
+
+        [HttpPost("GetModulesByCourse")]
+        public async Task<IActionResult> GetModulesByCourse([FromBody] CourseIdModel model)
+        {
+            if (string.IsNullOrEmpty(model.Id))
+            {
+                return BadRequest("Course Id is required.");
+            }
+
+            // Query modules for the given course
+            var modules = await _context.Module
+                .Where(m => m.CourseId == model.Id)
+                .Select(m => new
+                {
+                    id = m.Id,
+                    moduleName = m.ModuleName
+                })
+                .ToListAsync();
+
+            return Ok(modules);
+        }
+
+        [HttpPost("GetStudentSlideTime")]
+        public async Task<IActionResult> GetStudentSlideTime([FromBody] StudentSlideTimeRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.StudentID)
+             || string.IsNullOrWhiteSpace(request.CourseID)
+             || request.ModuleID == 0)
+                return BadRequest("Invalid request parameters.");
+
+            var dateRange = GetDateRange(request.DateFilter, request.StartDate, request.EndDate);
+            if (dateRange == null)
+                return BadRequest("Invalid or missing date range.");
+
+            var (start, end) = dateRange.Value;
+
+            var perSlide = await _context.SlideReadTracking
+                .Include(srt => srt.Slide)
+                .Where(srt =>
+                    srt.UserId == request.StudentID &&
+                    srt.Slide.ModuleId == request.ModuleID &&
+                    srt.ReadDateTime >= start &&
+                    srt.ReadDateTime <= end)
+                .GroupBy(srt => new { srt.SlideId, srt.Slide.Title })
+                .Select(g => new {
+                    SlideId = g.Key.SlideId,
+                    SlideTitle = g.Key.Title,
+                    TimeSpent = g.Sum(x => x.DurationSeconds)
+                })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                TotalTimeSpent = perSlide.Sum(x => x.TimeSpent),
+                Slides = perSlide
+            });
+        }
+
+        //[HttpPost("GetStudentSlidesViewedCount")]
+        //public async Task<IActionResult> GetStudentSlidesViewedCount([FromBody] StudentSlideTimeRequest request)
+        //{
+        //    if (string.IsNullOrWhiteSpace(request.StudentID)
+        //     || string.IsNullOrWhiteSpace(request.CourseID)
+        //     || request.ModuleID == 0)
+        //        return BadRequest("Invalid request parameters.");
+
+        //    var dateRange = GetDateRange(request.DateFilter, request.StartDate, request.EndDate);
+        //    if (dateRange == null)
+        //        return BadRequest("Invalid or missing date range.");
+
+        //    var (start, end) = dateRange.Value;
+
+        //    var slidesViewedCount = await _context.SlideReadTracking
+        //        .Include(srt => srt.Slide)
+        //        .Where(srt =>
+        //            srt.UserId == request.StudentID &&
+        //            srt.Slide.ModuleId == request.ModuleID &&
+        //            srt.ReadDateTime >= start &&
+        //            srt.ReadDateTime <= end)
+        //        .Select(srt => srt.SlideId)
+        //        .Distinct()
+        //        .CountAsync();
+
+        //    return Ok(new { SlidesViewedCount = slidesViewedCount });
+        //}
+
+        [HttpPost("GetStudentSlidesViewedDetails")]
+        public async Task<IActionResult> GetStudentSlidesViewedDetails([FromBody] StudentSlideTimeRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.StudentID)
+             || string.IsNullOrWhiteSpace(request.CourseID)
+             || request.ModuleID == 0)
+                return BadRequest("Invalid request parameters.");
+
+            var dateRange = GetDateRange(request.DateFilter, request.StartDate, request.EndDate);
+            if (dateRange == null)
+                return BadRequest("Invalid or missing date range.");
+
+            var (start, end) = dateRange.Value;
+
+            // Get all slides in the module
+            int totalSlidesInModule = await _context.Slide
+                .Where(s => s.ModuleId == request.ModuleID)
+                .CountAsync();
+
+            // Get the slides the student viewed
+            var viewedSlides = await _context.SlideReadTracking
+                .Include(srt => srt.Slide)
+                .Where(srt =>
+                    srt.UserId == request.StudentID &&
+                    srt.Slide.ModuleId == request.ModuleID &&
+                    srt.ReadDateTime >= start &&
+                    srt.ReadDateTime <= end)
+                .GroupBy(srt => new { srt.SlideId, srt.Slide.Title })
+                .Select(g => new {
+                    SlideId = g.Key.SlideId,
+                    SlideTitle = g.Key.Title,
+                    TimeSpent = g.Sum(x => x.DurationSeconds),
+                    LastViewed = g.Max(x => x.ReadDateTime) // Get the latest time this slide was accessed
+                })
+                .ToListAsync();
+
+            int slidesViewedCount = viewedSlides.Count;
+            double percentageViewed = totalSlidesInModule > 0
+                ? Math.Round((slidesViewedCount / (double)totalSlidesInModule) * 100, 2)
+                : 0;
+
+            var lastViewedSlide = viewedSlides.OrderByDescending(s => s.LastViewed).FirstOrDefault();
+
+            return Ok(new
+            {
+                TotalSlidesInModule = totalSlidesInModule,
+                SlidesViewedCount = slidesViewedCount,
+                PercentageViewed = percentageViewed,
+                ViewedSlides = viewedSlides,
+                LastViewedSlide = lastViewedSlide
+            });
+        }
+
+
 
         [HttpPost("GetEducatorCourseGrades")]
         public async Task<IActionResult> GetEducatorCourseGrades([FromBody] EducatorCourseModel model)
@@ -552,32 +701,46 @@ namespace GraceProject.Controllers.Report
 
             // Process and group student results
             var students = studentSessions
-                .Select(ss => new StudentQuizResultViewModel
-                {
-                    StudentId = ss.StudentID,
-                    StudentName = users
-                        .Where(u => u.Id.ToString() == ss.StudentID)
-                        .Select(u => u.FirstName + " " + u.LastName)
-                        .FirstOrDefault() ?? "Unknown Student",
-                    Quizzes = quizzes
-                        .Select(q => new EducatorQuizResultViewModel
-                        {
-                            QuizTitle = q.Title,
-                            TotalScore = q.TotalScore ?? 0,
-                            ObtainedScore = userQuizzes
-                            //    .Where(uq => uq.UserId == ss.StudentID && uq.QuizId == q.QuizId)
-                            //.Sum(uq => uq.Score) ?? 0
-                                .LastOrDefault(uq => uq.UserId == ss.StudentID && uq.QuizId == q.QuizId).Score ?? 0
+             .Select(ss => new StudentQuizResultViewModel
+             {
+                 StudentId = ss.StudentID,
+                 StudentName = users
+                     .Where(u => u.Id.ToString() == ss.StudentID)
+                     .Select(u => u.FirstName + " " + u.LastName)
+                     .FirstOrDefault() ?? "Unknown Student",
 
-                        }).ToList()
-                }).ToList();
+                 Quizzes = quizzes
+                     .Select(q =>
+                     {
+                         var attempted = userQuizzes.Any(uq => uq.UserId == ss.StudentID && uq.QuizId == q.QuizId);
+                         var dueDatePassed = q.DueDate.HasValue && q.DueDate <= DateTime.Now;
 
-            // 🔹 Calculate total score, obtained score, percentage, and grade per student
+                         var obtainedScore = attempted
+                             ? userQuizzes
+                                 .Where(uq => uq.UserId == ss.StudentID && uq.QuizId == q.QuizId)
+                                 .Sum(uq => uq.Score ?? 0)
+                             : (dueDatePassed ? 0 : -1); // -1 means not attempted but not past due
+
+                         return new EducatorQuizResultViewModel
+                         {
+                             QuizTitle = q.Title,
+                             TotalScore = q.TotalScore ?? 0,
+                             ObtainedScore = obtainedScore
+                         };
+                     }).ToList()
+             }).ToList();
+
             foreach (var student in students)
             {
-                student.TotalScore = student.Quizzes.Sum(q => q.TotalScore);
-                student.ObtainedScore = student.Quizzes.Sum(q => q.ObtainedScore);
-                student.Percentage = student.TotalScore > 0 ? (student.ObtainedScore / (double)student.TotalScore) * 100 : 0;
+                var consideredQuizzes = student.Quizzes
+                    .Where(q => q.ObtainedScore >= 0) // Ignore unattempted and not-due quizzes
+                    .ToList();
+
+                student.TotalScore = consideredQuizzes.Sum(q => q.TotalScore);
+                student.ObtainedScore = consideredQuizzes.Sum(q => q.ObtainedScore);
+                student.Percentage = student.TotalScore > 0
+                    ? (student.ObtainedScore / (double)student.TotalScore) * 100
+                    : 0;
                 student.Grade = GetGrade(student.Percentage);
             }
 
@@ -635,6 +798,15 @@ namespace GraceProject.Controllers.Report
         public string Keyword { get; set; }
         string UserId { get; set; }
         string SearchType { get; set; }
+    }
+    public class StudentSlideTimeRequest
+    {
+        public string StudentID { get; set; }
+        public string CourseID { get; set; }
+        public int ModuleID { get; set; }
+        public string DateFilter { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
     }
 
     public class IdModel

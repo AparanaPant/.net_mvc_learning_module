@@ -31,13 +31,17 @@ namespace GraceProject.Controllers.Educator
                 return NotFound("Course or Session not found.");
             }
 
-            // Get students enrolled in the session
+            var now = DateTime.Now;
+
             var students = _context.StudentSessions
                 .Where(ss => ss.SessionID == sessionId)
                 .Select(ss => new StudentQuizResultViewModel
                 {
                     StudentId = ss.StudentID,
-                    StudentName = _context.Users.Where(u => u.Id == ss.StudentID).Select(u => u.FirstName).FirstOrDefault(),
+                    StudentName = _context.Users
+                        .Where(u => u.Id == ss.StudentID)
+                        .Select(u => u.FirstName)
+                        .FirstOrDefault(),
                     Quizzes = _context.Quizzes
                         .Where(q => q.CourseID == courseId || q.SessionID == sessionId)
                         .Select(q => new EducatorQuizResultViewModel
@@ -45,16 +49,25 @@ namespace GraceProject.Controllers.Educator
                             QuizTitle = q.Title,
                             TotalScore = q.TotalScore ?? 0,
                             ObtainedScore = q.UserQuizzes
-                                .Where(uq => uq.UserId == ss.StudentID)
-                                .Sum(uq => uq.Score) ?? 0
+                            .Where(uq => uq.UserId == ss.StudentID)
+                            .OrderByDescending(uq => uq.CompletedAt)
+                            .Select(uq => uq.Score ?? 0)
+                            .FirstOrDefault(),
+                            IsAttempted = q.UserQuizzes.Any(uq => uq.UserId == ss.StudentID),
+                            DueDate = q.DueDate,
+                            IsPastDue = q.DueDate.HasValue && q.DueDate <= now
                         }).ToList()
                 }).ToList();
 
-            // Calculate total and grade for each student
+            // Apply filtering logic
             foreach (var student in students)
             {
-                student.TotalScore = student.Quizzes.Sum(q => q.TotalScore);
-                student.ObtainedScore = student.Quizzes.Sum(q => q.ObtainedScore);
+                var consideredQuizzes = student.Quizzes
+                    .Where(q => q.IsAttempted || q.IsPastDue)
+                    .ToList();
+
+                student.TotalScore = consideredQuizzes.Sum(q => q.TotalScore);
+                student.ObtainedScore = consideredQuizzes.Sum(q => q.IsAttempted ? q.ObtainedScore : 0);
                 student.Percentage = student.TotalScore > 0 ? (student.ObtainedScore / student.TotalScore) * 100 : 0;
                 student.Grade = GetGrade(student.Percentage);
             }

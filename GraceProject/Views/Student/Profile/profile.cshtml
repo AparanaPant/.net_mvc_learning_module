@@ -5,21 +5,63 @@
     Layout = "~/Views/Shared/_StudentLayout.cshtml";
 }
 
-<h1 class="mt-4">Profile</h1>
+<h1 class="mt-4 mb-4 text-center">My Profile</h1>
 
 <div class="container">
-    <div class="row">
-        <div class="col-md-3">
-            <img src="~/PanelsTemplate/images/user.png" alt="User Photo" class="img-thumbnail">
-        </div>
-        <div class="col-md-9">
-            <h2>User Information</h2>
-            <p><strong>Username:</strong> @Model.UserName</p>
-            <p><strong>Email:</strong> @Model.Email</p>
-            <p><strong>Phone Number:</strong> @Model.PhoneNumber</p>
-            <p><strong>First Name:</strong> @Model.FirstName</p>
-            <p><strong>Last Name:</strong> @Model.LastName</p>
-            <a href="/student/profile/edit" class="btn btn-primary mt-3">Edit Profile</a>
+    <div class="card shadow-sm p-4">
+        <div class="row">
+            <!-- Profile Picture Section -->
+            <div class="col-md-4 text-center border-end">
+                <img id="profileImagePreview"
+                     src="@(!string.IsNullOrEmpty(Model.ProfilePictureUrl) ? Model.ProfilePictureUrl : Url.Content("~/PanelsTemplate/images/user.png"))"
+                     alt="User Photo"
+                     class="img-fluid rounded-circle shadow-sm mb-3"
+                     style="max-width: 180px; height: 180px; object-fit: cover;" />
+
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <input type="file" name="profileImage" class="form-control mb-2" required />
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">Upload Picture</button>
+                </form>
+            </div>
+
+            <!-- User Info Section -->
+            <div class="col-md-8 ps-md-5 pt-3 pt-md-0">
+                <h4 class="mb-4">User Information</h4>
+                <div class="mb-2"><strong>Username:</strong> @Model.UserName</div>
+                <div class="mb-2"><strong>Email:</strong> @Model.Email</div>
+                <div class="mb-2"><strong>Phone Number:</strong> @Model.PhoneNumber</div>
+                <div class="mb-2"><strong>First Name:</strong> @Model.FirstName</div>
+                <div class="mb-2"><strong>Last Name:</strong> @Model.LastName</div>
+
+                <a href="/student/profile/edit" class="btn btn-primary mt-3">Edit Profile</a>
+            </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.getElementById("uploadForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+
+            fetch('/student/profile/upload-picture', {
+                method: 'POST',
+                body: formData
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.imageUrl) {
+                        document.getElementById("profileImagePreview").src = data.imageUrl;
+                    } else {
+                        alert("Upload failed. Please try again.");
+                    }
+                })
+                .catch(err => {
+                    alert("Failed to upload image.");
+                    console.error(err);
+                });
+        });
+    </script>
+}

@@ -9,32 +9,69 @@
     ➕ Create New Quiz
 </a>
 
-@if (!Model.Any())
+@if (!Model.Any(q => !q.IsArchived))
 {
     <p>No quizzes available.</p>
 }
 else
 {
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Active</th>
+                <th>Due Date</th>
+                <th>Attempts</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var quiz in Model.Where(q => !q.IsArchived))
+            {
+                var quizTaken = ViewBag.QuizTakenStatus != null && ((Dictionary<int, bool>)ViewBag.QuizTakenStatus)[quiz.QuizId];
+
+                <tr>
+                    <td>@quiz.Title</td>
+                    <td>
+                        <input type="checkbox" @(quiz.IsActive ? "checked" : "") onchange="toggleActive(@quiz.QuizId, this.checked)" />
+                    </td>
+                    <td>
+                        <input type="datetime-local" value="@(quiz.DueDate?.ToString("yyyy-MM-ddTHH:mm") ?? "")"
+                               onchange="updateDueDate(@quiz.QuizId, this.value)" />
+                    </td>
+                    <td>
+                        <input type="number" min="1" value="@quiz.NoOfAttempts"
+                               onchange="updateAttempts(@quiz.QuizId, this.value)" />
+                    </td>
+                    <td>
+                        <a href="~/Quiz/Details/@quiz.QuizId" class="btn btn-primary">View</a>
+                        <a href="@Url.Action("Edit", "Quiz", new { id = quiz.QuizId })"
+                           class="btn btn-secondary @(quizTaken ? "disabled" : "")">Edit</a>
+                        <button type="button" class="btn btn-danger @(quizTaken ? "disabled" : "")"
+                                onclick="confirmDelete('@quiz.QuizId')" @(quizTaken ? "disabled" : "")>
+                            Delete
+                        </button>
+                        <button class="btn btn-warning" onclick="toggleArchive(@quiz.QuizId)">
+                            @(quiz.IsArchived ? "Unarchive" : "Archive")
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h3>Archived Quizzes</h3>
+@if (ViewBag.ArchivedQuizzes is List<GraceProject.Models.Quiz> archived && archived.Any())
+{
     <ul class="list-group">
-        @foreach (var quiz in Model)
+        @foreach (var quiz in archived)
         {
-            var quizTaken = ViewBag.QuizTakenStatus != null && ((Dictionary<int, bool>)ViewBag.QuizTakenStatus).ContainsKey(quiz.QuizId)
-            ? ((Dictionary<int, bool>)ViewBag.QuizTakenStatus)[quiz.QuizId]
-            : false;
-
             <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>@quiz.Title</span> <!-- Quiz title is now plain text -->
-
+                <span>@quiz.Title (Archived)</span>
                 <div>
                     <a href="~/Quiz/Details/@quiz.QuizId" class="btn btn-primary">View</a>
-                    <a href="@Url.Action("Edit", "Quiz", new { id = quiz.QuizId, userType = "admin" })"
-                       class="btn btn-secondary @(quizTaken ? "disabled" : "")">
-                        Edit
-                    </a>
-                    <button type="button" class="btn btn-danger @(quizTaken ? "disabled" : "")"
-                            onclick="confirmDelete('@quiz.QuizId')" @(quizTaken ? "disabled" : "")>
-                        Delete
-                    </button>
+                    <button class="btn btn-warning" onclick="toggleArchive(@quiz.QuizId)">Unarchive</button>
                 </div>
             </li>
         }
@@ -57,5 +94,36 @@ else
                 });
             }
         }
+
+        function toggleActive(quizId, isActive) {
+            $.post(`/Quiz/ToggleActive/${quizId}?isActive=${isActive}`);
+        }
+
+        function updateDueDate(quizId, dueDate) {
+            $.post(`/Quiz/UpdateDueDate/${quizId}`, { dueDate });
+        }
+
+        function updateAttempts(quizId, attempts) {
+            $.post(`/Quiz/UpdateAttempts/${quizId}`, { attempts });
+        }
+
+        function confirmDelete(quizId) {
+            if (confirm('Are you sure you want to delete this quiz?')) {
+                $.ajax({
+                    url: `/Quiz/Delete/${quizId}`,
+                    type: 'POST',
+                    success: function () { location.reload(); },
+                    error: function (xhr, status, error) {
+                        alert('Error deleting quiz: ' + error);
+                    }
+                });
+            }
+        }
+        function toggleArchive(quizId) {
+            fetch('/Quiz/ToggleArchive/' + quizId, { method: 'POST' })
+                .then(() => location.reload())
+                .catch(err => alert('Failed to toggle archive: ' + err));
+        }
+
     </script>
 }

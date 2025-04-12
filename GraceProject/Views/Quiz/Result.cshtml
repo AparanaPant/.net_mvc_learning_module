@@ -32,7 +32,7 @@
     @foreach (var answer in Model.UserAnswers ?? new List<UserAnswer>())
     {
         bool isCorrect = answer.IsCorrect;
-        string resultClass = isCorrect ? "text-success" : "text-danger"; // ✅ Green for correct, ❌ Red for incorrect
+        string resultClass = isCorrect ? "text-success" : "text-danger"; 
 
         <div class="card mt-3">
             <div class="card-header bg-light">

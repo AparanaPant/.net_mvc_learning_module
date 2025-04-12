@@ -174,8 +174,11 @@ namespace GraceProject.Areas.Identity.Pages.Account
                 if (string.IsNullOrWhiteSpace(Input.Password))
                     ModelState.AddModelError(nameof(Input.Password), "Password is required.");
 
-                if (!Input.SchoolID.HasValue || Input.SchoolID == 0) // Ensure valid school is selected
+                if ((!Input.SchoolID.HasValue || Input.SchoolID == 0) && string.IsNullOrWhiteSpace(Input.NewSchoolName))
+                {
                     ModelState.AddModelError(nameof(Input.SchoolID), "School selection is required.");
+                }
+
             }
 
             // Stop processing if there are validation errors

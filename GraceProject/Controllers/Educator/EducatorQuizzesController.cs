@@ -36,23 +36,22 @@ namespace GraceProject.Controllers.Educator
                 return NotFound("Course not found.");
             }
 
-            // ✅ Get the correct session ID for the logged-in educator
+            // Get the educator's session ID for this course
             var educatorSessionId = await _context.EducatorSession
                 .Where(es => es.EducatorID == user.Id && es.Session.CourseID == courseId)
                 .Select(es => es.SessionID)
                 .FirstOrDefaultAsync();
 
-            // ✅ Get Default Quizzes (Created by Admin)
+            // Filter Default Quizzes: Active and not archived
             var defaultQuizzes = await _context.Quizzes
-        .Where(q => q.CourseID == courseId) // Admin-created quizzes
-        .ToListAsync();
-
-            // ✅ Get Session Quizzes (Created by Educator)
-            var sessionQuizzes = await _context.Quizzes
-                .Where(q => q.SessionID == educatorSessionId) // Educator-created quizzes linked to the session
+                .Where(q => q.CourseID == courseId && q.IsActive && !q.IsArchived)
                 .ToListAsync();
 
-            // ✅ Store Educator's Session ID for Course
+            // Filter Session Quizzes: Active and not archived
+            var sessionQuizzes = await _context.Quizzes
+                .Where(q => q.SessionID == educatorSessionId && q.IsActive && !q.IsArchived)
+                .ToListAsync();
+
             ViewData["SessionID"] = educatorSessionId;
 
             var model = new QuizzesViewModel
