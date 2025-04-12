@@ -211,8 +211,15 @@ namespace GraceProject.Areas.Identity.Pages.Account
 
                 _logger.LogInformation("User created successfully.");
 
-                // Send email confirmation
-                //await SendEmailConfirmation(user, userId, returnUrl);
+                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                var callbackUrl = Url.Page(
+                    "/Account/ConfirmEmail",
+                    pageHandler: null,
+                    values: new { area = "Identity", userId = user.Id, code = code, returnUrl = returnUrl },
+                    protocol: Request.Scheme);
+                await SendEmailAsync(Input.Email, "Confirm your email",
+                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
                 if (Input.SchoolID == null && !string.IsNullOrWhiteSpace(Input.NewSchoolName))
                 {
@@ -350,66 +357,66 @@ namespace GraceProject.Areas.Identity.Pages.Account
             await _context.SaveChangesAsync();
         }
 
-        private async Task<bool> SendEmailAsync(string email, string subject, string confirmLink)
-        {
-            try
-            {
-
-                MailMessage message = new MailMessage();
-                SmtpClient smtpClient = new SmtpClient();
-                message.From = new MailAddress("noreplygrace7@gmail.com");
-                message.To.Add(email);
-                message.Subject = subject;
-                message.IsBodyHtml = true;
-                message.Body = confirmLink;
-
-                smtpClient.Port = 587;
-                smtpClient.Host = "smtp.gmail.com";
-                smtpClient.EnableSsl = true;
-                smtpClient.UseDefaultCredentials = false;
-                smtpClient.Credentials = new NetworkCredential("noreplygrace7@gmail.com", "wmgj cbrc ryhs wjmw");
-                smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
-                smtpClient.Send(message);
-                return true;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("this is exception" + e);
-                return false;
-            }
-        }
-
         //private async Task<bool> SendEmailAsync(string email, string subject, string confirmLink)
         //{
-        //    SmtpClient smtpClient = new SmtpClient("mailrelay.auburn.edu");
-        //    smtpClient.Port = 25;
-        //    smtpClient.EnableSsl = false;
-
-
-        //    string senderEmail = "grace@auburn.edu";
-
-        //    // Configure the email message
-        //    MailMessage message = new MailMessage
-        //    {
-        //        From = new MailAddress(senderEmail),
-        //        Subject = subject,
-        //        Body = confirmLink,
-        //        IsBodyHtml = true
-        //    };
-        //    message.To.Add(new MailAddress(email));
-
         //    try
         //    {
-        //        // Send the email
-        //        await smtpClient.SendMailAsync(message);
+
+        //        MailMessage message = new MailMessage();
+        //        SmtpClient smtpClient = new SmtpClient();
+        //        message.From = new MailAddress("noreplygrace7@gmail.com");
+        //        message.To.Add(email);
+        //        message.Subject = subject;
+        //        message.IsBodyHtml = true;
+        //        message.Body = confirmLink;
+
+        //        smtpClient.Port = 587;
+        //        smtpClient.Host = "smtp.gmail.com";
+        //        smtpClient.EnableSsl = true;
+        //        smtpClient.UseDefaultCredentials = false;
+        //        smtpClient.Credentials = new NetworkCredential("noreplygrace7@gmail.com", "wmgj cbrc ryhs wjmw");
+        //        smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
+        //        smtpClient.Send(message);
         //        return true;
         //    }
         //    catch (Exception e)
         //    {
-     
+        //        Console.WriteLine("this is exception" + e);
         //        return false;
         //    }
         //}
+
+        private async Task<bool> SendEmailAsync(string email, string subject, string confirmLink)
+        {
+            SmtpClient smtpClient = new SmtpClient("mailrelay.auburn.edu");
+            smtpClient.Port = 25;
+            smtpClient.EnableSsl = false;
+
+
+            string senderEmail = "grace@auburn.edu";
+
+            // Configure the email message
+            MailMessage message = new MailMessage
+            {
+                From = new MailAddress(senderEmail),
+                Subject = subject,
+                Body = confirmLink,
+                IsBodyHtml = true
+            };
+            message.To.Add(new MailAddress(email));
+
+            try
+            {
+                // Send the email
+                await smtpClient.SendMailAsync(message);
+                return true;
+            }
+            catch (Exception e)
+            {
+
+                return false;
+            }
+        }
 
         private ApplicationUser CreateUser()
         {

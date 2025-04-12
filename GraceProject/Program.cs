@@ -41,25 +41,25 @@ builder.Services.Configure<IdentityOptions>(options =>
 });
 
 var app = builder.Build();
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    await CreateRolesAndAdmin(services);
-}
+//using (var scope = app.Services.CreateScope())
+//{
+//    var services = scope.ServiceProvider;
+//    await CreateRolesAndAdmin(services);
+//}
 
-using (var scope = app.Services.CreateScope())
-{
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    string[] roleNames = { "Admin", "Student", "Educator" };
+//using (var scope = app.Services.CreateScope())
+//{
+//    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+//    string[] roleNames = { "Admin", "Student", "Educator" };
 
-    foreach (var roleName in roleNames)
-    {
-        if (!await roleManager.RoleExistsAsync(roleName))
-        {
-            await roleManager.CreateAsync(new IdentityRole(roleName));
-        }
-    }
-}
+//    foreach (var roleName in roleNames)
+//    {
+//        if (!await roleManager.RoleExistsAsync(roleName))
+//        {
+//            await roleManager.CreateAsync(new IdentityRole(roleName));
+//        }
+//    }
+//}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -82,45 +82,45 @@ app.MapControllerRoute(
 app.MapRazorPages();
 
 
-async Task CreateRolesAndAdmin(IServiceProvider serviceProvider)
-{
-    var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+//async Task CreateRolesAndAdmin(IServiceProvider serviceProvider)
+//{
+//    var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+//    var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-    string[] roleNames = { "Admin", "Educator", "Student", "Guest" };
+//    string[] roleNames = { "Admin", "Educator", "Student", "Guest" };
 
-    foreach (var roleName in roleNames)
-    {
-        if (!await roleManager.RoleExistsAsync(roleName))
-        {
-            await roleManager.CreateAsync(new IdentityRole(roleName));
-        }
-    }
+//    foreach (var roleName in roleNames)
+//    {
+//        if (!await roleManager.RoleExistsAsync(roleName))
+//        {
+//            await roleManager.CreateAsync(new IdentityRole(roleName));
+//        }
+//    }
 
-    // Create default admin user (Modify Email/Password as needed)
-    string adminEmail = "admin@example.com";
-    string adminPassword = "Admin@123";
+//    // Create default admin user (Modify Email/Password as needed)
+//    string adminEmail = "admin@example.com";
+//    string adminPassword = "Admin@123";
 
-    var adminUser = await userManager.FindByEmailAsync(adminEmail);
-    if (adminUser == null)
-    {
-        var newAdmin = new ApplicationUser
-        {
-            UserName = adminEmail,
-            Email = adminEmail,
-            EmailConfirmed = true,
-            FirstName = "Admin",  
-            LastName = "User"    
-        };
+//    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+//    if (adminUser == null)
+//    {
+//        var newAdmin = new ApplicationUser
+//        {
+//            UserName = adminEmail,
+//            Email = adminEmail,
+//            EmailConfirmed = true,
+//            FirstName = "Admin",  
+//            LastName = "User"    
+//        };
 
-        var createAdmin = await userManager.CreateAsync(newAdmin, adminPassword);
+//        var createAdmin = await userManager.CreateAsync(newAdmin, adminPassword);
 
-        if (createAdmin.Succeeded)
-        {
-            await userManager.AddToRoleAsync(newAdmin, "Admin");
-        }
-    }
-}
+//        if (createAdmin.Succeeded)
+//        {
+//            await userManager.AddToRoleAsync(newAdmin, "Admin");
+//        }
+//    }
+//}
 
 try
 {
