@@ -23,10 +23,22 @@ namespace GraceProject.Controllers.Report
         }
 
         [HttpGet]
-        public IActionResult Report()
+        public async Task<IActionResult> Report()
         {
+            var user = await _context.Users
+                .Where(u => u.UserName == User.Identity.Name)
+                .FirstOrDefaultAsync();
+
+            var roleName = await (from userRole in _context.UserRoles
+                                  join r in _context.Roles on userRole.RoleId equals r.Id
+                                  where userRole.UserId == user.Id
+                                  select r.Name).FirstOrDefaultAsync();
+
+            ViewBag.UserRole = roleName;
+
             return View("~/Views/Report/AdminReport.cshtml");
         }
+
 
         // Get Student List
         [HttpPost("GetStudentList")]

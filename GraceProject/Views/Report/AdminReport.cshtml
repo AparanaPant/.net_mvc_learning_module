@@ -10,19 +10,17 @@
     <h2 class="mb-4 text-center">Admin Report</h2>
 
     <!-- Search Form -->
-    <div class="row mb-4">
-        <!-- Search Type -->
-        <!-- Search Type -->
-        <div class="col-md-3">
-            <label for="searchType" class="form-label">Search By</label>
-            <select id="searchType" class="form-control">
-                <option value="student">Student Name</option>
-                @* <option value="course">Course Name</option> *@
+    <div class="col-md-3">
+        <label for="searchType" class="form-label">Search By</label>
+        <select id="searchType" class="form-control">
+            <option value="student">Student Name</option>
+            @if (ViewBag.UserRole == "Admin" || ViewBag.UserRole == "Educator")
+            {
                 <option value="educator">Educator Name</option>
                 <option value="school">School Name</option>
-            </select>
-        </div>
-
+            }
+        </select>
+    </div>
         <!-- Search Value -->
         <div class="col-md-3">
             <label for="searchValue" class="form-label">Value</label>
