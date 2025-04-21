@@ -208,6 +208,7 @@
                                             <li><a href="~/Student/Courses"><i class="fa fa-book"></i> Courses</a></li>     
                                             @* <li><a asp-controller="Quiz" asp-action="QuizResults"><i class="fa fa-bar-chart-o"></i> Grades</a></li> *@
                                             <li><a href="~/Student/Profile/profile"><i class="fa fa-user"></i> Profile</a></li>
+                                            <li><a href="~/Report/Report"><i class="fa fa-chart-bar"></i> Reports</a></li>
                                         }
                                         else if (roles.Contains("Educator"))
                                         {
@@ -226,7 +227,6 @@
                                         {
                                             <li><a href="~/Guest/Dashboard"><i class="fa fa-home"></i> Home</a></li>
                                             <li><a href="~/Guest/Courses"><i class="fa fa-book"></i> Courses</a></li>
-                                            <li><a href="~/Report/Report"><i class="fa fa-chart-bar"></i> Reports</a></li>
                                         }
                                     </ul>
                                 </div>

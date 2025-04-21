@@ -14,10 +14,15 @@
         <label for="searchType" class="form-label">Search By</label>
         <select id="searchType" class="form-control">
             <option value="student">Student Name</option>
-            @if (ViewBag.UserRole == "Admin" || ViewBag.UserRole == "Educator")
+
+            @if (ViewBag.UserRole == "Admin")
             {
                 <option value="educator">Educator Name</option>
                 <option value="school">School Name</option>
+            }
+            else if (ViewBag.UserRole == "Educator")
+            {
+                <option value="educator">Educator Name</option>
             }
         </select>
     </div>
