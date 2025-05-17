@@ -16,7 +16,8 @@ namespace GraceProject.Controllers.Authentication
             var path = context.Request.Path;
 
             // Check if the user is not authenticated and the requested path is not the login or sign-up page
-            if (!context.User.Identity.IsAuthenticated && !IsLoginOrSignUpPage(path))
+            if (!context.User.Identity.IsAuthenticated && !IsLoginOrSignUpPage(path) && !path.Value.ToLower().Contains("api/"))
+            //if (!context.User.Identity.IsAuthenticated && !IsLoginOrSignUpPage(path))
             {
                 context.Response.Redirect("/Identity/Account/Login");
                 return;
