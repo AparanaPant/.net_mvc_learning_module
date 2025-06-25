@@ -12,7 +12,7 @@ public class AppQuiz
     public virtual Quiz OriginalQuiz { get; set; }
 
     [Required]
-    public int AppModuleId { get; set; }  // Placeholder for future AppModule table
+    public int GameLevelId { get; set; }  // Placeholder for future AppModule table
 
     [Required]
     public string Title { get; set; }

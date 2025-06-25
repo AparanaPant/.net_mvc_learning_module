@@ -42,6 +42,17 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<AppQuestion> AppQuestions { get; set; }
     public DbSet<AppOption> AppOptions { get; set; }
 
+    public DbSet<App3DModel> App3DModels { get; set; }
+    public DbSet<AppEquipment> AppEquipments { get; set; }
+    public DbSet<AppLearningSlide> AppLearningSlides { get; set; }
+
+    public DbSet<AppGameLevel> AppGameLevels { get; set; }
+    public DbSet<AppGameLevelTask> AppGameLevelTasks { get; set; }
+    public DbSet<AppUserTasksStatus> AppUserTasksStatus { get; set; }
+
+    public DbSet<AppScore> AppScores { get; set; }
+    public DbSet<AppUserScore> AppUserScores { get; set; }
+
 
 
     public GraceDbContext(DbContextOptions<GraceDbContext> options)
@@ -128,12 +139,87 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
             .HasOne(uq => uq.User)
             .WithMany()
             .HasForeignKey(uq => uq.UserId);
-        
+
+        builder.Entity<AppGameLevel>().ToTable("AppGameLevels");
+        builder.Entity<AppGameLevelTask>().ToTable("AppGameLevelTasks");
+        builder.Entity<AppUserTasksStatus>().ToTable("AppUserTasksStatus");
+        builder.Entity<App3DModel>().ToTable("App3DModels");
+        builder.Entity<AppEquipment>().ToTable("AppEquipments");
+        builder.Entity<AppLearningSlide>().ToTable("AppLearningSlides");
+
+        // App3DModel
+        builder.Entity<App3DModel>()
+            .HasOne(m => m.AppGameLevel)
+            .WithMany(g => g.App3DModels)
+            .HasForeignKey(m => m.AppGameLevelId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // AppEquipment
+        builder.Entity<AppEquipment>()
+            .HasOne(e => e.AppGameLevel)
+            .WithMany(g => g.AppEquipments)
+            .HasForeignKey(e => e.AppGameLevelId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<AppEquipment>()
+            .HasOne(e => e.App3DModel)
+            .WithMany()
+            .HasForeignKey(e => e.App3DModelId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // AppGameLevelTask
+        builder.Entity<AppGameLevelTask>()
+            .HasOne(t => t.AppGameLevel)
+            .WithMany(g => g.AppGameLevelTasks)
+            .HasForeignKey(t => t.AppGameLevelId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // AppLearningSlide
+        builder.Entity<AppLearningSlide>()
+            .HasOne(s => s.App3DModel)
+            .WithMany()
+            .HasForeignKey(s => s.App3DModelId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<AppLearningSlide>()
+            .HasOne(s => s.AppGameLevel)
+            .WithMany(g => g.AppLearningSlides)
+            .HasForeignKey(s => s.AppGameLevelId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // AppUserTasksStatus
+        builder.Entity<AppUserTasksStatus>()
+            .HasOne(u => u.ApplicationUser)
+            .WithMany() // Add navigation property if exists on ApplicationUser
+            .HasForeignKey(u => u.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<AppUserTasksStatus>()
+            .HasOne(u => u.AppGameLevelTask)
+            .WithMany(t => t.AppUserTasksStatus)
+            .HasForeignKey(u => u.AppGameLevelTaskId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+
+        // AppUserScore -> ApplicationUser (UserId)
+        builder.Entity<AppUserScore>()
+            .HasOne(aus => aus.ApplicationUser)
+            .WithMany() // or .WithMany(u => u.AppUserScores) if you have a collection in ApplicationUser
+            .HasForeignKey(aus => aus.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // AppUserScore -> AppGameLevelTask (AppGameLevelTaskId)
+        builder.Entity<AppUserScore>()
+            .HasOne(aus => aus.AppGameLevelTask)
+            .WithMany() // or .WithMany(t => t.UserScores) if you have a collection in AppGameLevelTask
+            .HasForeignKey(aus => aus.AppGameLevelTaskId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         //builder.Entity<SchoolInfo>().ToTable("SchoolInfo");
         //builder.Entity<SchoolInfo>(entity =>
         //{
-            // Define primary key
-            //entity.HasKey(e => e.SchoolID).HasName("PK_SchoolInfo");
+        // Define primary key
+        //entity.HasKey(e => e.SchoolID).HasName("PK_SchoolInfo");
 
         //// Map to table name
         //entity.ToTable("SchoolInfo");
@@ -153,20 +239,20 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
         //    .IsRequired()
         //    .HasMaxLength(100); // You can adjust the max length as per your requirements
 
-            // Define relationships
-            //entity.HasMany(e => e.Course)
-            //    .WithOne(c => c.SchoolInfo)
-            //    .HasForeignKey(c => c.SchoolID)
-            //    .OnDelete(DeleteBehavior.Restrict);
+        // Define relationships
+        //entity.HasMany(e => e.Course)
+        //    .WithOne(c => c.SchoolInfo)
+        //    .HasForeignKey(c => c.SchoolID)
+        //    .OnDelete(DeleteBehavior.Restrict);
 
-            //entity.HasMany(e => e.Educator)
-            //    .WithOne(ed => ed.SchoolInfo)
-            //    .HasForeignKey(ed => ed.SchoolID)
-            //    .OnDelete(DeleteBehavior.Restrict);
+        //entity.HasMany(e => e.Educator)
+        //    .WithOne(ed => ed.SchoolInfo)
+        //    .HasForeignKey(ed => ed.SchoolID)
+        //    .OnDelete(DeleteBehavior.Restrict);
 
-            //entity.HasMany(e => e.Student)
-            //    .WithOne(s => s.SchoolInfo)
-            //    .HasForeignKey(s => s.SchoolID)
+        //entity.HasMany(e => e.Student)
+        //    .WithOne(s => s.SchoolInfo)
+        //    .HasForeignKey(s => s.SchoolID)
         //    //    .OnDelete(DeleteBehavior.Restrict);
         //});
     }

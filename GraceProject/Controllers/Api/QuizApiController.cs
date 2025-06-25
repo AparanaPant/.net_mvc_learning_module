@@ -20,13 +20,13 @@ namespace GraceProject.Controllers.Api
         }
 
         // GET: api/QuizApi/app/{appQuizId}
-        [HttpGet("app/{appQuizId}")]
-        public async Task<IActionResult> GetAppQuiz(int appQuizId)
+        [HttpGet("GetAppQuiz/{GameLevelId}")]
+        public async Task<IActionResult> GetAppQuiz(int GameLevelId)
         {
             var quiz = await _context.AppQuizzes
                 .Include(q => q.Questions)
                     .ThenInclude(q => q.Options)
-                .Where(q => q.AppQuizId == appQuizId)
+                .Where(q => q.GameLevelId == GameLevelId)
                 .Select(q => new QuizDto
                 {
                     QuizId = q.AppQuizId,
@@ -46,10 +46,10 @@ namespace GraceProject.Controllers.Api
                 })
                 .FirstOrDefaultAsync();
 
-            if (quiz == null)
-            {
-                return NotFound(new { message = "AppQuiz not found" });
-            }
+            //if (quiz == null)
+            //{
+            //    return NotFound(new { message = "AppQuiz not found" });
+            //}
 
             return Ok(quiz);
         }
