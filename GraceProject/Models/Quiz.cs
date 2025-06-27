@@ -27,6 +27,9 @@ namespace GraceProject.Models
         [ForeignKey("Session")]
         public int? SessionID { get; set; }
 
+        [ForeignKey("GameLevel")]
+        public int? GameLevelID { get; set; }
+
         public int? TotalScore { get; set; }
 
         public virtual ICollection<Question> Questions { get; set; }
@@ -34,6 +37,8 @@ namespace GraceProject.Models
         public virtual ICollection<UserQuiz> UserQuizzes { get; set; }
         public virtual Course? Course { get; set; }
         public virtual Session? Session { get; set; }
+
+        public virtual AppGameLevel? GameLevel { get; set; }
 
         public DateTime? DueDate { get; set; }
         public int? NoOfAttempts { get; set; } = 2;

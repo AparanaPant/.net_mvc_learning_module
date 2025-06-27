@@ -19,7 +19,7 @@ public class QuizController : Controller
             .OrderBy(l => l.Name)
             .ToListAsync();
 
-        return View("~/Views/Quiz/SelectGameLevel.cshtml", levels);
+        return View("~/Views/Application/SelectGameLevel.cshtml", levels);
     }
 
     [HttpPost]

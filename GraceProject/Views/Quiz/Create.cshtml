@@ -11,6 +11,7 @@
     <form id="createQuizForm" asp-action="Create" method="post" enctype="multipart/form-data">
         <input type="hidden" asp-for="CourseID" />
         <input type="hidden" asp-for="SessionID" />
+        <input type="hidden" asp-for="GameLevelID" />
         <div class="total-score-section">
             <label><strong>Total Score:</strong></label>
             <span id="displayTotalScore">0</span>
@@ -123,6 +124,13 @@
             const questionIndex = questionDiv.dataset.index;
             const answerSection = questionDiv.querySelector('.answer-section');
             const questionType = select.value;
+            const gameLevelId = '@Model.GameLevelID';
+
+            if (gameLevelId && gameLevelId !== "" && questionType !== "Multiple Choice") {
+            alert("Only Multiple Choice questions are allowed for Game Level quizzes.");
+            select.value = "Multiple Choice";
+            return;
+        }
 
             questions[questionIndex].Type = questionType;
             answerSection.innerHTML = ''; // Clear existing answers

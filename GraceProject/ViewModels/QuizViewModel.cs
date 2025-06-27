@@ -29,6 +29,8 @@ namespace GraceProject.ViewModels
         public string? CourseID { get; set; }  
         public int? SessionID { get; set; }
 
+        public int? GameLevelID { get; set; }
+
         public DateTime? DueDate { get; set; }
         public int NoOfAttempts { get; set; }
 

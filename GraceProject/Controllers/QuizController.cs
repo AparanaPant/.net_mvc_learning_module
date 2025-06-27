@@ -37,25 +37,26 @@ namespace GraceProject.Controllers
             return View(quizzes);
         }
 
-        // Create a new quiz
         [HttpGet]
-        public IActionResult Create(string? courseId, int? sessionId)
+        public IActionResult Create(string? courseId, int? sessionId, int? gameLevelId)
         {
-            // Ensure that at least one of them is provided
-            if (string.IsNullOrEmpty(courseId) && !sessionId.HasValue)
+            // Ensure that at least one identifier is provided
+            if (string.IsNullOrEmpty(courseId) && !sessionId.HasValue && !gameLevelId.HasValue)
             {
-                return BadRequest("A valid Course ID or Session ID is required.");
+                return BadRequest("A valid Course ID, Session ID, or Game Level ID is required.");
             }
 
             var model = new QuizViewModel
             {
-                CourseID = courseId ?? string.Empty,  // Default to empty string if null
+                CourseID = courseId ?? string.Empty,
                 SessionID = sessionId,
+                GameLevelID = gameLevelId, 
                 Questions = new List<QuestionViewModel>()
             };
 
             return View(model);
         }
+
 
         [HttpPost]
         public async Task<IActionResult> UploadImage(IFormFile ImageFile, int questionIndex)
@@ -148,7 +149,11 @@ namespace GraceProject.Controllers
                 await _context.SaveChangesAsync();
 
                 // Conditional redirects based on SessionID or CourseID
-                if (quiz.SessionID.HasValue)
+                if (quiz.GameLevelID.HasValue)
+                {
+                    return Redirect("/Quiz/SelectGameLevel");
+                }
+                else if (quiz.SessionID.HasValue)
                 {
                     return Redirect($"/Educator/Quizzes/{quiz.SessionID}");
                 }
