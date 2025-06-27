@@ -7,7 +7,7 @@
 
 <h2>Select Game Level</h2>
 
-<form asp-controller="Quiz" asp-action="SelectGameLevelPost" method="post">
+<form id="gameLevelForm" asp-controller="Quiz" method="post">
     <select id="gameLevelDropdown" name="gameLevelId" style="width: 100%;" required>
         <option value="">-- Select Game Level --</option>
         @foreach (var level in Model)
@@ -17,7 +17,13 @@
     </select>
 
     <br /><br />
-    <button type="submit" class="btn btn-primary">Continue to Add Quiz</button>
+    <button type="submit" formaction="@Url.Action("SelectGameLevelPost", "Quiz")" class="btn btn-primary">
+        ➕ Continue to Add Quiz
+    </button>
+
+    <button type="submit" formaction="@Url.Action("ViewGameLevelQuizzes", "Quiz")" class="btn btn-secondary">
+        📄 View Quizzes for Selected Level
+    </button>
 </form>
 
 <!-- Select2 for searchable dropdown -->

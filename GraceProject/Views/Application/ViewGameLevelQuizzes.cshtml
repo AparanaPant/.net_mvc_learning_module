@@ -1,0 +1,98 @@
+﻿@model IEnumerable<GraceProject.Models.Quiz>
+@{
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+    ViewBag.Title = "Quizzes";
+    var activeQuizId = Model.FirstOrDefault()?.QuizId;
+}
+
+<h2>Game Level Quizzes</h2>
+
+<a href="@Url.Action("Create", "Quiz", new { GameLevelID = ViewBag.GameLevelID })" class="btn btn-success">
+    ➕ Create New Quiz
+</a>
+
+@if (!Model.Any(q => !q.IsArchived))
+{
+    <p>No quizzes available for this game level.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Due Date</th>
+                <th>Attempts</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var quiz in Model.Where(q => !q.IsArchived))
+            {
+                var quizTaken = ViewBag.QuizTakenStatus != null && ((Dictionary<int, bool>)ViewBag.QuizTakenStatus)[quiz.QuizId];
+                var isActive = quiz.QuizId == activeQuizId;
+
+                <tr>
+                    <td>@quiz.Title</td>
+                    <td>
+                        @if (isActive)
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Inactive</span>
+                        }
+                    </td>
+                    <td>
+                        @(quiz.DueDate?.ToString("yyyy-MM-dd HH:mm") ?? "N/A")
+                    </td>
+                    <td>@quiz.NoOfAttempts</td>
+                    <td>
+                        <a href="~/Quiz/Details/@quiz.QuizId" class="btn btn-primary">View</a>
+                        <a href="@Url.Action("Edit", "Quiz", new { id = quiz.QuizId })"
+                           class="btn btn-secondary @(quizTaken ? "disabled" : "")">Edit</a>
+                        <button type="button" class="btn btn-danger @(quizTaken ? "disabled" : "")"
+                                onclick="confirmDelete('@quiz.QuizId')" @(quizTaken ? "disabled" : "")>
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h3>Archived Quizzes</h3>
+@if (ViewBag.ArchivedQuizzes is List<GraceProject.Models.Quiz> archived && archived.Any())
+{
+    <ul class="list-group">
+        @foreach (var quiz in archived)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>@quiz.Title (Archived)</span>
+                <div>
+                    <a href="~/Quiz/Details/@quiz.QuizId" class="btn btn-primary">View</a>
+                </div>
+            </li>
+        }
+    </ul>
+}
+
+@section Scripts {
+    <script>
+        function confirmDelete(quizId) {
+            if (confirm('Are you sure you want to delete this quiz?')) {
+                $.ajax({
+                    url: '/Quiz/Delete/' + quizId,
+                    type: 'POST',
+                    success: function () { location.reload(); },
+                    error: function (xhr, status, error) {
+                        alert('Error deleting quiz: ' + error);
+                    }
+                });
+            }
+        }
+    </script>
+}

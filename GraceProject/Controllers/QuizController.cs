@@ -120,6 +120,7 @@ namespace GraceProject.Controllers
                     CreatedAt = DateTime.Now,
                     CourseID = quizViewModel.CourseID,
                     SessionID = quizViewModel.SessionID,
+                    GameLevelID = quizViewModel.GameLevelID,
                     TotalScore = quizViewModel.TotalScore,
                     DueDate = quizViewModel.DueDate,            
                     NoOfAttempts = quizViewModel.NoOfAttempts,  
