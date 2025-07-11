@@ -47,34 +47,49 @@ namespace GraceProject.Controllers.Api
             return Ok(scores);
         }
 
+
+
+        public async Task<bool> StoreUserScore(string userId, int? gameLevelTaskId, int? quizId, int earnedScore, string description)
+        {
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(description) || earnedScore == 0)
+            {
+                return (false);
+            }
+
+            var newScore = new AppUserScore
+            {
+                UserId = userId,
+                AppGameLevelTaskId = gameLevelTaskId,
+                QuizId = quizId,
+                EarnedScore = earnedScore,
+                Description = description,
+                SavedDate = DateTime.UtcNow
+            };
+
+            _context.AppUserScores.Add(newScore);
+            await _context.SaveChangesAsync();
+
+            return (true);
+        }
+
+
         [HttpGet("SaveUserScore")]
         public async Task<IActionResult> SaveUserScore(
             [FromQuery] string UserId,
-            [FromQuery] int AppGameLevelTaskId,
+            [FromQuery] int? AppGameLevelTaskId,
+            [FromQuery] int? QuizId,
             [FromQuery] int EarnedScore,
             [FromQuery] string Description
             )
         {
 
-            AppUserScore newScore =new AppUserScore();
+            var result = await StoreUserScore(UserId,
+            AppGameLevelTaskId,
+            QuizId,
+            EarnedScore,
+            Description);
 
-            if (string.IsNullOrEmpty(UserId) || string.IsNullOrEmpty(Description) || EarnedScore==0)
-            {
-                return BadRequest(new { message = "Invalid input data." });
-            }
-            return Ok(new { message = "User score inserted successfully" });
-
-            newScore.SavedDate = DateTime.UtcNow; // You can also accept it from client if needed
-            newScore.AppGameLevelTaskId = AppGameLevelTaskId>0? AppGameLevelTaskId:null;
-            newScore.EarnedScore = EarnedScore;
-            newScore.Description = Description;
-            newScore.UserId = UserId;
-            return Ok(new { message = "User score inserted successfully" });
-
-            _context.AppUserScores.Add(newScore);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = "User score inserted successfully", newScore.Id });
+            return Ok(result);
         }
     }
 }

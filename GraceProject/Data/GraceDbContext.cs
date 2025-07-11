@@ -215,6 +215,13 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
             .HasForeignKey(aus => aus.AppGameLevelTaskId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // AppUserScore -> AppGameLevelTask (AppGameLevelTaskId)
+        //builder.Entity<AppUserScore>()
+        //    .HasOne(aus => aus.Quiz)
+        //    .WithMany() // or .WithMany(t => t.UserScores) if you have a collection in AppGameLevelTask
+        //    .HasForeignKey(aus => aus.QuizId)
+        //    .OnDelete(DeleteBehavior.Restrict);
+
         //builder.Entity<SchoolInfo>().ToTable("SchoolInfo");
         //builder.Entity<SchoolInfo>(entity =>
         //{

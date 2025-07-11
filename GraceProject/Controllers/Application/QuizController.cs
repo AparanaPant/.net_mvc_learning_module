@@ -1,6 +1,8 @@
-﻿using GraceProject.Data;
+﻿using GraceProject.Controllers.Api;
+using GraceProject.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 [Route("Quiz")]
 public class QuizController : Controller
@@ -41,5 +43,7 @@ public class QuizController : Controller
 
         return View("~/Views/Application/ViewGameLevelQuizzes.cshtml", quizzes);
 
+
     }
+
 }

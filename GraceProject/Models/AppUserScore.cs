@@ -17,6 +17,10 @@ public class AppUserScore
     public int? AppGameLevelTaskId { get; set; }
     public virtual AppGameLevelTask AppGameLevelTask { get; set; } // Navigation property
 
+    [ForeignKey("QuizId")]
+    public int? QuizId { get; set; }
+    public virtual Quiz Quiz { get; set; } // Navigation property
+
 
     public DateTime SavedDate { get; set; }
     public int EarnedScore { get; set; }

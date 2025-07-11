@@ -50,6 +50,9 @@ namespace GraceProject.Models
 
         public bool IsArchived { get; set; } = false;
 
+        public virtual ICollection<AppUserScore> AppUserScores { get; set; }
+
+
 
     }
 
