@@ -1,0 +1,49 @@
+﻿@model List<GraceProject.Models.Quiz>
+
+@{
+    ViewData["Title"] = "Quizzes for Game Level";
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+    var canTakeQuiz = ViewBag.CanTakeQuiz as bool? ?? false;
+    var gameLevelName = ViewBag.GameLevelName as string ?? "Game Level";
+
+    var quiz = Model.FirstOrDefault(); // ✅ Just take what controller gave you
+}
+
+<div class="container">
+    <h2 class="text-center">🧠 Quiz - @gameLevelName</h2>
+
+    @if (quiz == null)
+    {
+        <p class="text-warning">⚠ No quiz available for this level.</p>
+    }
+    else
+    {
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Duration</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>@quiz.Title</td>
+                    <td>@quiz.Duration mins</td>
+                    <td>@(quiz.DueDate?.ToString("yyyy-MM-dd HH:mm") ?? "N/A")</td>
+                    <td>
+                        @if (!canTakeQuiz)
+                        {
+                            <span class="text-danger">🔒 Level must be cleared to unlock this quiz</span>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("Take", "Quiz", new { id = quiz.QuizId })" class="btn btn-success">▶ Start Quiz</a>
+                        }
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    }
+</div>

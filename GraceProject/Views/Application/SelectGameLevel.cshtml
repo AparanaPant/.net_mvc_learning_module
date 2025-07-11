@@ -1,8 +1,13 @@
-﻿@model List<GraceProject.Models.AppGameLevel>
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@model List<GraceProject.Models.AppGameLevel>
 
 @{
     ViewData["Title"] = "Select Game Level";
     Layout = "~/Views/Shared/_StudentLayout.cshtml";
+    var isStudent = User.IsInRole("Student");
 }
 
 <h2>Select Game Level</h2>
@@ -17,10 +22,16 @@
     </select>
 
     <br /><br />
-    <button type="submit" formaction="@Url.Action("SelectGameLevelPost", "Quiz")" class="btn btn-primary">
-        ➕ Continue to Add Quiz
-    </button>
 
+    @if (!isStudent)
+    {
+        <!-- Admin / Educator can add and view quizzes -->
+        <button type="submit" formaction="@Url.Action("SelectGameLevelPost", "Quiz")" class="btn btn-primary">
+            ➕ Continue to Add Quiz
+        </button>
+    }
+
+    <!-- Everyone can view quizzes -->
     <button type="submit" formaction="@Url.Action("ViewGameLevelQuizzes", "Quiz")" class="btn btn-secondary">
         📄 View Quizzes for Selected Level
     </button>
