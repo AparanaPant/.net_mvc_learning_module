@@ -200,6 +200,7 @@ namespace GraceProject.Controllers
                 QuizId = quiz.QuizId,
                 Title = quiz.Title,
                 Duration = quiz.Duration,
+                GameLevelID = quiz.GameLevelID,
                 Questions = quiz.Questions.Select(q => new QuestionViewModel
                 {
                     QuestionId = q.QuestionId,
