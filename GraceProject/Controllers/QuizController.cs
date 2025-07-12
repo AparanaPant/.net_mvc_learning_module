@@ -491,7 +491,7 @@ namespace GraceProject.Controllers
             await _context.SaveChangesAsync();
 
             UserScoreApiController userScoreApiController = new UserScoreApiController(_context);
-            await userScoreApiController.SaveUserScore(user.Id, null, 1, totalScore, "Quiz");
+            await userScoreApiController.SaveUserScore(user.Id, 1, quiz.QuizId, totalScore, "Quiz");
 
             return View("Result", userQuiz);
         }
