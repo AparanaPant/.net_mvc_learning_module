@@ -11,50 +11,55 @@ using System.Text.Json;
 namespace GraceProject.Controllers.Api
 {
     [Route("api/[controller]")]
-    [ApiController]
-    public class QuizApiController : ControllerBase
+[ApiController]
+public class QuizApiController : ControllerBase
+{
+    private readonly GraceDbContext _context;
+
+    public QuizApiController(GraceDbContext context)
     {
-        private readonly GraceDbContext _context;
+        _context = context;
+    }
 
-        public QuizApiController(GraceDbContext context)
-        {
-            _context = context;
-        }
-
-        // GET: api/QuizApi/app/{appQuizId}
-        [HttpGet("GetAppQuiz/{GameLevelId}")]
-        public async Task<IActionResult> GetAppQuiz(int GameLevelId)
-        {
-            var quiz = await _context.AppQuizzes
-                .Include(q => q.Questions)
-                    .ThenInclude(q => q.Options)
-                .Where(q => q.GameLevelId == GameLevelId)
-                .Select(q => new QuizDto
+    // GET: api/QuizApi/app/{gameLevelId}
+    [HttpGet("GetAppQuiz/{gameLevelId}")]
+    public async Task<IActionResult> GetAppQuiz(int gameLevelId)
+    {
+        // Querying Quiz model instead of AppQuiz
+        var quiz = await _context.Quizzes
+            .Include(q => q.Questions) 
+                .ThenInclude(q => q.Options)
+            .Where(q => q.GameLevelID == gameLevelId) // Using GameLevelID to filter quizzes
+            .Select(q => new QuizDto
+            {
+                QuizId = q.QuizId,
+                Title = q.Title,
+                Questions = q.Questions.Select(question => new QuestionDto
                 {
-                    QuizId = q.AppQuizId,
-                    Title = q.Title,
-                    Questions = q.Questions.Select(qu => new QuestionDto
+                    QuestionId = question.QuestionId,
+                    Text = question.Text,
+                    Points = question.Points,
+                    Options = question.Options.Select(option => new OptionDto
                     {
-                        QuestionId = qu.AppQuestionId,
-                        Text = qu.Text,
-                        Points = qu.Points,
-                        Options = qu.Options.Select(opt => new OptionDto
-                        {
-                            OptionId = opt.AppOptionId,
-                            Text = opt.Text,
-                            IsCorrect = opt.IsCorrect
-                        }).ToList()
+                        OptionId = option.OptionId,
+                        Text = option.Text,
+                        IsCorrect = option.IsCorrect
                     }).ToList()
-                })
-                .FirstOrDefaultAsync();
+                }).ToList()
+            })
+            .FirstOrDefaultAsync();
 
-            //if (quiz == null)
-            //{
-            //    return NotFound(new { message = "AppQuiz not found" });
-            //}
-
-            return Ok(quiz);
+        // If no quiz is found, return 404 Not Found
+        if (quiz == null)
+        {
+            return NotFound(new { message = "Quiz not found for the given game level." });
         }
+
+        return Ok(quiz); // Return the found quiz as the response
+    }
+
+    // Additional endpoints if necessary
+
 
         public async Task<bool> CheckIfUserCanTakeQuiz(string userId, string gameLevelName)
         {

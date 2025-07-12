@@ -38,9 +38,7 @@ public class GraceDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<EducatorSession> EducatorSession { get; set; }
     public DbSet<StudentSession> StudentSessions { get; set; }
 
-    public DbSet<AppQuiz> AppQuizzes { get; set; }
-    public DbSet<AppQuestion> AppQuestions { get; set; }
-    public DbSet<AppOption> AppOptions { get; set; }
+ 
 
     public DbSet<App3DModel> App3DModels { get; set; }
     public DbSet<AppEquipment> AppEquipments { get; set; }
