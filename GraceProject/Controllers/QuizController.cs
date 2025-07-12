@@ -1,18 +1,19 @@
 ﻿// Controllers/QuizController.cs
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+using GraceProject.Controllers.Api;
+using GraceProject.Data;
 using GraceProject.Models;
 using GraceProject.ViewModels;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
-using GraceProject.Data;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.IdentityModel.Tokens;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace GraceProject.Controllers
 {
@@ -418,7 +419,7 @@ namespace GraceProject.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized();
-
+            var roles = user != null ? await _userManager.GetRolesAsync(user) : new List<string>();
             var quiz = await _context.Quizzes
         .Include(q => q.Questions)
             .ThenInclude(q => q.Options)
@@ -488,6 +489,9 @@ namespace GraceProject.Controllers
             userQuiz.Score = totalScore;
             _context.UserQuizzes.Update(userQuiz);
             await _context.SaveChangesAsync();
+
+            UserScoreApiController userScoreApiController = new UserScoreApiController(_context);
+            await userScoreApiController.SaveUserScore(user.Id, null, 1, totalScore, "Quiz");
 
             return View("Result", userQuiz);
         }

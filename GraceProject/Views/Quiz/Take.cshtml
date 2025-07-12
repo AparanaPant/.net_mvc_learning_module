@@ -84,11 +84,15 @@
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0">Question @(i + 1)</h5>
                                 <span class="badge bg-secondary">
-                                @question.Points pts
+                                @question.Points 
                                 @if (Model.GameLevelID != null)
                                 {
-                                    <text> 💰</text> <!-- or use $$, or any icon of your choice -->
+                                    <text> $ </text> 
                                 }
+                                else
+                                    {
+                                        <text> pts</text>  
+                                    }
                             </span>
                             </div>
                             <div class="card-body">
