@@ -115,8 +115,10 @@ namespace GraceProject.Controllers.Api
         }
 
 
-        [HttpGet("GetUserTaskStatusByUserId/{UserId}")]
-        public async Task<IActionResult> GetUserTaskStatusByUserId(string UserId)
+        [HttpGet("GetUserTaskStatusByGameLevelAndUserId")]
+        public async Task<IActionResult> GetUserTaskStatusByGameLevelAndUserId(
+            [FromQuery] string GameLevelName,
+            [FromQuery] string UserId)
         {
             var taskstatus = await _context.AppUserTasksStatus
                 .Where(t => t.UserId == UserId)

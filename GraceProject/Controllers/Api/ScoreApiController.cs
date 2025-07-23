@@ -32,10 +32,30 @@ namespace GraceProject.Controllers.Api
                 })
                 .FirstOrDefaultAsync();
 
-            if (score == null)
-            {
-                return NotFound(new { message = "AppScore not found." });
-            }
+            //if (score == null)
+            //{
+            //    return NotFound(new { message = "AppScore not found." });
+            //}
+
+            return Ok(score);
+        }
+        [HttpGet("GetScoreByName/{Name}")]
+        public async Task<IActionResult> GetScoreByName(string Name)
+        {
+            var score = await _context.AppScores
+                .Where(s => s.Name == Name)
+                .Select(s => new AppScore
+                {
+                    Id = s.Id,
+                    Name = s.Name,
+                    InitialScore = s.InitialScore
+                })
+                .FirstOrDefaultAsync();
+
+            //if (score == null)
+            //{
+            //    return NotFound(new { message = "AppScore not found." });
+            //}
 
             return Ok(score);
         }
