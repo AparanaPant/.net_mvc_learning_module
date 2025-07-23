@@ -53,8 +53,8 @@ public class QuizController : Controller
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
             if (user == null) return Unauthorized();
 
-           // bool canTakeQuiz = await CheckIfUserCanTakeQuiz(user.Id, gameLevel.Name);
-            bool canTakeQuiz = true;
+             bool canTakeQuiz = await CheckIfUserCanTakeQuiz(user.Id, gameLevel.Name);
+           // bool canTakeQuiz = true;
 
             ViewBag.GameLevelName = gameLevel.Name;
             ViewBag.CanTakeQuiz = canTakeQuiz;
