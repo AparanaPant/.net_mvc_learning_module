@@ -26,13 +26,15 @@ namespace GraceProject.Controllers.Api
             {
                 return BadRequest(new { message = "UserId is required." });
             }
+
             var scores = await _context.AppUserScores
                 .Where(s => s.UserId == userId)
                 .Select(s => new
                 {
                     s.Id,
                     s.UserId,
-                    s.AppGameLevelTaskId,
+                    AppGameLevelTaskId = s.AppGameLevelTaskId ?? 0,
+                    QuizId = s.QuizId ?? 0,
                     s.EarnedScore,
                     s.Description,
                     s.SavedDate
@@ -47,6 +49,40 @@ namespace GraceProject.Controllers.Api
             return Ok(scores);
         }
 
+        [HttpGet("GetUserScoreByUserIdAndDescription")]
+        public async Task<IActionResult> GetUserScoreByUserIdAndDescription(
+            [FromQuery] string UserId,
+            [FromQuery] string Description)
+        {
+            if (string.IsNullOrEmpty(UserId))
+            {
+                return BadRequest(new { message = "UserId is required." });
+            }
+
+            var scores = await _context.AppUserScores
+                .Where(s => 
+                s.Description.Trim().ToLower()== Description.Trim().ToLower() &&
+                s.UserId==UserId
+                )
+                .Select(s => new
+                {
+                    s.Id,
+                    s.UserId,
+                    AppGameLevelTaskId = s.AppGameLevelTaskId ?? 0,
+                    QuizId = s.QuizId ?? 0,
+                    s.EarnedScore,
+                    s.Description,
+                    s.SavedDate
+                })
+                .ToListAsync();
+
+            //if (scores == null || scores.Count == 0)
+            //{
+            //    return NotFound(new { message = "No scores found for the specified user." });
+            //}
+
+            return Ok(scores);
+        }
 
 
         public async Task<bool> StoreUserScore(string userId, int? gameLevelTaskId, int? quizId, int earnedScore, string description)
@@ -89,6 +125,31 @@ namespace GraceProject.Controllers.Api
             EarnedScore,
             Description);
 
+            return Ok(result);
+        }
+
+
+
+        public async Task<int> _GetTotalUserScore(string userId)
+        {
+            var totalScore = await _context.AppUserScores
+                .Where(s => s.UserId == userId && s.QuizId != null)
+                .GroupBy(s => new { s.UserId, s.QuizId })
+                .Select(g => g.Max(s => s.EarnedScore))
+                .SumAsync();
+
+            return totalScore;
+        }
+
+        [HttpGet("GetTotalUserScore/{userId}")]
+        public async Task<IActionResult> GetTotalUserScore(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                return BadRequest(new { message = "UserId is required." });
+            }
+            var result = await _GetTotalUserScore(userId);
+            
             return Ok(result);
         }
     }
