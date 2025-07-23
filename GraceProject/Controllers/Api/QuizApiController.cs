@@ -21,40 +21,45 @@ namespace GraceProject.Controllers.Api
             _context = context;
         }
 
-        // GET: api/QuizApi/app/{appQuizId}
-        [HttpGet("GetAppQuiz/{GameLevelId}")]
-        public async Task<IActionResult> GetAppQuiz(int GameLevelId)
+        // GET: api/QuizApi/app/{gameLevelId}
+        [HttpGet("GetAppQuiz/{gameLevelId}")]
+        public async Task<IActionResult> GetAppQuiz(int gameLevelId)
         {
-            var quiz = await _context.AppQuizzes
+            // Querying Quiz model instead of AppQuiz
+            var quiz = await _context.Quizzes
                 .Include(q => q.Questions)
                     .ThenInclude(q => q.Options)
-                .Where(q => q.GameLevelId == GameLevelId)
+                .Where(q => q.GameLevelID == gameLevelId) // Using GameLevelID to filter quizzes
                 .Select(q => new QuizDto
                 {
-                    QuizId = q.AppQuizId,
+                    QuizId = q.QuizId,
                     Title = q.Title,
-                    Questions = q.Questions.Select(qu => new QuestionDto
+                    Questions = q.Questions.Select(question => new QuestionDto
                     {
-                        QuestionId = qu.AppQuestionId,
-                        Text = qu.Text,
-                        Points = qu.Points,
-                        Options = qu.Options.Select(opt => new OptionDto
+                        QuestionId = question.QuestionId,
+                        Text = question.Text,
+                        Points = question.Points,
+                        Options = question.Options.Select(option => new OptionDto
                         {
-                            OptionId = opt.AppOptionId,
-                            Text = opt.Text,
-                            IsCorrect = opt.IsCorrect
+                            OptionId = option.OptionId,
+                            Text = option.Text,
+                            IsCorrect = option.IsCorrect
                         }).ToList()
                     }).ToList()
                 })
                 .FirstOrDefaultAsync();
 
-            //if (quiz == null)
-            //{
-            //    return NotFound(new { message = "AppQuiz not found" });
-            //}
+            // If no quiz is found, return 404 Not Found
+            if (quiz == null)
+            {
+                return NotFound(new { message = "Quiz not found for the given game level." });
+            }
 
-            return Ok(quiz);
+            return Ok(quiz); // Return the found quiz as the response
         }
+
+        // Additional endpoints if necessary
+
 
         public async Task<bool> CheckIfUserCanTakeQuiz(string userId, string gameLevelName)
         {
