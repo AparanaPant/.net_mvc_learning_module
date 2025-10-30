@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using GraceProject.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace GraceProject.Areas.Identity.Pages.Account
 {
@@ -29,59 +30,32 @@ namespace GraceProject.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
         }
-
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [BindProperty]
         public InputModel Input { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
+       
         public IList<AuthenticationScheme> ExternalLogins { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
+       
         public string ReturnUrl { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
+       
         [TempData]
         public string ErrorMessage { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public class InputModel
         {
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
+           
             [Required]
             [EmailAddress]
             public string Email { get; set; }
 
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
+           
             [Required]
             [DataType(DataType.Password)]
             public string Password { get; set; }
 
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
+            
             [Display(Name = "Remember me?")]
             public bool RememberMe { get; set; }
         }
@@ -90,7 +64,22 @@ namespace GraceProject.Areas.Identity.Pages.Account
         {
             if (User.Identity.IsAuthenticated)
             {
-                Response.Redirect("/");
+                if (!string.IsNullOrEmpty(returnUrl) && returnUrl.Contains("?"))
+                {
+                    var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(returnUrl.Split('?')[1]);
+
+                    if (query.ContainsKey("sessionId"))
+                    {
+                        int sessionId;
+                        if (int.TryParse(query["sessionId"], out sessionId))
+                        {
+                            Response.Redirect($"/Student/RegisterCourse?sessionId={sessionId}");
+                            return;
+                        }
+                    }
+                }
+               Response.Redirect("/");
+               return;
             }
             if (!string.IsNullOrEmpty(ErrorMessage))
             {
@@ -115,14 +104,44 @@ namespace GraceProject.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
-                // This doesn't count login failures towards account lockout
-                // To enable password failures to trigger account lockout, set lockoutOnFailure: true
                 var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
+
+                    var user = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
+                    if (user != null)
+                    {
+                        var roles = await _signInManager.UserManager.GetRolesAsync(user);
+                        var uri = new Uri($"{Request.Scheme}://{Request.Host}{returnUrl}");
+                        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+
+                        if (query.ContainsKey("sessionId") && int.TryParse(query["sessionId"], out int sessionId))
+                        {
+                            return Redirect($"/Student/RegisterCourse?sessionId={sessionId}");
+                        }
+                       
+                        if (roles.Contains("Admin"))
+                        {
+                            return RedirectToAction("Dashboard", "Admin");
+                        }
+                        else if (roles.Contains("Educator"))
+                        {
+                            return RedirectToAction("Dashboard", "Educator");
+                        }
+                        else if (roles.Contains("Student"))
+                        {
+                            return RedirectToAction("Dashboard", "Student");
+                        }
+                        else if (roles.Contains("Guest"))
+                        {
+                            return RedirectToAction("Dashboard", "Guest");
+                        }
+                    }
+
                     return LocalRedirect(returnUrl);
                 }
+
                 if (result.RequiresTwoFactor)
                 {
                     return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
@@ -139,8 +158,9 @@ namespace GraceProject.Areas.Identity.Pages.Account
                 }
             }
 
-            // If we got this far, something failed, redisplay form
             return Page();
         }
+
+
     }
 }

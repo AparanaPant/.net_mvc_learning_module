@@ -1,0 +1,31 @@
+﻿After you run the migration , we need to make the following manual updates in the database .
+
+1.Add Courses 
+
+INSERT INTO [gracenew].[dbo].[Course] ([CourseID], [Title], [Credits])
+VALUES 
+    (10, 'Mathematics', 3),
+    (11, 'Physics', 4),
+    (12, 'Computer Science', 3),
+    (13, 'Biology', 4),
+    (14, 'Chemistry', 3);
+
+2. Add Grades 
+
+INSERT INTO [grace1].[dbo].[Grade] (GradeName)
+VALUES 
+    ('Grade 9'),
+    ('Grade 10'),
+    ('Grade 11'),
+    ('Grade 12');
+
+3. Add the following query for issue in quiz 
+
+    ALTER TABLE [grace].[dbo].[UserAnswers] ALTER COLUMN SelectedOptionId INT NULL;
+
+4. Confiimed after you register in the website, without approving email
+UPDATE AspNetUsers
+SET EmailConfirmed = 1;
+
+    
+	 

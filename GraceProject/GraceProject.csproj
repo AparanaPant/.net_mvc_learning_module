@@ -11,8 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="datatables.net" Version="2.1.6" />
-    <PackageReference Include="jQuery" Version="3.7.1" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.18" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="7.0.18" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.18" />
@@ -41,15 +39,16 @@
     <None Include="Views\Admin\Modules\Delete.cshtml" />
     <None Include="Views\Admin\Modules\Details.cshtml" />
     <None Include="Views\Admin\Modules\Edit.cshtml" />
-    <None Include="Views\Admin\Modules\Index.cshtml" />
     <None Include="Views\Admin\Slides\Index.cshtml" />
     <None Include="Views\Admin\Slides\SlideInfo.cshtml" />
     <None Include="Views\Home\Index.cshtml" />
     <None Include="Views\Home\Privacy.cshtml" />
+    <None Include="wwwroot\Documentation\Project\Publishing Guidance.txt" />
+    <None Include="wwwroot\Documentation\Website\GraceProjectModuleandSlideManagement.docx" />
+    <None Include="wwwroot\Documentation\Website\GraceProjectModuleandSlideManagement.pdf" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\Educator\" />
     <Folder Include="wwwroot\UploadedFiles\Slides\Images\" />
   </ItemGroup>
 

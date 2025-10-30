@@ -2,18 +2,20 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GraceProject.Controllers.Student
+namespace GraceProject.Controllers.Admin
 {
-    [Route("Student/Home")]
+    [Route("Student")]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
+
         public HomeController(ILogger<HomeController> logger, UserManager<ApplicationUser> userManager)
         {
             _logger = logger;
             this._userManager = userManager;
         }
+
         [Route("Dashboard")]
         public IActionResult Dashboard()
         {

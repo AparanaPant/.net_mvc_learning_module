@@ -34,11 +34,11 @@
     </label>
 </div>
 <div class="form-group">
-    <label for="text_TumbnailSlideTitle">Tumbnail Slide Title</label>
+    <label for="text_TumbnailSlideTitle">Thumbnail Slide Title</label>
     <input class="form-control" type="text" id="text_TumbnailSlideTitle" />
 </div>
 <div class="form-group">
-    <label for="div_TumbnailSlideIcon">Select Tumbnail Slide Icon</label>
+    <label for="div_TumbnailSlideIcon">Select Thumbnail Slide Icon</label>
     <div class="icon-container" id="div_TumbnailSlideIcon" style="height: 200px;overflow: scroll;">
     </div>
 </div>
@@ -57,13 +57,15 @@
         <select class="form-control select_element" id="select_element1">
             <option value="---">---</option>
             <option value="text">Text</option>
-            <option value="simple_clickable_image">Simple Clickable Image</option>
+            <option value="simple_image">Image</option>
             <option value="video">Video</option>
             <option value="professional_clickable_image">Professional Clickable Image</option>
             <option value="chart">Chart</option>
             <option value="drag_and_drop_items">Drag and Drop Items</option>
             <option value="displaying_process">Displaying Process</option>
             <option value="FlyingToImage">Flying Items To Image</option>
+            <option value="multichoicequestion">Multi-choice Question</option>
+            <option value="SlideNavigation">Slide Navigation</option>
         </select>
         <br />
         <div id="div_controllers" class="form-group col-xs-12" style="background-color: aliceblue;">
@@ -75,19 +77,34 @@
                         Activate Text-to-Speech
                     </label>
                 </div>
-                <label for="simpleTextEditor">Enter Simple Text:</label>
+                <label for="simpleTextEditor">Description:</label>
                 <div class="form-control" id="editor_element1">
                     <p>Slide Info</p>
                 </div>
             </div>
-            @*Display Simple Clickable Image*@
-            <div id="div_simple_clickable_image" class="form-group hidden">
+            @*Display Image*@
+            <div id="div_simple_image" class="form-group hidden">
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Image</label>
+                    <label for="imageInput" class="form-label">Image(The ideal size should not exceed 1200*630 pixels)</label>
                     <input type="file" class="form-control" id="imageInput" accept="image/*">
                 </div>
                 <div class="form-group col-xs-12">
                     <img id="displayImage" class="img-fluid" alt="" style="width: 100px;">
+                </div>
+                <div class="form-group col-xs-12">
+                    <label for="width" class="form-label">Image Align</label>
+                    <label>
+                        <input type="radio" name="align" value="left">
+                        Left
+                    </label>
+                    <label>
+                        <input type="radio" name="align" value="center">
+                        Center
+                    </label>
+                    <label>
+                        <input type="radio" name="align" value="right">
+                        Right
+                    </label>
                 </div>
                 <div class="form-group col-xs-12">
                     <label for="width" class="form-label">Width(px)</label>
@@ -132,7 +149,7 @@
                             <th>Label</th>
                             <th>Value</th>
                             <th>Color(click on it)</th>
-                            @*<th>Slide</th>*@
+                            <th>Slide</th>
                         </tr>
                     </thead>
                     <tbody id="dataTableBody">
@@ -142,13 +159,13 @@
                             <td contenteditable="true">
                                 <input type="color" class="form-control form-control-color" id="input_color_picker" value="#CCCCCC" title="Choose a color">
                             </td>
-                            @*<td>
-                            @*<select class="form-control" id="slideSelect">
-                            <option value="slide1">Slide 1</option>
-                            <option value="slide2">Slide 2</option>
-                            <option value="slide3">Slide 3</option>
-                            </select>
-                            </td>*@
+                            <td>
+                                <select class="form-control" id="slideSelect">
+                                    <option value="slide1">Slide 1</option>
+                                    <option value="slide2">Slide 2</option>
+                                    <option value="slide3">Slide 3</option>
+                                </select>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -161,11 +178,14 @@
                     <input type="text" class="form-control" id="text_Repository">
                 </div>
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Background Image of Repository</label>
+                    <label for="imageInput" class="form-label">Background Image of Repository(The ideal size should not exceed 630*630 pixels)</label>
                     <input type="file" class="form-control" id="file_Repository" accept="image/*">
                 </div>
                 <div class="form-group col-xs-12">
                     <img id="image_Repository" class="img-fluid" alt="" style="width: 100px;">
+                    <button id="btn_RemoveImage" class="hide" style="top: 0;position: absolute;left: 10px;background-color: red;color: #fff;border: none;cursor: pointer;top: 0px;">
+                        X
+                    </button>
                 </div>
 
                 @*answer column*@
@@ -174,11 +194,19 @@
                     <input type="text" class="form-control" id="text_Answer">
                 </div>
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Background Image of Answer Section</label>
+                    <label for="imageInput" class="form-label">Background Image of Answer Section(The ideal size should not exceed 630*630 pixels.)</label>
                     <input type="file" class="form-control" id="file_Answer" accept="image/*">
                 </div>
                 <div class="form-group col-xs-12">
                     <img id="image_Answer" class="img-fluid" alt="" style="width: 100px;">
+                    <button id="btn_RemoveImage" class="hide" style="top: 0;position: absolute;left: 10px;background-color: red;color: #fff;border: none;cursor: pointer;top: 0px;">
+                        X
+                    </button>
+                </div>
+
+                <div class="form-group col-xs-12">
+                    <label for="altTextInput" class="form-label">Instruction</label>
+                    <input type="text" class="form-control" id="text_Instruction">
                 </div>
 
                 @*items*@
@@ -186,7 +214,7 @@
                 <table class="table table-bordered" id="Table_Drag_and_Drop">
                     <thead>
                         <tr>
-                            <th>Is one of the answer?</th>
+                            <th>Is one of the answers?</th>
                             <th>Title</th>
                             <th>Description</th>
                         </tr>
@@ -199,12 +227,20 @@
                         </tr>
                     </tbody>
                 </table>
+
+                <div class="form-group col-xs-12">
+                    <label for="Select_DescriptionLocation" class="form-label">Description Location</label>
+                    <select class="form-control" id="Select_DescriptionLocation">
+                        <option value="top">Top</option>
+                        <option value="bottom">Bottom</option>
+                    </select>
+                </div>
             </div>
             @*Display Flying items To Image*@
             <div id="div_FlyingToImage" class="form-group hidden">
                 @*Main Image column*@
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Background Image of Repository</label>
+                    <label for="imageInput" class="form-label">Main Image(The ideal size should not exceed 600*400 pixels.)</label>
                     <input type="file" class="form-control" id="file_MainImage" accept="image/*">
                 </div>
                 <div class="form-group col-xs-12">
@@ -212,6 +248,7 @@
                 </div>
                 @*items*@
                 <button class="fa-plus-button btn btn-success pull-right" id="btn_addTableRow">+</button>
+                <div class="col-xs-12">The ideal size of images should not exceed 600*400 pixels.</div>
                 <table class="table table-bordered" id="Table_FlyingToImage">
                     <thead>
                         <tr>
@@ -238,32 +275,73 @@
                         </tr>
                     </tbody>
                 </table>
+                <div class="form-group col-xs-12">
+                    <label for="Select_DescriptionLocation" class="form-label">Description Location</label>
+                    <select class="form-control" id="Select_DescriptionLocation">
+                        <option value="top">Top</option>
+                        <option value="bottom">Bottom</option>
+                    </select>
+                </div>
             </div>
-
             @*Display professional clickable image*@
             <div id="div_professional_clickable_image" class="form-group hidden">
                 @*Main Image*@
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Image</label>
+                    <label for="altTextInput" class="form-label">Description</label>
+                    <input type="text" class="form-control" id="text_Description">
+                </div>
+                @*<div class="form-group col-xs-12">
+                <label for="width" class="form-label">Image Align</label>
+                <label>
+                <input type="radio" name="align" value="left">
+                Left
+                </label>
+                <label>
+                <input type="radio" name="align" value="center">
+                Center
+                </label>
+                <label>
+                <input type="radio" name="align" value="right">
+                Right
+                </label>
+                </div>*@
+                <div class="form-group col-xs-12">
+                    <label for="imageInput" class="form-label">Image(The ideal size should not exceed 600*400 pixels.)</label>
                     <input type="file" class="form-control" id="file_MainImage" accept="image/*">
+                </div>
+                <div class="form-group col-xs-12">
+                    <label for="imageInput" class="form-label">Color</label>
+                    <input type="color" class="form-control form-control-color" id="input_color_picker" value="#CCCCCC" title="Choose a color">
+                    <br />
+                    Note: The color will change after submission.
+                </div>
+                <div class="form-group col-xs-12">
+                    <label class="form-label">Clicking Color</label>
+                    <input type="color" class="form-control form-control-color" id="input_clickingcolor_picker" value="#CCCCCC" title="Choose a color">
                 </div>
                 <div class="form-group col-xs-12">
                     <div id="div_ClickableImage"></div>
                 </div>
+                <div class="form-group col-xs-12">
+                    <input type="checkbox" value="" id="checkbox_DisplayLabels">
+                    <label for="checkbox_DisplayLabels">
+                        Display Labels
+                    </label>
+                </div>
                 @*items*@
-                <button class="fa-plus-button btn btn-success pull-right" id="btn_addTableRow">+</button>
+                <button class="fa-plus-button btn btn-success pull-right hide" id="btn_addTableRow">+</button>
                 <table class="table table-bordered" id="Table_professional_clickable_image">
                     <thead>
                         <tr>
                             <th>Coordinate</th>
-                            <th>Description</th>
+                            <th>Label</th>
                             <th>Slide</th>
                         </tr>
                     </thead>
                     <tbody id="dataTableBody">
                         <tr>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
+                            <td></td>
+                            <td></td>
                             <td>
                                 <select class="form-control" id="slideSelect">
                                     <option value="slide1">Slide 1</option>
@@ -275,28 +353,19 @@
                     </tbody>
                 </table>
             </div>
-
             @*Display Displaying Process*@
             <div id="div_displaying_process" class="form-group hidden">
-                @*Main Image*@
-                <div class="form-group col-xs-12">
-                    <label for="altTextInput" class="form-label">Title of Main Image</label>
-                    <input type="text" class="form-control" id="text_MainImage">
-                </div>
-                <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Main Image</label>
-                    <input type="file" class="form-control" id="file_MainImage" accept="image/*">
-                    <input type="hidden" value="" id="hidden_MainImageURL" />
-                </div>
-                <div class="form-group col-xs-12" id="div_TransportProcess_MainImage">
-                </div>
                 @*Left Image(Main Image)*@
                 <div class="form-group col-xs-12">
-                    <label for="altTextInput" class="form-label">The Title of Left Image</label>
+                    <label for="altTextInput" class="form-label" style="text-decoration: underline;">The Title of Left Image</label>
                     <input type="text" class="form-control" id="text_LeftImage">
                 </div>
+                <div>
+                    <label for="imageInput" class="form-label">The corresponding arrows color</label>
+                    <input type="color" class="form-control form-control-color" id="input_color_picker_Left" value="#CCCCCC" title="Choose a color">
+                </div>
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Left Image</label>
+                    <label for="imageInput" class="form-label">Left Image(The ideal size should not exceed 400*430 pixels.)</label>
                     <input type="file" class="form-control" id="file_LeftImage" accept="image/*">
                 </div>
                 <div class="form-group col-xs-12">
@@ -304,15 +373,73 @@
                 </div>
                 @*Right Image*@
                 <div class="form-group col-xs-12">
-                    <label for="altTextInput" class="form-label">The Title of Right Image</label>
+                    <label for="altTextInput" class="form-label" style="text-decoration: underline;">The Title of Right Image</label>
                     <input type="text" class="form-control" id="text_RightImage">
                 </div>
+                <div>
+                    <label for="imageInput" class="form-label">The corresponding arrows color</label>
+                    <input type="color" class="form-control form-control-color" id="input_color_picker_Right" value="#CCCCCC" title="Choose a color">
+                </div>
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Right Image</label>
+                    <label for="imageInput" class="form-label">Right Image(The ideal size should not exceed 400*430 pixels.)</label>
                     <input type="file" class="form-control" id="file_RightImage" accept="image/*">
                 </div>
                 <div class="form-group col-xs-12">
                     <img id="image_RightImage" class="img-fluid" alt="" style="width:100px;">
+                </div>
+                @*Main Image*@
+                <div class="form-group col-xs-12">
+                    <label for="altTextInput" class="form-label" style="text-decoration: underline;">Title of Main Image</label>
+                    <input type="text" class="form-control" id="text_MainImage">
+                </div>
+                <div class="form-group col-xs-12">
+                    <label for="imageInput" class="form-label">Main Image(The ideal size should not exceed 400*430 pixels.)</label>
+                    <input type="file" class="form-control" id="file_MainImage" accept="image/*">
+                    <input type="hidden" value="" id="hidden_MainImageURL" />
+                </div>
+                <div class="form-group col-xs-12" id="div_TransportProcess_MainImage">
+                </div>
+            </div>
+            @*Display Multi Choice Question*@
+            <div id="div_MultichoiceQuestion" class="form-group hidden">
+                @*Question*@
+                <div class="form-group col-xs-12">
+                    <label for="altTextInput" class="form-label">Question:</label>
+                    <input type="text" class="form-control" id="text_Question">
+                </div>
+                @*choices*@
+                <button class="fa-plus-button btn btn-success pull-right" id="btn_addTableRow">+</button>
+                <table class="table table-bordered" id="Table_MultichoiceQuestion">
+                    <thead>
+                        <tr>
+                            <th>Answer</th>
+                            <th>Title</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody">
+                        <tr>
+                            <td contenteditable="true"><input type="checkbox" /></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            @*Slide Navigation*@
+            <div id="div_SlideNavigation" class="form-group hidden">
+                <div class="form-group col-xs-12">
+                    <div class="form-group col-xs-12">
+                        <label for="altTextInput" class="form-label" style="text-decoration: underline;">Title:</label>
+                        <input type="text" class="form-control" id="text_title">
+                    </div>
+                    <label for="slideSelect" class="form-label">Navigate to:</label>
+                    <select class="form-control" id="slideSelect">
+                        <option value="slide1">Slide 1</option>
+                        <option value="slide2">Slide 2</option>
+                        <option value="slide3">Slide 3</option>
+                    </select>
+
                 </div>
             </div>
         </div>
@@ -322,16 +449,19 @@
     <div id="container_element2" class="container_element col-xs-12">
         <h2 class="text-center bg-blue" for="element1" style="padding: 10px;">
             2nd Row/Column
-        </h2>        <select class="form-control select_element" id="select_element2">
+        </h2>
+        <select class="form-control select_element" id="select_element2">
             <option value="---">---</option>
             <option value="text">Text</option>
-            <option value="simple_clickable_image">Simple Clickable Image</option>
+            <option value="simple_image">Image</option>
             <option value="video">Video</option>
             <option value="professional_clickable_image">Professional Clickable Image</option>
             <option value="chart">Chart</option>
             <option value="drag_and_drop_items">Drag and Drop Items</option>
             <option value="displaying_process">Displaying Process</option>
             <option value="FlyingToImage">Flying Items To Image</option>
+            <option value="multichoicequestion">Multi-choice Question</option>
+            <option value="SlideNavigation">Slide Navigation</option>
         </select>
         <br />
         <div id="div_controllers" class="form-group col-xs-12" style="background-color: aliceblue;">
@@ -343,19 +473,34 @@
                         Activate Text-to-Speech
                     </label>
                 </div>
-                <label for="simpleTextEditor">Enter Simple Text:</label>
+                <label for="simpleTextEditor">Description:</label>
                 <div class="form-control" id="editor_element2">
                     <p>Slide Info</p>
                 </div>
             </div>
-            @*Display Simple Clickable Image*@
-            <div id="div_simple_clickable_image" class="form-group hidden">
+            @*Display Image*@
+            <div id="div_simple_image" class="form-group hidden">
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Image</label>
+                    <label for="imageInput" class="form-label">Image(The ideal size should not exceed 1200*630 pixels)</label>
                     <input type="file" class="form-control" id="imageInput" accept="image/*">
                 </div>
                 <div class="form-group col-xs-12">
                     <img id="displayImage" class="img-fluid" alt="" style="width: 100px;">
+                </div>
+                <div class="form-group col-xs-12">
+                    <label for="width" class="form-label">Image Align</label>
+                    <label>
+                        <input type="radio" name="align" value="left">
+                        Left
+                    </label>
+                    <label>
+                        <input type="radio" name="align" value="center">
+                        Center
+                    </label>
+                    <label>
+                        <input type="radio" name="align" value="right">
+                        Right
+                    </label>
                 </div>
                 <div class="form-group col-xs-12">
                     <label for="width" class="form-label">Width(px)</label>
@@ -400,8 +545,7 @@
                             <th>Label</th>
                             <th>Value</th>
                             <th>Color(click on it)</th>
-                            @* <th>Description</th>
-                            <th>Slide</th>*@
+                            <th>Slide</th>
                         </tr>
                     </thead>
                     <tbody id="dataTableBody">
@@ -411,13 +555,13 @@
                             <td contenteditable="true">
                                 <input type="color" class="form-control form-control-color" id="input_color_picker" value="#CCCCCC" title="Choose a color">
                             </td>
-                            @*<td>
-                            @*<select class="form-control" id="slideSelect">
-                            <option value="slide1">Slide 1</option>
-                            <option value="slide2">Slide 2</option>
-                            <option value="slide3">Slide 3</option>
-                            </select>
-                            </td>*@
+                            <td>
+                                <select class="form-control" id="slideSelect">
+                                    <option value="slide1">Slide 1</option>
+                                    <option value="slide2">Slide 2</option>
+                                    <option value="slide3">Slide 3</option>
+                                </select>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -430,11 +574,14 @@
                     <input type="text" class="form-control" id="text_Repository">
                 </div>
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Background Image of Repository</label>
+                    <label for="imageInput" class="form-label">Background Image of Repository(The ideal size should not exceed 630*630 pixels)</label>
                     <input type="file" class="form-control" id="file_Repository" accept="image/*">
                 </div>
                 <div class="form-group col-xs-12">
                     <img id="image_Repository" class="img-fluid" alt="" style="width: 100px;">
+                    <button id="btn_RemoveImage" class="hide" style="top: 0;position: absolute;left: 10px;background-color: red;color: #fff;border: none;cursor: pointer;top: 0px;">
+                        X
+                    </button>
                 </div>
 
                 @*answer column*@
@@ -443,11 +590,19 @@
                     <input type="text" class="form-control" id="text_Answer">
                 </div>
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Background Image of Answer Section</label>
+                    <label for="imageInput" class="form-label">Background Image of Answer Section(The ideal size should not exceed 630*630 pixels.)</label>
                     <input type="file" class="form-control" id="file_Answer" accept="image/*">
                 </div>
                 <div class="form-group col-xs-12">
                     <img id="image_Answer" class="img-fluid" alt="" style="width: 100px;">
+                    <button id="btn_RemoveImage" class="hide" style="top: 0;position: absolute;left: 10px;background-color: red;color: #fff;border: none;cursor: pointer;top: 0px;">
+                        X
+                    </button>
+                </div>
+
+                <div class="form-group col-xs-12">
+                    <label for="altTextInput" class="form-label">Instruction</label>
+                    <input type="text" class="form-control" id="text_Instruction">
                 </div>
 
                 @*items*@
@@ -455,7 +610,7 @@
                 <table class="table table-bordered" id="Table_Drag_and_Drop">
                     <thead>
                         <tr>
-                            <th>Is one of the answer?</th>
+                            <th>Is one of the answers?</th>
                             <th>Title</th>
                             <th>Description</th>
                         </tr>
@@ -468,12 +623,20 @@
                         </tr>
                     </tbody>
                 </table>
+
+                <div class="form-group col-xs-12">
+                    <label for="Select_DescriptionLocation" class="form-label">Description Location</label>
+                    <select class="form-control" id="Select_DescriptionLocation">
+                        <option value="top">Top</option>
+                        <option value="bottom">Bottom</option>
+                    </select>
+                </div>
             </div>
             @*Display Flying items To Image*@
             <div id="div_FlyingToImage" class="form-group hidden">
                 @*Main Image column*@
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Background Image of Repository</label>
+                    <label for="imageInput" class="form-label">Main Image(The ideal size should not exceed 600*400 pixels.)</label>
                     <input type="file" class="form-control" id="file_MainImage" accept="image/*">
                 </div>
                 <div class="form-group col-xs-12">
@@ -481,6 +644,7 @@
                 </div>
                 @*items*@
                 <button class="fa-plus-button btn btn-success pull-right" id="btn_addTableRow">+</button>
+                <div class="col-xs-12">The ideal size of images should not exceed 600*400 pixels.</div>
                 <table class="table table-bordered" id="Table_FlyingToImage">
                     <thead>
                         <tr>
@@ -507,32 +671,73 @@
                         </tr>
                     </tbody>
                 </table>
+                <div class="form-group col-xs-12">
+                    <label for="Select_DescriptionLocation" class="form-label">Description Location</label>
+                    <select class="form-control" id="Select_DescriptionLocation">
+                        <option value="top">Top</option>
+                        <option value="bottom">Bottom</option>
+                    </select>
+                </div>
             </div>
-
             @*Display professional clickable image*@
             <div id="div_professional_clickable_image" class="form-group hidden">
                 @*Main Image*@
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Image</label>
+                    <label for="altTextInput" class="form-label">Description</label>
+                    <input type="text" class="form-control" id="text_Description">
+                </div>
+                @*<div class="form-group col-xs-12">
+                <label for="width" class="form-label">Image Align</label>
+                <label>
+                <input type="radio" name="align" value="left">
+                Left
+                </label>
+                <label>
+                <input type="radio" name="align" value="center">
+                Center
+                </label>
+                <label>
+                <input type="radio" name="align" value="right">
+                Right
+                </label>
+                </div>*@
+                <div class="form-group col-xs-12">
+                    <label for="imageInput" class="form-label">Image(The ideal size should not exceed 600*400 pixels.)</label>
                     <input type="file" class="form-control" id="file_MainImage" accept="image/*">
+                </div>
+                <div class="form-group col-xs-12">
+                    <label for="imageInput" class="form-label">Color</label>
+                    <input type="color" class="form-control form-control-color" id="input_color_picker" value="#CCCCCC" title="Choose a color">
+                    <br />
+                    Note: The color will change after submission.
+                </div>
+                <div class="form-group col-xs-12">
+                    <label class="form-label">Clicking Color</label>
+                    <input type="color" class="form-control form-control-color" id="input_clickingcolor_picker" value="#CCCCCC" title="Choose a color">
                 </div>
                 <div class="form-group col-xs-12">
                     <div id="div_ClickableImage"></div>
                 </div>
+                <div class="form-group col-xs-12">
+                    <input type="checkbox" value="" id="checkbox_DisplayLabels">
+                    <label for="checkbox_DisplayLabels">
+                        Display Labels
+                    </label>
+                </div>
                 @*items*@
-                <button class="fa-plus-button btn btn-success pull-right" id="btn_addTableRow">+</button>
+                <button class="fa-plus-button btn btn-success pull-right hide" id="btn_addTableRow">+</button>
                 <table class="table table-bordered" id="Table_professional_clickable_image">
                     <thead>
                         <tr>
                             <th>Coordinate</th>
-                            <th>Description</th>
+                            <th>Label</th>
                             <th>Slide</th>
                         </tr>
                     </thead>
                     <tbody id="dataTableBody">
                         <tr>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
+                            <td></td>
+                            <td></td>
                             <td>
                                 <select class="form-control" id="slideSelect">
                                     <option value="slide1">Slide 1</option>
@@ -544,28 +749,19 @@
                     </tbody>
                 </table>
             </div>
-
             @*Display Displaying Process*@
             <div id="div_displaying_process" class="form-group hidden">
-                @*Main Image*@
-                <div class="form-group col-xs-12">
-                    <label for="altTextInput" class="form-label">Title of Main Image</label>
-                    <input type="text" class="form-control" id="text_MainImage">
-                </div>
-                <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Main Image</label>
-                    <input type="file" class="form-control" id="file_MainImage" accept="image/*">
-                    <input type="hidden" value="" id="hidden_MainImageURL" />
-                </div>
-                <div class="form-group col-xs-12" id="div_TransportProcess_MainImage">
-                </div>
                 @*Left Image(Main Image)*@
                 <div class="form-group col-xs-12">
-                    <label for="altTextInput" class="form-label">The Title of Left Image</label>
+                    <label for="altTextInput" class="form-label" style="text-decoration: underline;">The Title of Left Image</label>
                     <input type="text" class="form-control" id="text_LeftImage">
                 </div>
+                <div>
+                    <label for="imageInput" class="form-label">The corresponding arrows color</label>
+                    <input type="color" class="form-control form-control-color" id="input_color_picker_Left" value="#CCCCCC" title="Choose a color">
+                </div>
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Left Image</label>
+                    <label for="imageInput" class="form-label">Left Image(The ideal size should not exceed 400*430 pixels.)</label>
                     <input type="file" class="form-control" id="file_LeftImage" accept="image/*">
                 </div>
                 <div class="form-group col-xs-12">
@@ -573,17 +769,76 @@
                 </div>
                 @*Right Image*@
                 <div class="form-group col-xs-12">
-                    <label for="altTextInput" class="form-label">The Title of Right Image</label>
+                    <label for="altTextInput" class="form-label" style="text-decoration: underline;">The Title of Right Image</label>
                     <input type="text" class="form-control" id="text_RightImage">
                 </div>
+                <div>
+                    <label for="imageInput" class="form-label">The corresponding arrows color</label>
+                    <input type="color" class="form-control form-control-color" id="input_color_picker_Right" value="#CCCCCC" title="Choose a color">
+                </div>
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Right Image</label>
+                    <label for="imageInput" class="form-label">Right Image(The ideal size should not exceed 400*430 pixels.)</label>
                     <input type="file" class="form-control" id="file_RightImage" accept="image/*">
                 </div>
                 <div class="form-group col-xs-12">
                     <img id="image_RightImage" class="img-fluid" alt="" style="width:100px;">
                 </div>
+                @*Main Image*@
+                <div class="form-group col-xs-12">
+                    <label for="altTextInput" class="form-label" style="text-decoration: underline;">Title of Main Image</label>
+                    <input type="text" class="form-control" id="text_MainImage">
+                </div>
+                <div class="form-group col-xs-12">
+                    <label for="imageInput" class="form-label">Main Image(The ideal size should not exceed 400*430 pixels.)</label>
+                    <input type="file" class="form-control" id="file_MainImage" accept="image/*">
+                    <input type="hidden" value="" id="hidden_MainImageURL" />
+                </div>
+                <div class="form-group col-xs-12" id="div_TransportProcess_MainImage">
+                </div>
             </div>
+            @*Display Multi Choice Question*@
+            <div id="div_MultichoiceQuestion" class="form-group hidden">
+                @*Question*@
+                <div class="form-group col-xs-12">
+                    <label for="altTextInput" class="form-label">Question:</label>
+                    <input type="text" class="form-control" id="text_Question">
+                </div>
+                @*choices*@
+                <button class="fa-plus-button btn btn-success pull-right" id="btn_addTableRow">+</button>
+                <table class="table table-bordered" id="Table_MultichoiceQuestion">
+                    <thead>
+                        <tr>
+                            <th>Answer</th>
+                            <th>Title</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody">
+                        <tr>
+                            <td contenteditable="true"><input type="checkbox" /></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            @*Slide Navigation*@
+            <div id="div_SlideNavigation" class="form-group hidden">
+                <div class="form-group col-xs-12">
+                    <div class="form-group col-xs-12">
+                        <label for="altTextInput" class="form-label" style="text-decoration: underline;">Title:</label>
+                        <input type="text" class="form-control" id="text_title">
+                    </div>
+                    <label for="slideSelect" class="form-label">Navigate to:</label>
+                    <select class="form-control" id="slideSelect">
+                        <option value="slide1">Slide 1</option>
+                        <option value="slide2">Slide 2</option>
+                        <option value="slide3">Slide 3</option>
+                    </select>
+
+                </div>
+            </div>
+
         </div>
         <br />
         <button type="button" class="btn btn-danger" id="deleteSlideSection">Delete</button>
@@ -591,16 +846,19 @@
     <div id="container_element3" class="container_element col-xs-12">
         <h2 class="text-center bg-blue" for="element1" style="padding: 10px;">
             3rd Row/Column
-        </h2>        <select class="form-control select_element" id="select_element3">
+        </h2>
+        <select class="form-control select_element" id="select_element3">
             <option value="---">---</option>
             <option value="text">Text</option>
-            <option value="simple_clickable_image">Simple Clickable Image</option>
+            <option value="simple_image">Image</option>
             <option value="video">Video</option>
             <option value="professional_clickable_image">Professional Clickable Image</option>
             <option value="chart">Chart</option>
             <option value="drag_and_drop_items">Drag and Drop Items</option>
             <option value="displaying_process">Displaying Process</option>
             <option value="FlyingToImage">Flying Items To Image</option>
+            <option value="multichoicequestion">Multi-choice Question</option>
+            <option value="SlideNavigation">Slide Navigation</option>
         </select>
         <br />
         <div id="div_controllers" class="form-group col-xs-12" style="background-color: aliceblue;">
@@ -612,19 +870,34 @@
                         Activate Text-to-Speech
                     </label>
                 </div>
-                <label for="simpleTextEditor">Enter Simple Text:</label>
+                <label for="simpleTextEditor">Description:</label>
                 <div class="form-control" id="editor_element3">
                     <p>Slide Info</p>
                 </div>
             </div>
-            @*Display Simple Clickable Image*@
-            <div id="div_simple_clickable_image" class="form-group hidden">
+            @*Display Image*@
+            <div id="div_simple_image" class="form-group hidden">
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Image</label>
+                    <label for="imageInput" class="form-label">Image(The ideal size should not exceed 1200*630 pixels)</label>
                     <input type="file" class="form-control" id="imageInput" accept="image/*">
                 </div>
                 <div class="form-group col-xs-12">
                     <img id="displayImage" class="img-fluid" alt="" style="width: 100px;">
+                </div>
+                <div class="form-group col-xs-12">
+                    <label for="width" class="form-label">Image Align</label>
+                    <label>
+                        <input type="radio" name="align" value="left">
+                        Left
+                    </label>
+                    <label>
+                        <input type="radio" name="align" value="center">
+                        Center
+                    </label>
+                    <label>
+                        <input type="radio" name="align" value="right">
+                        Right
+                    </label>
                 </div>
                 <div class="form-group col-xs-12">
                     <label for="width" class="form-label">Width(px)</label>
@@ -669,8 +942,7 @@
                             <th>Label</th>
                             <th>Value</th>
                             <th>Color(click on it)</th>
-                            @*<th>Description</th>
-                            <th>Slide</th>*@
+                            <th>Slide</th>
                         </tr>
                     </thead>
                     <tbody id="dataTableBody">
@@ -680,13 +952,13 @@
                             <td contenteditable="true">
                                 <input type="color" class="form-control form-control-color" id="input_color_picker" value="#CCCCCC" title="Choose a color">
                             </td>
-                            @*<td>
-                            @*<select class="form-control" id="slideSelect">
-                            <option value="slide1">Slide 1</option>
-                            <option value="slide2">Slide 2</option>
-                            <option value="slide3">Slide 3</option>
-                            </select>
-                            </td>*@
+                            <td>
+                                <select class="form-control" id="slideSelect">
+                                    <option value="slide1">Slide 1</option>
+                                    <option value="slide2">Slide 2</option>
+                                    <option value="slide3">Slide 3</option>
+                                </select>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -699,11 +971,14 @@
                     <input type="text" class="form-control" id="text_Repository">
                 </div>
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Background Image of Repository</label>
+                    <label for="imageInput" class="form-label">Background Image of Repository(The ideal size should not exceed 630*630 pixels)</label>
                     <input type="file" class="form-control" id="file_Repository" accept="image/*">
                 </div>
                 <div class="form-group col-xs-12">
                     <img id="image_Repository" class="img-fluid" alt="" style="width: 100px;">
+                    <button id="btn_RemoveImage" class="hide" style="top: 0;position: absolute;left: 10px;background-color: red;color: #fff;border: none;cursor: pointer;top: 0px;">
+                        X
+                    </button>
                 </div>
 
                 @*answer column*@
@@ -712,11 +987,19 @@
                     <input type="text" class="form-control" id="text_Answer">
                 </div>
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Background Image of Answer Section</label>
+                    <label for="imageInput" class="form-label">Background Image of Answer Section(The ideal size should not exceed 630*630 pixels.)</label>
                     <input type="file" class="form-control" id="file_Answer" accept="image/*">
                 </div>
                 <div class="form-group col-xs-12">
                     <img id="image_Answer" class="img-fluid" alt="" style="width: 100px;">
+                    <button id="btn_RemoveImage" class="hide" style="top: 0;position: absolute;left: 10px;background-color: red;color: #fff;border: none;cursor: pointer;top: 0px;">
+                        X
+                    </button>
+                </div>
+
+                <div class="form-group col-xs-12">
+                    <label for="altTextInput" class="form-label">Instruction</label>
+                    <input type="text" class="form-control" id="text_Instruction">
                 </div>
 
                 @*items*@
@@ -724,7 +1007,7 @@
                 <table class="table table-bordered" id="Table_Drag_and_Drop">
                     <thead>
                         <tr>
-                            <th>Is one of the answer?</th>
+                            <th>Is one of the answers?</th>
                             <th>Title</th>
                             <th>Description</th>
                         </tr>
@@ -737,12 +1020,20 @@
                         </tr>
                     </tbody>
                 </table>
+
+                <div class="form-group col-xs-12">
+                    <label for="Select_DescriptionLocation" class="form-label">Description Location</label>
+                    <select class="form-control" id="Select_DescriptionLocation">
+                        <option value="top">Top</option>
+                        <option value="bottom">Bottom</option>
+                    </select>
+                </div>
             </div>
             @*Display Flying items To Image*@
             <div id="div_FlyingToImage" class="form-group hidden">
                 @*Main Image column*@
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Background Image of Repository</label>
+                    <label for="imageInput" class="form-label">Main Image(The ideal size should not exceed 600*400 pixels.)</label>
                     <input type="file" class="form-control" id="file_MainImage" accept="image/*">
                 </div>
                 <div class="form-group col-xs-12">
@@ -750,6 +1041,7 @@
                 </div>
                 @*items*@
                 <button class="fa-plus-button btn btn-success pull-right" id="btn_addTableRow">+</button>
+                <div class="col-xs-12">The ideal size of images should not exceed 600*400 pixels.</div>
                 <table class="table table-bordered" id="Table_FlyingToImage">
                     <thead>
                         <tr>
@@ -776,32 +1068,73 @@
                         </tr>
                     </tbody>
                 </table>
+                <div class="form-group col-xs-12">
+                    <label for="Select_DescriptionLocation" class="form-label">Description Location</label>
+                    <select class="form-control" id="Select_DescriptionLocation">
+                        <option value="top">Top</option>
+                        <option value="bottom">Bottom</option>
+                    </select>
+                </div>
             </div>
-
             @*Display professional clickable image*@
             <div id="div_professional_clickable_image" class="form-group hidden">
                 @*Main Image*@
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Image</label>
+                    <label for="altTextInput" class="form-label">Description</label>
+                    <input type="text" class="form-control" id="text_Description">
+                </div>
+                @*<div class="form-group col-xs-12">
+                <label for="width" class="form-label">Image Align</label>
+                <label>
+                <input type="radio" name="align" value="left">
+                Left
+                </label>
+                <label>
+                <input type="radio" name="align" value="center">
+                Center
+                </label>
+                <label>
+                <input type="radio" name="align" value="right">
+                Right
+                </label>
+                </div>*@
+                <div class="form-group col-xs-12">
+                    <label for="imageInput" class="form-label">Image(The ideal size should not exceed 600*400 pixels.)</label>
                     <input type="file" class="form-control" id="file_MainImage" accept="image/*">
+                </div>
+                <div class="form-group col-xs-12">
+                    <label for="imageInput" class="form-label">Color</label>
+                    <input type="color" class="form-control form-control-color" id="input_color_picker" value="#CCCCCC" title="Choose a color">
+                    <br />
+                    Note: The color will change after submission.
+                </div>
+                <div class="form-group col-xs-12">
+                    <label class="form-label">Clicking Color</label>
+                    <input type="color" class="form-control form-control-color" id="input_clickingcolor_picker" value="#CCCCCC" title="Choose a color">
                 </div>
                 <div class="form-group col-xs-12">
                     <div id="div_ClickableImage"></div>
                 </div>
+                <div class="form-group col-xs-12">
+                    <input type="checkbox" value="" id="checkbox_DisplayLabels">
+                    <label for="checkbox_DisplayLabels">
+                        Display Labels
+                    </label>
+                </div>
                 @*items*@
-                <button class="fa-plus-button btn btn-success pull-right" id="btn_addTableRow">+</button>
+                <button class="fa-plus-button btn btn-success pull-right hide" id="btn_addTableRow">+</button>
                 <table class="table table-bordered" id="Table_professional_clickable_image">
                     <thead>
                         <tr>
                             <th>Coordinate</th>
-                            <th>Description</th>
+                            <th>Label</th>
                             <th>Slide</th>
                         </tr>
                     </thead>
                     <tbody id="dataTableBody">
                         <tr>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
+                            <td></td>
+                            <td></td>
                             <td>
                                 <select class="form-control" id="slideSelect">
                                     <option value="slide1">Slide 1</option>
@@ -813,28 +1146,19 @@
                     </tbody>
                 </table>
             </div>
-
             @*Display Displaying Process*@
             <div id="div_displaying_process" class="form-group hidden">
-                @*Main Image*@
-                <div class="form-group col-xs-12">
-                    <label for="altTextInput" class="form-label">Title of Main Image</label>
-                    <input type="text" class="form-control" id="text_MainImage">
-                </div>
-                <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Main Image</label>
-                    <input type="file" class="form-control" id="file_MainImage" accept="image/*">
-                    <input type="hidden" value="" id="hidden_MainImageURL" />
-                </div>
-                <div class="form-group col-xs-12" id="div_TransportProcess_MainImage">
-                </div>
                 @*Left Image(Main Image)*@
                 <div class="form-group col-xs-12">
-                    <label for="altTextInput" class="form-label">The Title of Left Image</label>
+                    <label for="altTextInput" class="form-label" style="text-decoration: underline;">The Title of Left Image</label>
                     <input type="text" class="form-control" id="text_LeftImage">
                 </div>
+                <div>
+                    <label for="imageInput" class="form-label">The corresponding arrows color</label>
+                    <input type="color" class="form-control form-control-color" id="input_color_picker_Left" value="#CCCCCC" title="Choose a color">
+                </div>
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Left Image</label>
+                    <label for="imageInput" class="form-label">Left Image(The ideal size should not exceed 400*430 pixels.)</label>
                     <input type="file" class="form-control" id="file_LeftImage" accept="image/*">
                 </div>
                 <div class="form-group col-xs-12">
@@ -842,17 +1166,76 @@
                 </div>
                 @*Right Image*@
                 <div class="form-group col-xs-12">
-                    <label for="altTextInput" class="form-label">The Title of Right Image</label>
+                    <label for="altTextInput" class="form-label" style="text-decoration: underline;">The Title of Right Image</label>
                     <input type="text" class="form-control" id="text_RightImage">
                 </div>
+                <div>
+                    <label for="imageInput" class="form-label">The corresponding arrows color</label>
+                    <input type="color" class="form-control form-control-color" id="input_color_picker_Right" value="#CCCCCC" title="Choose a color">
+                </div>
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Right Image</label>
+                    <label for="imageInput" class="form-label">Right Image(The ideal size should not exceed 400*430 pixels.)</label>
                     <input type="file" class="form-control" id="file_RightImage" accept="image/*">
                 </div>
                 <div class="form-group col-xs-12">
                     <img id="image_RightImage" class="img-fluid" alt="" style="width:100px;">
                 </div>
+                @*Main Image*@
+                <div class="form-group col-xs-12">
+                    <label for="altTextInput" class="form-label" style="text-decoration: underline;">Title of Main Image</label>
+                    <input type="text" class="form-control" id="text_MainImage">
+                </div>
+                <div class="form-group col-xs-12">
+                    <label for="imageInput" class="form-label">Main Image(The ideal size should not exceed 400*430 pixels.)</label>
+                    <input type="file" class="form-control" id="file_MainImage" accept="image/*">
+                    <input type="hidden" value="" id="hidden_MainImageURL" />
+                </div>
+                <div class="form-group col-xs-12" id="div_TransportProcess_MainImage">
+                </div>
             </div>
+            @*Display Multi Choice Question*@
+            <div id="div_MultichoiceQuestion" class="form-group hidden">
+                @*Question*@
+                <div class="form-group col-xs-12">
+                    <label for="altTextInput" class="form-label">Question:</label>
+                    <input type="text" class="form-control" id="text_Question">
+                </div>
+                @*choices*@
+                <button class="fa-plus-button btn btn-success pull-right" id="btn_addTableRow">+</button>
+                <table class="table table-bordered" id="Table_MultichoiceQuestion">
+                    <thead>
+                        <tr>
+                            <th>Answer</th>
+                            <th>Title</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody">
+                        <tr>
+                            <td contenteditable="true"><input type="checkbox" /></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            @*Slide Navigation*@
+            <div id="div_SlideNavigation" class="form-group hidden">
+                <div class="form-group col-xs-12">
+                    <div class="form-group col-xs-12">
+                        <label for="altTextInput" class="form-label" style="text-decoration: underline;">Title:</label>
+                        <input type="text" class="form-control" id="text_title">
+                    </div>
+                    <label for="slideSelect" class="form-label">Navigate to:</label>
+                    <select class="form-control" id="slideSelect">
+                        <option value="slide1">Slide 1</option>
+                        <option value="slide2">Slide 2</option>
+                        <option value="slide3">Slide 3</option>
+                    </select>
+
+                </div>
+            </div>
+
         </div>
         <br />
         <button type="button" class="btn btn-danger" id="deleteSlideSection">Delete</button>
@@ -860,16 +1243,19 @@
     <div id="container_element4" class="container_element col-xs-12">
         <h2 class="text-center bg-blue" for="element1" style="padding: 10px;">
             4th Row/Column
-        </h2>        <select class="form-control select_element" id="select_element4">
+        </h2>
+        <select class="form-control select_element" id="select_element4">
             <option value="---">---</option>
             <option value="text">Text</option>
-            <option value="simple_clickable_image">Simple Clickable Image</option>
+            <option value="simple_image">Image</option>
             <option value="video">Video</option>
             <option value="professional_clickable_image">Professional Clickable Image</option>
             <option value="chart">Chart</option>
             <option value="drag_and_drop_items">Drag and Drop Items</option>
             <option value="displaying_process">Displaying Process</option>
             <option value="FlyingToImage">Flying Items To Image</option>
+            <option value="multichoicequestion">Multi-choice Question</option>
+            <option value="SlideNavigation">Slide Navigation</option>
         </select>
         <br />
         <div id="div_controllers" class="form-group col-xs-12" style="background-color: aliceblue;">
@@ -881,19 +1267,34 @@
                         Activate Text-to-Speech
                     </label>
                 </div>
-                <label for="simpleTextEditor">Enter Simple Text:</label>
+                <label for="simpleTextEditor">Description:</label>
                 <div class="form-control" id="editor_element4">
                     <p>Slide Info</p>
                 </div>
             </div>
-            @*Display Simple Clickable Image*@
-            <div id="div_simple_clickable_image" class="form-group hidden">
+            @*Display Image*@
+            <div id="div_simple_image" class="form-group hidden">
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Image</label>
+                    <label for="imageInput" class="form-label">Image(The ideal size should not exceed 1200*630 pixels)</label>
                     <input type="file" class="form-control" id="imageInput" accept="image/*">
                 </div>
                 <div class="form-group col-xs-12">
                     <img id="displayImage" class="img-fluid" alt="" style="width: 100px;">
+                </div>
+                <div class="form-group col-xs-12">
+                    <label for="width" class="form-label">Image Align</label>
+                    <label>
+                        <input type="radio" name="align" value="left">
+                        Left
+                    </label>
+                    <label>
+                        <input type="radio" name="align" value="center">
+                        Center
+                    </label>
+                    <label>
+                        <input type="radio" name="align" value="right">
+                        Right
+                    </label>
                 </div>
                 <div class="form-group col-xs-12">
                     <label for="width" class="form-label">Width(px)</label>
@@ -938,8 +1339,7 @@
                             <th>Label</th>
                             <th>Value</th>
                             <th>Color(click on it)</th>
-                            @*<th>Description</th>
-                            <th>Slide</th>*@
+                            <th>Slide</th>
                         </tr>
                     </thead>
                     <tbody id="dataTableBody">
@@ -949,13 +1349,13 @@
                             <td contenteditable="true">
                                 <input type="color" class="form-control form-control-color" id="input_color_picker" value="#CCCCCC" title="Choose a color">
                             </td>
-                            @*<td>
-                            @*<select class="form-control" id="slideSelect">
-                            <option value="slide1">Slide 1</option>
-                            <option value="slide2">Slide 2</option>
-                            <option value="slide3">Slide 3</option>
-                            </select>
-                            </td>*@
+                            <td>
+                                <select class="form-control" id="slideSelect">
+                                    <option value="slide1">Slide 1</option>
+                                    <option value="slide2">Slide 2</option>
+                                    <option value="slide3">Slide 3</option>
+                                </select>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -968,11 +1368,14 @@
                     <input type="text" class="form-control" id="text_Repository">
                 </div>
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Background Image of Repository</label>
+                    <label for="imageInput" class="form-label">Background Image of Repository(The ideal size should not exceed 630*630 pixels)</label>
                     <input type="file" class="form-control" id="file_Repository" accept="image/*">
                 </div>
                 <div class="form-group col-xs-12">
                     <img id="image_Repository" class="img-fluid" alt="" style="width: 100px;">
+                    <button id="btn_RemoveImage" class="hide" style="top: 0;position: absolute;left: 10px;background-color: red;color: #fff;border: none;cursor: pointer;top: 0px;">
+                        X
+                    </button>
                 </div>
 
                 @*answer column*@
@@ -981,11 +1384,19 @@
                     <input type="text" class="form-control" id="text_Answer">
                 </div>
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Background Image of Answer Section</label>
+                    <label for="imageInput" class="form-label">Background Image of Answer Section(The ideal size should not exceed 630*630 pixels.)</label>
                     <input type="file" class="form-control" id="file_Answer" accept="image/*">
                 </div>
                 <div class="form-group col-xs-12">
                     <img id="image_Answer" class="img-fluid" alt="" style="width: 100px;">
+                    <button id="btn_RemoveImage" class="hide" style="top: 0;position: absolute;left: 10px;background-color: red;color: #fff;border: none;cursor: pointer;top: 0px;">
+                        X
+                    </button>
+                </div>
+
+                <div class="form-group col-xs-12">
+                    <label for="altTextInput" class="form-label">Instruction</label>
+                    <input type="text" class="form-control" id="text_Instruction">
                 </div>
 
                 @*items*@
@@ -993,7 +1404,7 @@
                 <table class="table table-bordered" id="Table_Drag_and_Drop">
                     <thead>
                         <tr>
-                            <th>Is one of the answer?</th>
+                            <th>Is one of the answers?</th>
                             <th>Title</th>
                             <th>Description</th>
                         </tr>
@@ -1006,12 +1417,20 @@
                         </tr>
                     </tbody>
                 </table>
+
+                <div class="form-group col-xs-12">
+                    <label for="Select_DescriptionLocation" class="form-label">Description Location</label>
+                    <select class="form-control" id="Select_DescriptionLocation">
+                        <option value="top">Top</option>
+                        <option value="bottom">Bottom</option>
+                    </select>
+                </div>
             </div>
             @*Display Flying items To Image*@
             <div id="div_FlyingToImage" class="form-group hidden">
                 @*Main Image column*@
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Background Image of Repository</label>
+                    <label for="imageInput" class="form-label">Main Image(The ideal size should not exceed 600*400 pixels.)</label>
                     <input type="file" class="form-control" id="file_MainImage" accept="image/*">
                 </div>
                 <div class="form-group col-xs-12">
@@ -1019,6 +1438,7 @@
                 </div>
                 @*items*@
                 <button class="fa-plus-button btn btn-success pull-right" id="btn_addTableRow">+</button>
+                <div class="col-xs-12">The ideal size of images should not exceed 600*400 pixels.</div>
                 <table class="table table-bordered" id="Table_FlyingToImage">
                     <thead>
                         <tr>
@@ -1045,32 +1465,73 @@
                         </tr>
                     </tbody>
                 </table>
+                <div class="form-group col-xs-12">
+                    <label for="Select_DescriptionLocation" class="form-label">Description Location</label>
+                    <select class="form-control" id="Select_DescriptionLocation">
+                        <option value="top">Top</option>
+                        <option value="bottom">Bottom</option>
+                    </select>
+                </div>
             </div>
-
             @*Display professional clickable image*@
             <div id="div_professional_clickable_image" class="form-group hidden">
                 @*Main Image*@
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Image</label>
+                    <label for="altTextInput" class="form-label">Description</label>
+                    <input type="text" class="form-control" id="text_Description">
+                </div>
+                @*<div class="form-group col-xs-12">
+                <label for="width" class="form-label">Image Align</label>
+                <label>
+                <input type="radio" name="align" value="left">
+                Left
+                </label>
+                <label>
+                <input type="radio" name="align" value="center">
+                Center
+                </label>
+                <label>
+                <input type="radio" name="align" value="right">
+                Right
+                </label>
+                </div>*@
+                <div class="form-group col-xs-12">
+                    <label for="imageInput" class="form-label">Image(The ideal size should not exceed 600*400 pixels.)</label>
                     <input type="file" class="form-control" id="file_MainImage" accept="image/*">
+                </div>
+                <div class="form-group col-xs-12">
+                    <label for="imageInput" class="form-label">Color</label>
+                    <input type="color" class="form-control form-control-color" id="input_color_picker" value="#CCCCCC" title="Choose a color">
+                    <br />
+                    Note: The color will change after submission.
+                </div>
+                <div class="form-group col-xs-12">
+                    <label class="form-label">Clicking Color</label>
+                    <input type="color" class="form-control form-control-color" id="input_clickingcolor_picker" value="#CCCCCC" title="Choose a color">
                 </div>
                 <div class="form-group col-xs-12">
                     <div id="div_ClickableImage"></div>
                 </div>
+                <div class="form-group col-xs-12">
+                    <input type="checkbox" value="" id="checkbox_DisplayLabels">
+                    <label for="checkbox_DisplayLabels">
+                        Display Labels
+                    </label>
+                </div>
                 @*items*@
-                <button class="fa-plus-button btn btn-success pull-right" id="btn_addTableRow">+</button>
+                <button class="fa-plus-button btn btn-success pull-right hide" id="btn_addTableRow">+</button>
                 <table class="table table-bordered" id="Table_professional_clickable_image">
                     <thead>
                         <tr>
                             <th>Coordinate</th>
-                            <th>Description</th>
+                            <th>Label</th>
                             <th>Slide</th>
                         </tr>
                     </thead>
                     <tbody id="dataTableBody">
                         <tr>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
+                            <td></td>
+                            <td></td>
                             <td>
                                 <select class="form-control" id="slideSelect">
                                     <option value="slide1">Slide 1</option>
@@ -1082,28 +1543,19 @@
                     </tbody>
                 </table>
             </div>
-
             @*Display Displaying Process*@
             <div id="div_displaying_process" class="form-group hidden">
-                @*Main Image*@
-                <div class="form-group col-xs-12">
-                    <label for="altTextInput" class="form-label">Title of Main Image</label>
-                    <input type="text" class="form-control" id="text_MainImage">
-                </div>
-                <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Main Image</label>
-                    <input type="file" class="form-control" id="file_MainImage" accept="image/*">
-                    <input type="hidden" value="" id="hidden_MainImageURL" />
-                </div>
-                <div class="form-group col-xs-12" id="div_TransportProcess_MainImage">
-                </div>
                 @*Left Image(Main Image)*@
                 <div class="form-group col-xs-12">
-                    <label for="altTextInput" class="form-label">The Title of Left Image</label>
+                    <label for="altTextInput" class="form-label" style="text-decoration: underline;">The Title of Left Image</label>
                     <input type="text" class="form-control" id="text_LeftImage">
                 </div>
+                <div>
+                    <label for="imageInput" class="form-label">The corresponding arrows color</label>
+                    <input type="color" class="form-control form-control-color" id="input_color_picker_Left" value="#CCCCCC" title="Choose a color">
+                </div>
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Left Image</label>
+                    <label for="imageInput" class="form-label">Left Image(The ideal size should not exceed 400*430 pixels.)</label>
                     <input type="file" class="form-control" id="file_LeftImage" accept="image/*">
                 </div>
                 <div class="form-group col-xs-12">
@@ -1111,17 +1563,76 @@
                 </div>
                 @*Right Image*@
                 <div class="form-group col-xs-12">
-                    <label for="altTextInput" class="form-label">The Title of Right Image</label>
+                    <label for="altTextInput" class="form-label" style="text-decoration: underline;">The Title of Right Image</label>
                     <input type="text" class="form-control" id="text_RightImage">
                 </div>
+                <div>
+                    <label for="imageInput" class="form-label">The corresponding arrows color</label>
+                    <input type="color" class="form-control form-control-color" id="input_color_picker_Right" value="#CCCCCC" title="Choose a color">
+                </div>
                 <div class="form-group col-xs-12">
-                    <label for="imageInput" class="form-label">Right Image</label>
+                    <label for="imageInput" class="form-label">Right Image(The ideal size should not exceed 400*430 pixels.)</label>
                     <input type="file" class="form-control" id="file_RightImage" accept="image/*">
                 </div>
                 <div class="form-group col-xs-12">
                     <img id="image_RightImage" class="img-fluid" alt="" style="width:100px;">
                 </div>
+                @*Main Image*@
+                <div class="form-group col-xs-12">
+                    <label for="altTextInput" class="form-label" style="text-decoration: underline;">Title of Main Image</label>
+                    <input type="text" class="form-control" id="text_MainImage">
+                </div>
+                <div class="form-group col-xs-12">
+                    <label for="imageInput" class="form-label">Main Image(The ideal size should not exceed 400*430 pixels.)</label>
+                    <input type="file" class="form-control" id="file_MainImage" accept="image/*">
+                    <input type="hidden" value="" id="hidden_MainImageURL" />
+                </div>
+                <div class="form-group col-xs-12" id="div_TransportProcess_MainImage">
+                </div>
             </div>
+            @*Display Multi Choice Question*@
+            <div id="div_MultichoiceQuestion" class="form-group hidden">
+                @*Question*@
+                <div class="form-group col-xs-12">
+                    <label for="altTextInput" class="form-label">Question:</label>
+                    <input type="text" class="form-control" id="text_Question">
+                </div>
+                @*choices*@
+                <button class="fa-plus-button btn btn-success pull-right" id="btn_addTableRow">+</button>
+                <table class="table table-bordered" id="Table_MultichoiceQuestion">
+                    <thead>
+                        <tr>
+                            <th>Answer</th>
+                            <th>Title</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody">
+                        <tr>
+                            <td contenteditable="true"><input type="checkbox" /></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            @*Slide Navigation*@
+            <div id="div_SlideNavigation" class="form-group hidden">
+                <div class="form-group col-xs-12">
+                    <div class="form-group col-xs-12">
+                        <label for="altTextInput" class="form-label" style="text-decoration: underline;">Title:</label>
+                        <input type="text" class="form-control" id="text_title">
+                    </div>
+                    <label for="slideSelect" class="form-label">Navigate to:</label>
+                    <select class="form-control" id="slideSelect">
+                        <option value="slide1">Slide 1</option>
+                        <option value="slide2">Slide 2</option>
+                        <option value="slide3">Slide 3</option>
+                    </select>
+
+                </div>
+            </div>
+
         </div>
         <br />
         <button type="button" class="btn btn-danger" id="deleteSlideSection">Delete</button>
@@ -1209,6 +1720,24 @@
 
 
     })
+    function CheckDataInput() {
+        var SlideTitle = $("#text_SlideTitle").val();
+        var SlideOrder = $("#text_SlideOrder").val();
+        var TumbnailSlideTitle = $("#text_TumbnailSlideTitle").val();
+        var slideType = $("#slideType").val();
+
+        if (SlideTitle == "")
+            return "Please input the slide title";
+        if (!(SlideOrder >= 0) || SlideOrder.trim() == '')
+            return "Please input the slide order";
+        if (TumbnailSlideTitle == "")
+            return "Please input the thumbnail slide title";
+        if (slideType == null || slideType == '')
+            return "Please select slide type";
+
+        return true;
+
+    }
     function SetAction(Action) {
         $("#hidden_Action").val(Action);
     }
@@ -1236,10 +1765,15 @@
         $("#select_element4").change();
 
 
-        $("#container_element1").find("#div_TransportProcess_MainImage").html('');
-        $("#container_element2").find("#div_TransportProcess_MainImage").html('');
-        $("#container_element3").find("#div_TransportProcess_MainImage").html('');
-        $("#container_element4").find("#div_TransportProcess_MainImage").html('');
+        $("#container_element1").find("#div_SlideNavigation").find("#slideSelect").val(-1);
+        $("#container_element2").find("#div_SlideNavigation").find("#slideSelect").val(-1);
+        $("#container_element3").find("#div_SlideNavigation").find("#slideSelect").val(-1);
+        $("#container_element4").find("#div_SlideNavigation").find("#slideSelect").val(-1);
+        $("#container_element1").find("#div_SlideNavigation").find("#text_title").val("");
+        $("#container_element2").find("#div_SlideNavigation").find("#text_title").val("");
+        $("#container_element3").find("#div_SlideNavigation").find("#text_title").val("");
+        $("#container_element4").find("#div_SlideNavigation").find("#text_title").val("");
+
 
 
 
@@ -1252,6 +1786,12 @@
         $("#container_element3").find("#div_professional_clickable_image").find("#dataTableBody tr").slice(0, -1).remove();
         $("#container_element4").find("#div_professional_clickable_image").find('#btn_addTableRow').click()
         $("#container_element4").find("#div_professional_clickable_image").find("#dataTableBody tr").slice(0, -1).remove();
+
+        $("#container_element1").find("#div_professional_clickable_image").find("#text_Description").val('');
+        $("#container_element2").find("#div_professional_clickable_image").find("#text_Description").val('');
+        $("#container_element3").find("#div_professional_clickable_image").find("#text_Description").val('');
+        $("#container_element4").find("#div_professional_clickable_image").find("#text_Description").val('');
+
 
         $("#container_element1").find("#div_chart").find('#btn_addTableRow').click()
         $("#container_element1").find("#div_chart").find("#dataTableBody tr").slice(0, -1).remove();
@@ -1272,6 +1812,29 @@
         $("#container_element4").find("#div_Drag_and_Drop").find('#btn_addTableRow').click()
         $("#container_element4").find("#div_Drag_and_Drop").find("#dataTableBody tr").slice(0, -1).remove();
 
+        $("#container_element1").find("#text_Instruction").val('');
+        $("#container_element2").find("#text_Instruction").val('');
+        $("#container_element3").find("#text_Instruction").val('');
+        $("#container_element4").find("#text_Instruction").val('');
+
+        $("#container_element1").find("#text_Question").val('');
+        $("#container_element2").find("#text_Question").val('');
+        $("#container_element3").find("#text_Question").val('');
+        $("#container_element4").find("#text_Question").val('');
+
+        $("#container_element1").find("#text_Question").val('');
+        $("#container_element2").find("#text_Question").val('');
+        $("#container_element3").find("#text_Question").val('');
+        $("#container_element4").find("#text_Question").val('');
+        $("#container_element1").find("#div_MultichoiceQuestion").find('#btn_addTableRow').click()
+        $("#container_element1").find("#div_MultichoiceQuestion").find("#dataTableBody tr").slice(0, -1).remove();
+        $("#container_element2").find("#div_MultichoiceQuestion").find('#btn_addTableRow').click()
+        $("#container_element2").find("#div_MultichoiceQuestion").find("#dataTableBody tr").slice(0, -1).remove();
+        $("#container_element3").find("#div_MultichoiceQuestion").find('#btn_addTableRow').click()
+        $("#container_element3").find("#div_MultichoiceQuestion").find("#dataTableBody tr").slice(0, -1).remove();
+        $("#container_element4").find("#div_MultichoiceQuestion").find('#btn_addTableRow').click()
+        $("#container_element4").find("#div_MultichoiceQuestion").find("#dataTableBody tr").slice(0, -1).remove();
+
         $("#container_element1").find("#div_displaying_process").find('#btn_addTableRow').click()
         $("#container_element1").find("#div_displaying_process").find("#dataTableBody tr").slice(0, -1).remove();
         $("#container_element2").find("#div_displaying_process").find('#btn_addTableRow').click()
@@ -1280,6 +1843,15 @@
         $("#container_element3").find("#div_displaying_process").find("#dataTableBody tr").slice(0, -1).remove();
         $("#container_element4").find("#div_displaying_process").find('#btn_addTableRow').click()
         $("#container_element4").find("#div_displaying_process").find("#dataTableBody tr").slice(0, -1).remove();
+        $("#container_element1").find("#div_displaying_process").find('#input_color_picker_Left').val("#FF0000");
+        $("#container_element1").find("#div_displaying_process").find('#input_color_picker_Right').val("#0000FF");
+        $("#container_element2").find("#div_displaying_process").find('#input_color_picker_Left').val("#FF0000");
+        $("#container_element2").find("#div_displaying_process").find('#input_color_picker_Right').val("#0000FF");
+        $("#container_element3").find("#div_displaying_process").find('#input_color_picker_Left').val("#FF0000");
+        $("#container_element3").find("#div_displaying_process").find('#input_color_picker_Right').val("#0000FF");
+        $("#container_element4").find("#div_displaying_process").find('#input_color_picker_Left').val("#FF0000");
+        $("#container_element4").find("#div_displaying_process").find('#input_color_picker_Right').val("#0000FF");
+
 
 
         $("#container_element1").find("#div_FlyingToImage").find('#btn_addTableRow').click()
@@ -1292,10 +1864,10 @@
         $("#container_element4").find("#div_FlyingToImage").find("#dataTableBody tr").slice(0, -1).remove();
 
 
-
-
-
-
+        $("#container_element1").find('input[name="align"][value="center"]').prop('checked', true);
+        $("#container_element2").find('input[name="align"][value="center"]').prop('checked', true);
+        $("#container_element3").find('input[name="align"][value="center"]').prop('checked', true);
+        $("#container_element4").find('input[name="align"][value="center"]').prop('checked', true);
 
     }
     /*Display parameters of selected controller such as Clickable Image, Chart, ...*/
@@ -1380,50 +1952,54 @@
             editor.addClass("hidden");
         }
 
-        //Display simple clickable image controller
-        if (selectBox.find(":selected").val() === "simple_clickable_image") {
-            var editor = $("#" + container).find("#div_simple_clickable_image");
-            editor.removeClass("hidden");
+        //Display Image controller
+        if (selectBox.find(":selected").val() === "simple_image") {
+            var controller = $("#" + container).find("#div_simple_image");
+            controller.removeClass("hidden");
 
-            $("#" + container).find("#div_simple_clickable_image").find('#imageInput').change(function () {
+            $("#" + container).find("#div_simple_image").find('#imageInput').change(function () {
                 var imageFile;
-                var imageInput = $("#" + container).find("#div_simple_clickable_image").find("#imageInput");
+                var imageInput = $("#" + container).find("#div_simple_image").find("#imageInput");
                 if (imageInput[0].files && imageInput[0].files[0]) {
                     imageFile = imageInput[0].files[0];
                 }
-                uploadImage(imageFile, function (isdone, url, msg) {
+                uploadImage(imageFile, { 'width': 1200, 'height': 630 }, function (isdone, url, msg) {
                     if (isdone == true)
-                        $("#" + container).find("#div_simple_clickable_image").find('#displayImage').attr('src', '/UploadedFiles/Slides/Images/' + url);
+                        $("#" + container).find("#div_simple_image").find('#displayImage').attr('src', '/UploadedFiles/Slides/Images/' + url);
                     else
                         alert(msg);
                 });
             });
+
+            $("#" + container).find('input[name="align"][value="center"]').prop('checked', true);
+
             ////
-            DisplaySlideListInSelect($("#" + container).find("#slideSelect"))
+            var ModuleId = getQueryParameters().moduleid;
+            DisplaySlideListInSelectofModule($("#" + container).find("#slideSelect"), ModuleId)
 
 
         } else {
             //hide the controllers
-            var editor = $("#" + container).find("#div_simple_clickable_image");
-            editor.addClass("hidden");
+            var controller = $("#" + container).find("#div_simple_image");
+            controller.addClass("hidden");
         }
 
         //Display Video controller
         if (selectBox.find(":selected").val() === "video") {
-            var editor = $("#" + container).find("#div_video");
-            editor.removeClass("hidden");
+            var controller = $("#" + container).find("#div_video");
+            controller.removeClass("hidden");
 
         } else {
             //hide the controllers
-            var editor = $("#" + container).find("#div_video");
-            editor.addClass("hidden");
+            var controller = $("#" + container).find("#div_video");
+            controller.addClass("hidden");
         }
 
 
         //Display Chart
         if (selectBox.find(":selected").val() === "chart") {
-            var editor = $("#" + container).find("#div_chart");
-            editor.removeClass("hidden");
+            var controller = $("#" + container).find("#div_chart");
+            controller.removeClass("hidden");
 
             $("#" + container).find("#div_chart").find('#btn_addTableRow').unbind().click(function () {
 
@@ -1437,20 +2013,37 @@
                 tbody.append(newRow);
             });
 
-            DisplaySlideListInSelect($("#" + container).find("#Table_chart").find("td").find("#slideSelect"))
+            var ModuleId = getQueryParameters().moduleid;
+            DisplaySlideListInSelectofModule($("#" + container).find("#Table_chart").find("td").find("#slideSelect"), ModuleId)
 
 
         } else {
             //hide the controllers
-            var editor = $("#" + container).find("#div_chart");
-            editor.addClass("hidden");
+            var controller = $("#" + container).find("#div_chart");
+            controller.addClass("hidden");
         }
 
+        //Display Slide Navigation
+        if (selectBox.find(":selected").val() === "SlideNavigation") {
+            var controller = $("#" + container).find("#div_SlideNavigation");
+            controller.removeClass("hidden");
+            var ModuleId = getQueryParameters().moduleid;
+            DisplaySlideListInSelectofModule($("#" + container).find("#div_SlideNavigation").find("#slideSelect"), ModuleId)
+        } else {
+            //hide the controllers
+            var controller = $("#" + container).find("#div_SlideNavigation");
+            controller.addClass("hidden");
+        }
 
         //Display Drag and Drop
         if (selectBox.find(":selected").val() === "drag_and_drop_items") {
-            var editor = $("#" + container).find("#div_Drag_and_Drop");
-            editor.removeClass("hidden");
+            var controller = $("#" + container).find("#div_Drag_and_Drop");
+            controller.removeClass("hidden");
+
+            $("#" + container).find("[id='btn_RemoveImage']").click(function () {
+                $(this).parent("div").find("img").attr("src", "");
+                $(this).addClass("hide");
+            })
 
             $("#" + container).find("#div_Drag_and_Drop").find('#btn_addTableRow').unbind().click(function () {
 
@@ -1486,9 +2079,11 @@
                 if (imageInput[0].files && imageInput[0].files[0]) {
                     imageFile = imageInput[0].files[0];
                 }
-                uploadImage(imageFile, function (isdone, url, msg) {
-                    if (isdone == true)
+                uploadImage(imageFile, { 'width': 1200, 'height': 630 }, function (isdone, url, msg) {
+                    if (isdone == true) {
                         $("#" + container).find("#div_Drag_and_Drop").find('#image_Repository').attr('src', '/UploadedFiles/Slides/Images/' + url);
+                        $("#" + container).find("#div_Drag_and_Drop").find('#image_Repository').parent("div").find("button").removeClass("hide");
+                    }
                     else
                         alert(msg);
                 });
@@ -1500,9 +2095,11 @@
                 if (imageInput[0].files && imageInput[0].files[0]) {
                     imageFile = imageInput[0].files[0];
                 }
-                uploadImage(imageFile, function (isdone, url, msg) {
-                    if (isdone == true)
+                uploadImage(imageFile, { 'width': 1200, 'height': 630 }, function (isdone, url, msg) {
+                    if (isdone == true) {
                         $("#" + container).find("#div_Drag_and_Drop").find('#image_Answer').attr('src', '/UploadedFiles/Slides/Images/' + url);
+                        $("#" + container).find("#div_Drag_and_Drop").find('#image_Answer').parent("div").find("button").removeClass("hide");
+                    }
                     else
                         alert(msg);
                 });
@@ -1517,13 +2114,18 @@
 
         //Display FlyingToImage
         if (selectBox.find(":selected").val() === "FlyingToImage") {
-            var editor = $("#" + container).find("#div_FlyingToImage");
-            editor.removeClass("hidden");
+            var controller = $("#" + container).find("#div_FlyingToImage");
+            controller.removeClass("hidden");
 
             $("#" + container).find("#div_FlyingToImage").find('#btn_addTableRow').unbind().click(function () {
 
                 // Select the tbody element
                 const tbody = $("#" + container).find("#Table_FlyingToImage tbody");
+
+                if (tbody.find("tr").length == 3) {
+                    alert("You can’t add more than three images!");
+                    return;
+                }
 
                 // Clone the last row (assuming at least one row exists)
                 const newRow = tbody.find("tr:last").clone();
@@ -1555,7 +2157,7 @@
                     if ($(imageInput)[0].files && imageInput[0].files[0] && imageInput[0].files[0] != null && imageInput[0].files[0] != undefined) {
                         imageFile = imageInput[0].files[0];
                     }
-                    uploadImage(imageFile, function (isdone, url, msg) {
+                    uploadImage(imageFile, { 'width': 600, 'height': 400 }, function (isdone, url, msg) {
                         if (isdone == true)
                             $(imageInput).parents("td").find('img').attr('src', '/UploadedFiles/Slides/Images/' + url);
                         //else
@@ -1572,7 +2174,7 @@
                 if (imageInput[0].files && imageInput[0].files[0]) {
                     imageFile = imageInput[0].files[0];
                 }
-                uploadImage(imageFile, function (isdone, url, msg) {
+                uploadImage(imageFile, { 'width': 600, 'height': 400 }, function (isdone, url, msg) {
                     if (isdone == true)
                         $("#" + container).find("#div_FlyingToImage").find('#img_MainImage').attr('src', '/UploadedFiles/Slides/Images/' + url);
                     else
@@ -1587,7 +2189,7 @@
                 if ($(imageInput)[0].files && imageInput[0].files[0] && imageInput[0].files[0] != null && imageInput[0].files[0] != undefined) {
                     imageFile = imageInput[0].files[0];
                 }
-                uploadImage(imageFile, function (isdone, url, msg) {
+                uploadImage(imageFile, { 'width': 600, 'height': 400 }, function (isdone, url, msg) {
                     if (isdone == true)
                         $(imageInput).parents("td").find('img').attr('src', '/UploadedFiles/Slides/Images/' + url);
                     //else
@@ -1599,14 +2201,14 @@
 
         } else {
             //hide the controllers
-            var editor = $("#" + container).find("#div_FlyingToImage");
-            editor.addClass("hidden");
+            var controller = $("#" + container).find("#div_FlyingToImage");
+            controller.addClass("hidden");
         }
 
         //Display professional clickable image
         if (selectBox.find(":selected").val() === "professional_clickable_image") {
-            var editor = $("#" + container).find("#div_professional_clickable_image");
-            editor.removeClass("hidden");
+            var controller = $("#" + container).find("#div_professional_clickable_image");
+            controller.removeClass("hidden");
 
             $("#" + container).find("#div_professional_clickable_image").find('#btn_addTableRow').unbind().click(function () {
 
@@ -1635,7 +2237,8 @@
                 tbody.append(newRow);
             });
 
-            DisplaySlideListInSelect($("#" + container).find("#Table_professional_clickable_image").find("td").find("#slideSelect"))
+            var ModuleId = getQueryParameters().moduleid;
+            DisplaySlideListInSelectofModule($("#" + container).find("#Table_professional_clickable_image").find("td").find("#slideSelect"), ModuleId)
 
 
             //Main image
@@ -1645,32 +2248,92 @@
                 if (imageInput[0].files && imageInput[0].files[0]) {
                     imageFile = imageInput[0].files[0];
                 }
-                uploadImage(imageFile, function (isdone, url, msg) {
+                uploadImage(imageFile, { 'width': 600, 'height': 400 }, function (isdone, url, msg) {
                     if (isdone == true) {
-                        //ChangeImageofClickableImageCntroller(container, '/UploadedFiles/Slides/Images/' + url)
-
-                        var ControllerHTML = CreateClickableImageandAreasHTML({ Path: '/UploadedFiles/Slides/Images/' + url });
+                        var color = $("#" + container).find("#div_professional_clickable_image").find("#input_color_picker").val();
+                        var clickingcolor = $("#" + container).find("#div_professional_clickable_image").find("#input_clickingcolor_picker").val();
+                        var DisplayLabel = $("#" + container).find("#div_professional_clickable_image").find("#checkbox_DisplayLabels").prop("checked");
+                        //create controller HTML and assign it to UI
+                        var ControllerHTML = CreateClickableImageandAreasHTML({ Path: '/UploadedFiles/Slides/Images/' + url, Color: color, ClickingColor: clickingcolor });
                         $("#" + container).find("#div_professional_clickable_image #div_ClickableImage").html("")
                         $("#" + container).find("#div_professional_clickable_image #div_ClickableImage").append(ControllerHTML);
-                        InitiateClickableImageandAreas(container, 'edit');
 
-                        AddandDeleteAreas(container);
+                        //create clickable areas
+                        InitiateClickableImageandAreas(container, 'edit', null);
+
+                        //initiate functions for adding or deleting new areas
+                        AddandDeleteAreas(container, color);
                     }
                     else
                         alert(msg);
                 });
             });
 
+            $("#" + container).find("#div_professional_clickable_image").find('input[name="align"][value="center"]').prop('checked', true);
+
+
         } else {
             //hide the controllers
-            var editor = $("#" + container).find("#div_professional_clickable_image");
-            editor.addClass("hidden");
+            var controller = $("#" + container).find("#div_professional_clickable_image");
+            controller.addClass("hidden");
         }
+
+        //Display multi choice question
+        if (selectBox.find(":selected").val() === "multichoicequestion") {
+            var controller = $("#" + container).find("#div_MultichoiceQuestion");
+            controller.removeClass("hidden");
+            $("#" + container).on("change", "#div_MultichoiceQuestion #Table_MultichoiceQuestion [type='checkbox']", function () {
+                //$("#" + container).find("#div_MultichoiceQuestion").find("#Table_MultichoiceQuestion").find("[type='checkbox']").change(function () {
+                debugger;
+
+                var checkboxes = $("#" + container).find("#div_MultichoiceQuestion").find("#Table_MultichoiceQuestion").find("input[type='checkbox']");
+
+                // Check if any checkbox is already checked
+
+                if (checkboxes.filter(":checked").length == 2) {
+                    $(this).attr("checked", false);
+                    alert("You cannot select more than one checkbox.");
+                }
+            })
+            $("#" + container).find("#div_MultichoiceQuestion").find('#btn_addTableRow').unbind().click(function () {
+
+                // Select the tbody element
+                const tbody = $("#" + container).find("#Table_MultichoiceQuestion tbody");
+
+                // Clone the last row (assuming at least one row exists)
+                const newRow = tbody.find("tr:last").clone();
+
+                // Loop through all td elements in the cloned row
+                newRow.find("td").each(function () {
+                    const cell = $(this);
+
+                    // Check if the cell contains a select or checkbox element
+                    if (!cell.find("select, input[type='checkbox'], input[type=file]").length) {
+                        // Empty the cell content (if not a select or checkbox)
+                        cell.empty();
+                    } else {
+                        cell.find("input[type='file']").val("")
+                        // For checkboxes, uncheck them
+                        cell.find("input[type='checkbox']").prop("checked", false);
+                    }
+                });
+
+                // Add the cloned row to the table body
+                tbody.append(newRow);
+            });
+
+        }
+        else {
+            //hide the controllers
+            var controller = $("#" + container).find("#div_MultichoiceQuestion");
+            controller.addClass("hidden");
+        }
+
 
         //Display displaying process
         if (selectBox.find(":selected").val() === "displaying_process") {
-            var editor = $("#" + container).find("#div_displaying_process");
-            editor.removeClass("hidden");
+            var controller = $("#" + container).find("#div_displaying_process");
+            controller.removeClass("hidden");
 
             //Main image
             var files = $("#" + container).find("#div_displaying_process").find('#file_MainImage').change(function () {
@@ -1679,7 +2342,7 @@
                 if (imageInput[0].files && imageInput[0].files[0]) {
                     imageFile = imageInput[0].files[0];
                 }
-                uploadImage(imageFile, function (isdone, url, msg) {
+                uploadImage(imageFile, { 'width': 400, 'height': 430 }, function (isdone, url, msg) {
                     if (isdone == true) {
                         $("#" + container).find("#hidden_MainImageURL").val('/UploadedFiles/Slides/Images/' + url);
                         SetCanvasBackgroundImage(container, '/UploadedFiles/Slides/Images/' + url);
@@ -1698,7 +2361,7 @@
                 if (imageInput[0].files && imageInput[0].files[0]) {
                     imageFile = imageInput[0].files[0];
                 }
-                uploadImage(imageFile, function (isdone, url, msg) {
+                uploadImage(imageFile, { 'width': 400, 'height': 430 }, function (isdone, url, msg) {
                     if (isdone == true)
                         $("#" + container).find("#div_displaying_process").find('#image_LeftImage').attr('src', '/UploadedFiles/Slides/Images/' + url);
                     else
@@ -1713,7 +2376,7 @@
                 if (imageInput[0].files && imageInput[0].files[0]) {
                     imageFile = imageInput[0].files[0];
                 }
-                uploadImage(imageFile, function (isdone, url, msg) {
+                uploadImage(imageFile, { 'width': 400, 'height': 430 }, function (isdone, url, msg) {
                     if (isdone == true)
                         $("#" + container).find("#div_displaying_process").find('#image_RightImage').attr('src', '/UploadedFiles/Slides/Images/' + url);
                     else
@@ -1722,8 +2385,8 @@
             });
         } else {
             //hide the controllers
-            var editor = $("#" + container).find("#div_displaying_process");
-            editor.addClass("hidden");
+            var controller = $("#" + container).find("#div_displaying_process");
+            controller.addClass("hidden");
         }
 
         if (callback != undefined && callback != null) {
@@ -1835,20 +2498,20 @@
                 return callback(jsonString);
             }
         }
-        if (selectBox.find(":selected").val() === "simple_clickable_image") {
+        if (selectBox.find(":selected").val() === "simple_image") {
             // Get image file (if selected)
             var imageFile;
-            var imageInput = $("#" + container).find("#div_simple_clickable_image").find("#imageInput");
+            var imageInput = $("#" + container).find("#div_simple_image").find("#imageInput");
             if (imageInput[0].files && imageInput[0].files[0]) {
                 imageFile = imageInput[0].files[0];
             }
 
 
-            var imageUrl = $("#" + container).find("#div_simple_clickable_image").find("#displayImage").attr("src");
-            var width = $("#" + container).find("#div_simple_clickable_image").find("#width").val();
-            var altText = $("#" + container).find("#div_simple_clickable_image").find("#altTextInput").val();
-            var selectedSlide = $("#" + container).find("#div_simple_clickable_image").find("#slideSelect").val();
-
+            var imageUrl = $("#" + container).find("#div_simple_image").find("#displayImage").attr("src");
+            var width = $("#" + container).find("#div_simple_image").find("#width").val();
+            var altText = $("#" + container).find("#div_simple_image").find("#altTextInput").val();
+            var selectedSlide = $("#" + container).find("#div_simple_image").find("#slideSelect").val();
+            var align = $("#" + container).find('input[name="align"]:checked').val();
             // Create JSON object
             var jsonObject = {
                 "ControllerName": "Image",
@@ -1857,14 +2520,15 @@
                 "TransformtoSlideNum": selectedSlide,
                 "BlinkingBorder": "true",
                 "Title": altText,
-                "Width": width
+                "Width": width,
+                "Align": align
             };
             var jsonString = JSON.stringify(jsonObject);
             return callback(jsonString);
 
         }
         if (selectBox.find(":selected").val() === "video") {
-            debugger;
+            ////////debugger;
             // Get video URL
             var VideoURL = $("#" + container).find("#div_video").find("#text_VideoLink").val();
 
@@ -1888,7 +2552,7 @@
                 tableRow.label = $(row).find("td:nth-child(1)").text().trim();
                 tableRow.value = $(row).find("td:nth-child(2)").text().trim();
                 //tableRow.description = $(row).find("td:nth-child(3)").text().trim();
-                //tableRow.slide = $(row).find("td:nth-child(4) select").val();
+                tableRow.slide = $(row).find("td:nth-child(4) select").val();
                 tableRow.color = $(row).find("td:nth-child(3)").find("#input_color_picker").val();
                 if (tableRow.label != null && tableRow.label != '' && tableRow.value != null && tableRow.value != '')
                     tableData.push(tableRow);
@@ -1917,11 +2581,23 @@
 
 
         }
+
+        if (selectBox.find(":selected").val() === "SlideNavigation") {
+            var SelectedSlide = $("#" + container).find("#div_SlideNavigation").find("#slideSelect").val();
+            var SlideTitle = $("#" + container).find("#div_SlideNavigation").find("#text_title").val();
+            var jsonObject = {
+                "ControllerName": "SlideNavigation",
+                "SlideId": SelectedSlide,
+                "SlideTitle": SlideTitle
+            };
+            var jsonString = JSON.stringify(jsonObject);
+            return callback(jsonString);
+        }
+
         if (selectBox.find(":selected").val() === "drag_and_drop_items") {
             // Repository section
             var repositoryTitle = $("#" + container).find("#div_Drag_and_Drop").find("#text_Repository").val();
             var RepositoryImageUrl = $("#" + container).find("#div_Drag_and_Drop").find("#image_Repository").attr("src");
-
 
             // Answer section
             var answerTitle = $("#" + container).find("#div_Drag_and_Drop").find("#text_Answer").val();
@@ -1938,7 +2614,7 @@
                 tableData.push(tableRow);
             });
 
-
+            var Instruction = $("#" + container).find("#div_Drag_and_Drop").find("#text_Instruction").val();
 
             // Construct the JSON object
             var items = tableData.map(function (row) {
@@ -1956,16 +2632,21 @@
                 };
             });
 
+
+            var DescriptionLocation = $("#" + container).find("#div_Drag_and_Drop").find("#Select_DescriptionLocation").val();
+
+
             var jsonObject = {
                 "ControllerName": "DragandDropItems",
                 "ItemsColumnCaption": repositoryTitle,
                 "AnswerColumnCaption": answerTitle,
                 "CheckAnswerByChangingSlide": "true",
-                "Description": "Please drag essential components:",
+                "Description": Instruction,
                 "BackgroundImageOfTank": RepositoryImageUrl ? RepositoryImageUrl : "",
                 "Items": items,
                 "BackgroundImageOfAnswer": AnswerImageUrl ? AnswerImageUrl : "",
-                "CorrectItems": correctItems
+                "CorrectItems": correctItems,
+                "DescriptionLocation": DescriptionLocation
             };
             var jsonString = JSON.stringify(jsonObject);
             return callback(jsonString);
@@ -1993,6 +2674,7 @@
                 flyingImages.push(imageRow);
             });
 
+            var DescriptionLocation = $("#" + container).find("#div_FlyingToImage").find("#Select_DescriptionLocation").val();
 
             var jsonObject = {
                 "ControllerName": "Animate",
@@ -2005,9 +2687,11 @@
                         "MovementDescription": image.description,
                         "MovementDistance": image.distance,
                         "MovementType": image.movementType,
-                        "Path": image.imageUrl
+                        "Path": image.imageUrl,
+                        "DescriptionLocation": DescriptionLocation
                     };
-                })
+                }),
+                "DescriptionLocation": DescriptionLocation
             };
             var jsonString = JSON.stringify(jsonObject);
             return callback(jsonString);
@@ -2016,7 +2700,7 @@
 
         }
         if (selectBox.find(":selected").val() === "professional_clickable_image") {
-            //debugger;
+            //////////debugger;
             // Main Image
             var imageUrl = GetImageofClickableImageCntroller(container)
             //var imageUrl = $("#" + container).find("#div_professional_clickable_image").find("#image_ClickableImage").attr("src");
@@ -2024,6 +2708,11 @@
 
             // Main image (assuming same behavior as previous examples)
             var mainImageInput = $("#" + container).find("#div_professional_clickable_image").find("#file_MainImage");
+            var color = $("#" + container).find("#div_professional_clickable_image").find("#input_color_picker").val();
+            var clickingcolor = $("#" + container).find("#div_professional_clickable_image").find("#input_clickingcolor_picker").val();
+            var DisplayLabel = $("#" + container).find("#div_professional_clickable_image").find("#checkbox_DisplayLabels").prop("checked");
+
+            var Description = $("#" + container).find("#div_professional_clickable_image").find("#text_Description").val();
             var mainImageFile;
             if (mainImageInput[0].files && mainImageInput[0].files[0]) {
                 mainImageFile = mainImageInput[0].files[0];
@@ -2040,12 +2729,17 @@
                 clickableImages.push(clickableImage);
             });
 
+            var align = $("#" + container).find('input[name="align"]:checked').val();
 
 
             // Construct the JSON object
             var jsonObject = {
                 "ControllerName": "ClickableImages",
+                "Description": Description,
                 "Path": imageUrl, // Assuming this is a fixed path
+                "Color": color,
+                "ClickingColor": clickingcolor,
+                "DisplayLabel": DisplayLabel,
                 "areas": clickableImages.map(function (image, index) {
                     return {
                         "area": "area" + (index + 1),
@@ -2054,11 +2748,50 @@
                         "coords": image.coordinate,
                         "TransformtoSlideNum": image.selectedSlide
                     };
-                })
+                }),
+                "Align": align
             };
             var jsonString = JSON.stringify(jsonObject);
             return callback(jsonString);
 
+        }
+        if (selectBox.find(":selected").val() === "multichoicequestion") {
+            var questionTitle = $("#" + container).find("#div_MultichoiceQuestion").find("#text_Question").val();
+
+            // Table data
+            var tableData = [];
+            $("#" + container).find("#div_MultichoiceQuestion").find("#Table_MultichoiceQuestion").find("#dataTableBody tr").each(function (index, row) {
+                var tableRow = {};
+                tableRow.isAnswer = $(row).find("td:nth-child(1) input[type='checkbox']").prop("checked");
+                tableRow.title = $(row).find("td:nth-child(2)").text().trim();
+                tableRow.description = $(row).find("td:nth-child(3)").text().trim();
+                tableData.push(tableRow);
+            });
+
+            // Construct the JSON object
+            var items = tableData.map(function (row) {
+                return {
+                    description: row.description,
+                    text: row.title
+                };
+            });
+
+            var correctItems = tableData.filter(function (row) {
+                return row.isAnswer;
+            }).map(function (row) {
+                return {
+                    text: row.title
+                };
+            });
+
+            var jsonObject = {
+                "ControllerName": "MultiChoiceQuestion",
+                "Question": questionTitle,
+                "Choices": items,
+                "CorrectAnswers": correctItems
+            };
+            var jsonString = JSON.stringify(jsonObject);
+            return callback(jsonString);
         }
         if (selectBox.find(":selected").val() === "displaying_process") {
 
@@ -2067,13 +2800,15 @@
 
             var LeftImageTitle = $("#" + container).find("#div_displaying_process").find("#text_LeftImage").val();
             var LeftImageUrl = $("#" + container).find("#div_displaying_process").find("#image_LeftImage").attr("src");
+            var LeftImage_CorrespondingArrowsColor = $("#" + container).find("#div_displaying_process").find("#input_color_picker_Left").val();
+
 
             var RightImageTitle = $("#" + container).find("#div_displaying_process").find("#text_RightImage").val();
             var RightImageUrl = $("#" + container).find("#div_displaying_process").find("#image_RightImage").attr("src");
+            var RightImage_CorrespondingArrowsColor = $("#" + container).find("#div_displaying_process").find("#input_color_picker_Right").val();
 
 
-            debugger;
-
+            ////////debugger;
             var jsonObject = {
                 "ControllerName": "TransportProcess",
 
@@ -2082,9 +2817,11 @@
 
                 "Button1ImagePath": LeftImageUrl,
                 "Button1Title": LeftImageTitle,
+                "Button1CorrespondingArrowsColor": LeftImage_CorrespondingArrowsColor,
 
                 "Button2ImagePath": RightImageUrl,
                 "Button2Title": RightImageTitle,
+                "Button2CorrespondingArrowsColor": RightImage_CorrespondingArrowsColor,
 
                 "Arrows": getArrowPaths(container)
             };
@@ -2096,6 +2833,12 @@
     }
     /*Save Slide Info*/
     function SaveSlideInfo() {
+        var checkDataInputResult = CheckDataInput();
+        if (checkDataInputResult != true && checkDataInputResult != "true" && checkDataInputResult != "True") {
+            alert(checkDataInputResult);
+            return;
+        }
+
 
         var SlideInfo = getInfo();
 
@@ -2147,11 +2890,13 @@
 
     }
     /*Get Slides List*/
-    function GetSlideList(callback) {
+    function GetSlideList(ModuleId, callback) {
+        console.log(ModuleId);
+
         $.ajax({
             url: "/Admin/Slides/GetSlideList",
             type: 'POST',
-            async: true,
+            data: JSON.stringify(ModuleId),
             contentType: 'application/json',
             success: function (response) {
                 return callback(response);
@@ -2162,9 +2907,8 @@
         });
     }
     /*Display Slide List in Select controller*/
-    function DisplaySlideListInSelect(Container) {
-        GetSlideList(function (SlideList) {
-            console.log(SlideList);
+    function DisplaySlideListInSelectofModule(Container, ModuleId) {
+        GetSlideList(ModuleId, function (SlideList) {
             $(Container).empty();
             $(Container).append($('<option>', {
                 value: -1,
@@ -2197,7 +2941,7 @@
     }
     /* Display Slide info in Controllers for editing*/
     function setInfo(jsonString) {
-        debugger;
+        ////////debugger;
 
         var jsonData = JSON.parse(jsonString);
 
@@ -2236,12 +2980,14 @@
             return;
 
         var selectBox = $("#" + container).find("#" + SelectControllerId);
-        debugger;
+        ////////debugger;
         var controller = "";
+
+        //Normalization of controllername
         if (jsonObject.controllerName === "Text" || jsonObject.controllerName === " ")
             controller = "text";
         if (jsonObject.controllerName === "Image")
-            controller = "simple_clickable_image";
+            controller = "simple_image";
         if (jsonObject.controllerName === "PieChart")
             controller = "chart";
         if (jsonObject.controllerName === "DragandDropItems")
@@ -2254,6 +3000,12 @@
             controller = "displaying_process";
         if (jsonObject.controllerName === "Video" || jsonObject.controllerName === "video")
             controller = "video";
+        if (jsonObject.controllerName === "MultiChoiceQuestion")
+            controller = "multichoicequestion";
+        if (jsonObject.controllerName === "SlideNavigation")
+            controller = "SlideNavigation";
+
+
 
         $(selectBox).val(controller);
 
@@ -2314,14 +3066,15 @@
                 if (jsonObject.controllerName === "Image") {
                     //
                     var controllerParameters = JSON.parse(jsonObject.controllerParameters);
-                    $("#" + container).find("#div_simple_clickable_image").find("#displayImage").attr("src", controllerParameters.Path);
-                    $("#" + container).find("#div_simple_clickable_image").find("#width").val(controllerParameters.Width);
-                    $("#" + container).find("#div_simple_clickable_image").find("#altTextInput").val(controllerParameters.Title);
-                    $("#" + container).find("#div_simple_clickable_image").find("#slideSelect").val(controllerParameters.TransformtoSlideNum);
+                    $("#" + container).find("#div_simple_image").find("#displayImage").attr("src", controllerParameters.Path);
+                    $("#" + container).find("#div_simple_image").find("#width").val(controllerParameters.Width);
+                    $("#" + container).find("#div_simple_image").find("#altTextInput").val(controllerParameters.Title);
+                    $("#" + container).find("#div_simple_image").find("#slideSelect").val(controllerParameters.TransformtoSlideNum);
+                    $("#" + container).find("#div_simple_image").find('input[name="align"][value="' + controllerParameters.Align + '"]').prop('checked', true);
                     return callback(true);
                 }
                 if (jsonObject.controllerName === "Video") {
-                    debugger;
+                    ////////debugger;
                     var controllerParameters = JSON.parse(jsonObject.controllerParameters);
                     $("#" + container).find("#div_video").find("#text_VideoLink").val(controllerParameters.URL);
                     return callback(true);
@@ -2343,8 +3096,19 @@
                         newRow.find('td:eq(0)').text(controllerParameters.labels[index]);
                         newRow.find('td:eq(1)').text(value);
                         newRow.find('td:eq(2)').find("#input_color_picker").val(controllerParameters.colors[index]);
+                        ////debugger;
+                        newRow.find('td:eq(3)').find("select").val(controllerParameters.TransformtoSlideNum[index]);
                         firstrow = false;
                     });
+                    return callback(true);
+                }
+
+                if (jsonObject.controllerName === "SlideNavigation") {
+                    //debugger;
+                    var controllerParameters = JSON.parse(jsonObject.controllerParameters);
+                    $("#" + container).find("#div_SlideNavigation").find("#slideSelect").val(controllerParameters.SlideId);
+                    $("#" + container).find("#div_SlideNavigation").find("#text_title").val(controllerParameters.SlideTitle);
+
                     return callback(true);
                 }
 
@@ -2354,8 +3118,13 @@
 
                     $("#" + container).find("#div_Drag_and_Drop").find("#text_Repository").val(controllerParameters.ItemsColumnCaption);
                     $("#" + container).find("#div_Drag_and_Drop").find("#image_Repository").attr("src", controllerParameters.BackgroundImageOfTank);
+                    $("#" + container).find("#div_Drag_and_Drop").find('#image_Repository').parent("div").find("button").removeClass("hide");
                     $("#" + container).find("#div_Drag_and_Drop").find("#text_Answer").val(controllerParameters.AnswerColumnCaption);
                     $("#" + container).find("#div_Drag_and_Drop").find("#image_Answer").attr("src", controllerParameters.BackgroundImageOfAnswer);
+                    $("#" + container).find("#div_Drag_and_Drop").find('#image_Answer').parent("div").find("button").removeClass("hide");
+                    $("#" + container).find("#div_Drag_and_Drop").find("#text_Instruction").val(controllerParameters.Description);
+                    $("#" + container).find("#div_Drag_and_Drop").find("#Select_DescriptionLocation").val(controllerParameters.DescriptionLocation);
+
 
                     var tableBody = $("#" + container).find("#div_Drag_and_Drop").find("#Table_Drag_and_Drop").find("#dataTableBody");
                     var firstrow = true;
@@ -2377,6 +3146,34 @@
                     });
                     return callback(true);
                 }
+                //////debugger;
+                if (jsonObject.controllerName === "MultiChoiceQuestion") {
+
+                    var controllerParameters = JSON.parse(jsonObject.controllerParameters);
+
+                    $("#" + container).find("#div_MultichoiceQuestion").find("#text_Question").val(controllerParameters.Question);
+
+                    var tableBody = $("#" + container).find("#div_MultichoiceQuestion").find("#Table_MultichoiceQuestion").find("#dataTableBody");
+                    var firstrow = true;
+                    controllerParameters.Choices.forEach((item, index) => {
+                        if (firstrow == false)
+                            $("#" + container).find("#div_MultichoiceQuestion").find('#btn_addTableRow').click();
+
+                        var isAnswer = false;
+                        for (i = 0; i < controllerParameters.CorrectAnswers.length; i++) {
+                            if (controllerParameters.CorrectAnswers[i].text == item.text)
+                                isAnswer = true;
+                        }
+
+                        var newRow = $(tableBody).find('tr:last');
+                        newRow.find('td:eq(0) input[type="checkbox"]').prop('checked', isAnswer);
+                        newRow.find('td:eq(1)').text(item.text);
+                        newRow.find('td:eq(2)').text(item.description);
+                        firstrow = false;
+                    });
+                    return callback(true);
+                }
+
 
                 if (jsonObject.controllerName === "Animate") {
                     //
@@ -2397,19 +3194,36 @@
                         newRow.find('td:eq(3) select').val(element.MovementType);
                         firstrow = false;
                     });
+
+                    $("#" + container).find("#div_FlyingToImage").find("#Select_DescriptionLocation").val(controllerParameters.DescriptionLocation);
+
+
                     return callback(true);
                 }
 
                 if (jsonObject.controllerName === "ClickableImages") {
-                    //
                     var controllerParameters = JSON.parse(jsonObject.controllerParameters);
+
+                    //create html and assign html to UI
                     var ControllerHTML = CreateClickableImageandAreasHTML(controllerParameters);
                     $("#" + container).find("#div_professional_clickable_image #div_ClickableImage").html("")
                     $("#" + container).find("#div_professional_clickable_image #div_ClickableImage").append(ControllerHTML);
-                    InitiateClickableImageandAreas(container, 'edit');
+                    $("#" + container).find("#div_professional_clickable_image").find("#text_Description").val(controllerParameters.Description);
+                    $("#" + container).find("#div_professional_clickable_image").find('input[name="align"][value="' + controllerParameters.Align + '"]').prop('checked', true);
 
-                    AddandDeleteAreas(container);
-                    /*$("#" + container).find("#div_professional_clickable_image").find("#image_ClickableImage").attr("src", controllerParameters.Path);*/
+                    //display clickable areas
+                    InitiateClickableImageandAreas(container, 'edit', controllerParameters);
+
+
+                    $("#" + container).find("#div_professional_clickable_image").find("#checkbox_DisplayLabels").prop('checked', controllerParameters.DisplayLabel);
+
+
+                    $("#" + container).find("#div_professional_clickable_image").find("#input_color_picker").val(controllerParameters.Color);
+                    $("#" + container).find("#div_professional_clickable_image").find("#input_clickingcolor_picker").val(controllerParameters.ClickingColor);
+
+                    //initiate functions for adding or deleting new areas
+                    var color = $("#" + container).find("#div_professional_clickable_image").find("#input_color_picker").val();
+                    AddandDeleteAreas(container, color);
 
                     var tableBody = $("#" + container).find("#div_professional_clickable_image").find("#dataTableBody");
                     var firstrow = true;
@@ -2423,36 +3237,55 @@
                         newRow.find('td:eq(2) select').val(area.TransformtoSlideNum);
                         firstrow = false;
                     });
+
                     return callback(true);
                 }
 
                 if (jsonObject.controllerName === "TransportProcess") {
                     var controllerParameters = JSON.parse(jsonObject.controllerParameters);
-
                     var NormalizedParameters = DisplayTransportProcess(controllerParameters, 'edit');
 
                     $('#' + container).find("#div_TransportProcess_MainImage").append(NormalizedParameters.leftButton, NormalizedParameters.canvas, NormalizedParameters.rightButton);
-
                     InitiateDisplayTransportProcess(
                         'edit',
                         container,
-                        NormalizedParameters.canvasId,
-                        NormalizedParameters.MainImagePath,
-                        NormalizedParameters.Button1ImagePath,
-                        NormalizedParameters.Button2ImagePath,
-                        NormalizedParameters.startPoints,
-                        NormalizedParameters.endPoints,
-                        NormalizedParameters.curveDefinitions
+                        NormalizedParameters
                     );
+
+                    $("#" + container).find('#input_color_picker_Left').on('change', function (event) {
+                        //new color of corresponding arrows of the left image
+                        const newColorofCorrespondingArrowsofLeftImage = event.target.value;
+                        // color of corresponding arrows of the right image
+                        const ColorofCorrespondingArrowsofRightImage = $("#" + container).find("#div_displaying_process").find("#input_color_picker_Right").val();
+
+                        ChangeArrowColor(container, NormalizedParameters.canvasId, 'left', newColorofCorrespondingArrowsofLeftImage);
+
+                    });
+
+                    $("#" + container).find('#input_color_picker_Right').on('change', function (event) {
+                        //new color of corresponding arrows of the left image
+                        const newColorofCorrespondingArrowsofRightImage = event.target.value;
+                        // color of corresponding arrows of the right image
+                        const ColorofCorrespondingArrowsofLeftImage = $("#" + container).find("#div_displaying_process").find("#input_color_picker_Left").val();
+
+                        ChangeArrowColor(container, NormalizedParameters.canvasId, 'right', newColorofCorrespondingArrowsofRightImage);
+
+                    });
 
                     var controllerParameters = JSON.parse(jsonObject.controllerParameters);
 
                     $("#" + container).find("#div_displaying_process").find("#hidden_MainImageURL").val(controllerParameters.MainImagePath);
                     $("#" + container).find("#div_displaying_process").find("#text_MainImage").val(controllerParameters.Button1Title);
+
                     $("#" + container).find("#div_displaying_process").find("#image_LeftImage").attr("src", controllerParameters.Button1ImagePath);
-                    $("#" + container).find("#div_displaying_process").find("#text_LeftImage").val(controllerParameters.Button2Title);
+                    $("#" + container).find("#div_displaying_process").find("#text_LeftImage").val(controllerParameters.Button1Title);
+                    $("#" + container).find("#div_displaying_process").find("#input_color_picker_Left").val(controllerParameters.Button1CorrespondingArrowsColor);
+
                     $("#" + container).find("#div_displaying_process").find("#image_RightImage").attr("src", controllerParameters.Button2ImagePath);
                     $("#" + container).find("#div_displaying_process").find("#text_RightImage").val(controllerParameters.Button2Title);
+                    $("#" + container).find("#div_displaying_process").find("#input_color_picker_Right").val(controllerParameters.Button2CorrespondingArrowsColor);
+
+
                     return callback(true);
                 }
             }, 1000);
@@ -2467,33 +3300,54 @@
         }
         return color;
     }
-    function uploadImage(File, callback) {
-        var formData = new FormData();
-        formData.append('file', File);
-        $.ajax({
-            url: '/api/upload/UploadImage',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function (response) {
-                return callback(true, response.fileName, '');
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-                if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
-                    return callback(false, '', 'Error uploading file: ' + jqXHR.responseJSON.error);
-                } else {
-                    return callback(false, '', 'Error uploading file: ' + textStatus);
-                }
+    function uploadImage(File, AcceptableSize, callback) {
+
+        // Check if File is an image
+        if (!File.type.startsWith('image/')) {
+            return callback(false, '', 'The selected file is not an image.');
+        }
+
+        let img = new Image()
+        img.src = window.URL.createObjectURL(File)
+        img.onload = () => {
+            debugger;
+            if (img.width > AcceptableSize.width || img.height > AcceptableSize.height)
+                return callback(false, '', 'Error uploading file: Image size exceeds ' + AcceptableSize.width + '*' + AcceptableSize.height + ' pixels.');
+            else {
+                //uploading Image
+                var formData = new FormData();
+                formData.append('file', File);
+                $.ajax({
+                    url: '/api/upload/UploadImage',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        return callback(true, response.fileName, '');
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        debugger;
+                        if (jqXHR.responseText) {
+                            return callback(false, '', 'Error uploading file: ' + jqXHR.responseText);
+                        } else {
+                            return callback(false, '', 'Error uploading file: ' + textStatus);
+                        }
+                    }
+                });
+
             }
-        });
+        }
     }
     //add clickable row to table
     function AddNewRowToProfessionalClickableTable(Container, coords, label) {
         var table = $('#' + Container + ' #Table_professional_clickable_image tbody');
         var rows = table.find('tr');
         var rowCount = rows.length;
-        if (rowCount > 1)
+
+        var _coords = $('#' + Container + ' #Table_professional_clickable_image tr:last').find('td').eq(0).text();
+        var _label = $('#' + Container + ' #Table_professional_clickable_image tr:last').find('td').eq(1).text();
+        if (rowCount > 1 || (rowCount == 1 && _coords != '' && _label != ''))
             //add a new record to the table
             $('#' + Container).find("#div_professional_clickable_image").find('#btn_addTableRow').click()
         //display info in tbl cell

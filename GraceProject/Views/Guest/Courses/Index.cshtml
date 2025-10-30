@@ -1,0 +1,70 @@
+﻿@{
+    ViewData["Title"] = "Guest Courses";
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success text-center">
+        @TempData["SuccessMessage"]
+        TempData.Remove("SuccessMessage");
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger text-center">
+        @TempData["ErrorMessage"]
+        TempData.Remove("ErrorMessage");
+    </div>
+}
+
+<div class="container">
+    <h1 class="display-4 text-center">Guest Courses</h1>
+
+    <h2>Your Enrolled Courses</h2>
+    @if (ViewData["GuestCourses"] is List<GraceProject.Models.Course> guestCourses && guestCourses.Any())
+    {
+        <div class="row">
+            @foreach (var course in guestCourses)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm border-primary">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">@course.Title</h5>
+                            <p class="card-text">Credits: @course.Credits</p>
+                            <a href="~/Student/Courses/Details/@course.CourseID" class="btn btn-primary">View Course</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-warning text-center">⚠ You are not enrolled in any courses.</p>
+    }
+
+    <h2 class="mt-5">All Available Courses</h2>
+    @if (ViewData["AllCourses"] is List<GraceProject.Models.Course> allCourses && allCourses.Any())
+    {
+        <div class="row">
+            @foreach (var course in allCourses)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm border-success">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">@course.Title</h5>
+                            <p class="card-text">Credits: @course.Credits</p>
+                            <a href="~/guest/courses/details/@course.CourseID" class="btn btn-outline-success">View & Enroll</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-warning text-center">⚠ No courses available.</p>
+    }
+</div>

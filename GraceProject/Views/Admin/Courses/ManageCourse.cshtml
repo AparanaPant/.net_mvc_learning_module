@@ -1,0 +1,28 @@
+﻿@model GraceProject.Models.Course
+@{
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+    ViewBag.Title = "Manage Course";
+    var educators = ViewBag.Educators as List<GraceProject.Models.ApplicationUser> ?? new List<GraceProject.Models.ApplicationUser>();
+}
+
+<h2 class="text-center">@Model.Title</h2>
+<p class="text-center text-muted">Course ID: @Model.CourseID</p>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="list-group">
+                <a href="~/Admin/Courses/Quizzes/List/@Model.CourseID" class="list-group-item list-group-item-action">
+                    <i class="fa fa-book"></i> Quizzes
+                </a>
+                <a href="~/Admin/Modules/ManageModule/@Model.CourseID" class="list-group-item list-group-item-action">
+                    <i class="fa fa-file-alt"></i> Modules
+                </a>
+                <a href="~/Admin/Courses/Sessions/List/@Model.CourseID" class="list-group-item list-group-item-action">
+                    <i class="fa fa-calendar-alt"></i> Sessions
+                </a>
+            </div>
+        </div>
+    </div>
+
+

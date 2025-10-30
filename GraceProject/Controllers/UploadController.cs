@@ -1,5 +1,6 @@
 ﻿using GraceProject.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Drawing;
 
 namespace GraceProject.Controllers
 {
@@ -16,8 +17,17 @@ namespace GraceProject.Controllers
                 return BadRequest("No file uploaded");
 
             // Check if file size is greater than 1 MB (1 MB = 1 * 1024 * 1024 bytes)
-            if (file.Length > 1 * 1024 * 1024)
-                return BadRequest("File size exceeds 1 MB");
+            if (file.Length > 2 * 1024 * 1024)
+                return BadRequest("File size exceeds 2 MB");
+
+            // Validate image dimensions (1200x630)
+            using (var image = Image.FromStream(file.OpenReadStream()))
+            {
+                if (image.Width > 1200 || image.Height > 630)
+                {
+                    return BadRequest("Image dimensions exceed 1200x630 pixels");
+                }
+            }
 
             // Generate a random 10-digit number for the file name
             var random = new Random();

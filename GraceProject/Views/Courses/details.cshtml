@@ -1,0 +1,24 @@
+﻿@model GraceProject.Models.Course
+
+@{
+    ViewData["Title"] = "Course Details";
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+}
+
+<div class="container">
+    <h1 class="display-4 text-center">@Model?.Title</h1>
+    <p class="text-center"><strong>Course ID:</strong> @Model?.CourseID</p>
+
+    <h2>Course Actions</h2>
+    <div class="list-group">
+        <a href="~/Courses/Quizzes/@Model?.CourseID" class="list-group-item list-group-item-action">📖 Quizzes</a>
+        <a href="~/Student/Modules/Index/@Model?.CourseID" class="list-group-item list-group-item-action">📚 Modules</a>
+    </div>
+
+    <div class="text-center mt-4">
+        <form method="post" action="~/Courses/RegisterToCourse">
+            <input type="hidden" name="courseId" value="@Model?.CourseID" />
+            <button type="submit" class="btn btn-success">✅ Register to Course</button>
+        </form>
+    </div>
+</div>

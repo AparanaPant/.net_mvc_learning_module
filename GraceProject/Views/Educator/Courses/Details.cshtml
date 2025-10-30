@@ -1,0 +1,85 @@
+﻿@model GraceProject.Models.Course
+
+@{
+    ViewData["Title"] = "Course Details";
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+    var sessionId = ViewData["SessionID"] as int?;
+}
+
+<div class="container">
+    <h1 class="display-4 text-center">@Model?.Title</h1>
+
+    <h2>Manage Course</h2>
+    <div class="list-group">
+        <a href="~/Educator/Quizzes/@Model?.CourseID" class="list-group-item list-group-item-action">📖 Quizzes</a>
+        <a href="~/Student/Modules/Index/@Model?.CourseID" class="list-group-item list-group-item-action">📚 Modules</a>
+        <a href="~/educator/courses/Gradebook/@Model?.CourseID/@sessionId" class="list-group-item list-group-item-action">📊 Grade Book</a>
+    </div>
+
+    @if (sessionId.HasValue)
+    {
+        <div class="text-center mt-4">
+            <button class="btn btn-success share-button"
+                    data-sessionid="@sessionId"
+                    data-toggle="modal"
+                    data-target="#shareModal">
+                📢 Share Course Registration
+            </button>
+        </div>
+    }
+</div>
+
+<div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="shareModalLabel">Share Course Registration</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Copy and share the registration link:</p>
+                <input type="text" id="registration-link" class="form-control" readonly>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="copyToClipboard()">Copy</button>
+                <button class="btn btn-secondary" onclick="shareViaEmail()">Share via Email</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Handling Link Generation -->
+<script>
+    let currentLink = "";
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".share-button").forEach(button => {
+            button.addEventListener("click", function () {
+                let sessionId = this.getAttribute("data-sessionid");
+
+                fetch(`/educator/courses/GenerateRegistrationLink?sessionId=${sessionId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        currentLink = data.link;
+                        document.getElementById("registration-link").value = currentLink;
+                    })
+                    .catch(error => console.error("Error generating link:", error));
+            });
+        });
+    });
+
+    function copyToClipboard() {
+        let linkInput = document.getElementById("registration-link");
+        linkInput.select();
+        document.execCommand("copy");
+        alert("Link copied to clipboard!");
+    }
+
+    function shareViaEmail() {
+        let subject = encodeURIComponent("Session Registration Link");
+        let body = encodeURIComponent(`Here is the session registration link: ${currentLink}`);
+        window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    }
+</script>

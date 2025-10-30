@@ -1,0 +1,13 @@
+- Go to the appsettings and enable the c.o.n.s.t.r.i.n.g of the server
+
+- check "AppEnvironment", it should be production, otherwise we will face some errors with sending email
+
+- the name of the project file should be short otherwise you will face some errors that some files cannot be copied if the directories are very long and the publishing will not be done
+
+- before publishing you must backup the db and the working website files
+
+- delete all of the file except : wwwroot of the project , appsettings.Development, appsettings
+
+- paste the files in wwwroot IIS (we have 2 wwwroots, one in the project and the other is the wwwroot of the iis)
+
+- delete all file except "UploadedFiles" in wwwroot/wwwroot : this file is the users uploaded files such as images

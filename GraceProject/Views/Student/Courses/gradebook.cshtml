@@ -1,0 +1,96 @@
+﻿@model GradebookViewModel
+@{
+    ViewData["Title"] = "My gradebook";
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+}
+
+<h2>@Model.CourseTitle - Gradebook</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Quiz</th>
+            <th>Obtained / Total Score</th>
+            <th>Percentage</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var quiz in Model.Quizzes)
+        {
+            <tr>
+                <td>
+                    @quiz.QuizTitle
+                    @if (quiz.DueDate.HasValue)
+                    {
+                        <br />
+
+                        <small>Due: @quiz.DueDate.Value.ToShortDateString()</small>
+                    }
+                </td>
+                <td>
+                    @if (quiz.IsAttempted)
+                    {
+                        @($"{quiz.ObtainedScore} / {quiz.TotalScore}")
+                    }
+                    else
+                    {
+                        @($"N/A / {quiz.TotalScore}")
+                    }
+                </td>
+                <td>
+                    @if (quiz.IsAttempted && quiz.TotalScore > 0)
+                    {
+                        @($"{quiz.Percentage}%")
+                    }
+                    else if (!quiz.IsAttempted && quiz.DueDate.HasValue && quiz.DueDate.Value < DateTime.Now)
+                    {
+                        <span>0%</span>
+                    }
+                    else
+                    {
+                        <span class="not-attempted">-</span>
+                    }
+                </td>
+            </tr>
+        }
+        <tr>
+            <td><strong>Total</strong></td>
+            <td>
+                <strong>@Model.ObtainedScore / @Model.TotalScore</strong>
+            </td>
+            <td>
+                @if (Model.TotalScore > 0)
+                {
+                    <strong>@(Math.Round((double)Model.ObtainedScore / Model.TotalScore * 100))%</strong>
+                }
+                else
+                {
+                    <strong>-</strong>
+                }
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<style>
+    .table {
+        width: 80%;
+        margin: 20px auto;
+        border-collapse: collapse;
+    }
+
+        .table th, .table td {
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        .table th {
+            background-color: #f2f2f2;
+        }
+
+    .not-attempted {
+        color: #999;
+        font-style: italic;
+    }
+</style>

@@ -1,0 +1,43 @@
+﻿@model GraceProject.Models.Session
+@{
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+    ViewBag.Title = "Session Details";
+}
+
+<h2>Session Details</h2>
+<p>Course: @Model.Course?.Title</p>
+<p>Start Date: @Model.StartDate</p>
+<p>End Date: @Model.EndDate</p>
+<p>Status: @(Model.IsActive ? "Active" : "Inactive")</p>
+
+<h3>Educators</h3>
+@if (Model.EducatorSessions != null && Model.EducatorSessions.Any())
+{
+    <ul>
+        @foreach (var educatorSession in Model.EducatorSessions)
+        {
+            <li>@educatorSession.Educator?.FirstName @educatorSession.Educator?.LastName (@educatorSession.Educator?.Email)</li>
+        }
+    </ul>
+}
+else
+{
+    <p>No educators assigned.</p>
+}
+
+<h3>Students</h3>
+@if (Model.StudentSessions != null && Model.StudentSessions.Any())
+{
+    <ul>
+        @foreach (var studentSession in Model.StudentSessions)
+        {
+            <li>@studentSession.Student?.FirstName @studentSession.Student?.LastName (@studentSession.Student?.Email)</li>
+        }
+    </ul>
+}
+else
+{
+    <p>No students registered.</p>
+}
+
+<a href="javascript:history.back()" class="btn btn-secondary">Go Back</a>

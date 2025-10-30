@@ -16,10 +16,11 @@ namespace GraceProject.Controllers.Authentication
             var path = context.Request.Path;
 
             // Check if the user is not authenticated and the requested path is not the login or sign-up page
-            if (!context.User.Identity.IsAuthenticated && !IsLoginOrSignUpPage(path))
+            if (!context.User.Identity.IsAuthenticated && !IsLoginOrSignUpPage(path) && !path.Value.ToLower().Contains("api/"))
+            //if (!context.User.Identity.IsAuthenticated && !IsLoginOrSignUpPage(path))
             {
-                //context.Response.Redirect("/Identity/Account/Login");
-                //return;
+                context.Response.Redirect("/Identity/Account/Login");
+                return;
             }
 
             await _next(context);
@@ -27,12 +28,15 @@ namespace GraceProject.Controllers.Authentication
 
         private bool IsLoginOrSignUpPage(string path)
         {
-            // Adjust these paths to match your actual login and sign-up page routes
             return path.Equals("/Identity/Account/Login", StringComparison.OrdinalIgnoreCase) ||
                    path.Equals("/Identity/Account/Register", StringComparison.OrdinalIgnoreCase) ||
-                   path.Equals("/Identity/Account/ForgotPassword", StringComparison.OrdinalIgnoreCase);
+                   path.Equals("/Identity/Account/ForgotPassword", StringComparison.OrdinalIgnoreCase) ||
+                   path.Equals("/Identity/Account/ForgotPasswordConfirmation", StringComparison.OrdinalIgnoreCase) ||
+                   path.Equals("/Identity/Account/ResetPassword", StringComparison.OrdinalIgnoreCase) ||
+                   path.Equals("/Identity/Account/RegisterConfirmation", StringComparison.OrdinalIgnoreCase) ||
+                   path.Equals("/Identity/Account/ConfirmEmail", StringComparison.OrdinalIgnoreCase);
 
-            
+
         }
     }
 }

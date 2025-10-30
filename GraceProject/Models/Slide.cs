@@ -11,6 +11,8 @@ namespace GraceProject.Models
 
         public ICollection<SlideSection> SlideSections { get; set; }
 
+        public ICollection<SlideReadTracking> SlideReadTracking { get; set; }
+
         [Required]
         public string SlideSectionsType { get; set; }
 

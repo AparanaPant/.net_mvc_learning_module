@@ -1,0 +1,115 @@
+﻿@model GraceProject.ViewModels.QuizzesViewModel
+
+@{
+    ViewData["Title"] = "Quizzes for " + Model.Course.Title;
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+}
+
+<div class="container">
+    <h1 class="display-4 text-center">Quizzes - @Model.Course.Title</h1>
+
+    <h2>Quizzes</h2>
+    @if (Model.DefaultQuizzes.Any())
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Duration</th>
+                    @* <th>Start Time (CST)</th> *@
+                    <th>Due Date (CST)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var quiz in Model.DefaultQuizzes)
+                {
+                    <tr>
+                        <td>@quiz.Title</td>
+                        <td>@quiz.Duration minutes</td>
+                        @* <td>@quiz.StartTimeCST.ToString("yyyy-MM-dd HH:mm")</td> *@
+                        <td>
+                            @if (quiz.DueDate.HasValue)
+                            {
+                                @quiz.DueDate.Value.ToString("yyyy-MM-dd HH:mm")
+                            }
+                            else
+                            {
+                                <span>N/A</span>
+                            }
+                        </td>
+                        <td>
+                            @{
+                                // Evaluate conditions for enabling the quiz.
+                                bool hasStarted = (Model.CurrentTimeCST >= quiz.StartTimeCST);
+                                bool isPastDue = (quiz.DueDate.HasValue && quiz.DueDate.Value <= Model.CurrentTimeCST);
+                                bool hasAttemptsLeft = !quiz.NoOfAttempts.HasValue || quiz.AttemptsUsed < quiz.NoOfAttempts.Value;
+                            }
+
+                            @if (!hasStarted)
+                            {
+                                <span class="text-danger">⏳ Not Available Yet</span>
+                            }
+                            else if (isPastDue)
+                            {
+                                <span class="text-danger">⏳ Past Due</span>
+                            }
+                            else if (!hasAttemptsLeft)
+                            {
+                                <span class="text-danger">No Attempts Left</span>
+                            }
+                            else
+                            {
+                                <!-- Quiz is open, not past due, and attempts remain -->
+                                <a href="~/Quiz/Take/@quiz.QuizId" class="btn btn-success">▶ Start Quiz</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p class="text-warning">⚠ No default quizzes available.</p>
+    }
+
+    @* <h2>🎯 Session Quizzes</h2> *@
+    @* @if (Model.SessionQuizzes.Any()) *@
+    @* { *@
+    @*     <table class="table table-striped"> *@
+    @*         <thead> *@
+    @*             <tr> *@
+    @*                 <th>Title</th> *@
+    @*                 <th>Duration</th> *@
+    @*                 <th>Start Time (CST)</th> *@
+    @*                 <th>Actions</th> *@
+    @*             </tr> *@
+    @*         </thead> *@
+    @*         <tbody> *@
+    @*             @foreach (var quiz in Model.SessionQuizzes) *@
+    @*             { *@
+    @*                 <tr> *@
+    @*                     <td>@quiz.Title</td> *@
+    @*                     <td>@quiz.Duration minutes</td> *@
+    @*                     <td>@quiz.StartTimeCST.ToString("yyyy-MM-dd HH:mm")</td> *@
+    @*                     <td> *@
+    @*                         @if (Model.CurrentTimeCST >= quiz.StartTimeCST) *@
+    @*                         { *@
+    @*                             <a href="~/Quiz/Take/@quiz.QuizId" class="btn btn-success">▶ Start Quiz</a> *@
+    @*                         } *@
+    @*                         else *@
+    @*                         { *@
+    @*                             <span class="text-danger">⏳ Not Available Yet</span> *@
+    @*                         } *@
+    @*                     </td> *@
+    @*                 </tr> *@
+    @*             } *@
+    @*         </tbody> *@
+    @*     </table> *@
+    @* } *@
+    @* else *@
+    @* { *@
+    @*     <p class="text-warning">⚠ No session quizzes available.</p> *@
+    @* } *@
+</div>

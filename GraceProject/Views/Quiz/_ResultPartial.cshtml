@@ -1,0 +1,64 @@
+﻿@model GraceProject.Models.UserQuiz
+
+<h4>Quiz Result: @Model.Quiz.Title</h4>
+
+<p><strong>Score:</strong> @Model.Score / @Model.UserAnswers.Sum(a => a.Question.Points)</p>
+<p><strong>Completed At:</strong> @Model.CompletedAt</p>
+
+@foreach (var answer in Model.UserAnswers)
+{
+    bool isCorrect = answer.IsCorrect;
+    string resultClass = isCorrect ? "text-success" : "text-danger"; // ✅ Green if correct, ❌ Red if incorrect
+
+    <div class="card mt-3">
+        <div class="card-header bg-light">
+            <h5>Question: @answer.Question.Text</h5>
+        </div>
+        <div class="card-body">
+            <p><strong>Marks for this question:</strong> @answer.Question.Points</p>
+
+            @if (answer.SelectedOptionId.HasValue)
+            {
+                <p>
+                    <strong>Your Answer:</strong>
+                    <span class="@resultClass">
+                        @answer.SelectedOption.Text (@(isCorrect ? "✅ Correct" : "❌ Incorrect"))
+                    </span>
+                </p>
+            }
+            else if (!string.IsNullOrEmpty(answer.FillInTheBlankResponse))
+            {
+                <p>
+                    <strong>Your Answer:</strong>
+                    <span class="@resultClass">
+                        @answer.FillInTheBlankResponse (@(isCorrect ? "✅ Correct" : "❌ Incorrect"))
+                    </span>
+                </p>
+            }
+            else
+            {
+                <p class="text-warning"><strong>Not Attempted</strong></p>
+            }
+
+            <p>
+                <strong>Correct Answer:</strong>
+                @if (answer.Question.Options.Any(o => o.IsCorrect))
+                {
+                    <span class="text-success">
+                        @string.Join(", ", answer.Question.Options.Where(o => o.IsCorrect).Select(o => o.Text))
+                    </span>
+                }
+                else if (answer.Question.FillInTheBlankAnswers.Any())
+                {
+                    <span class="text-success">
+                        @string.Join(", ", answer.Question.FillInTheBlankAnswers.Select(f => f.Answer))
+                    </span>
+                }
+                else
+                {
+                    <span class="text-warning">N/A</span>
+                }
+            </p>
+        </div>
+    </div>
+}

@@ -1,0 +1,1089 @@
+﻿﻿
+@model GraceProject.Models.Report
+
+@{
+    ViewData["Title"] = "Admin Report";
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+}
+
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Admin Report</h2>
+
+    <!-- Search Form -->
+    <div class="col-md-3">
+        <label for="searchType" class="form-label">Search By</label>
+        <select id="searchType" class="form-control">
+            <option value="student">Student Name</option>
+
+            @if (ViewBag.UserRole == "Admin")
+            {
+                <option value="educator">Educator Name</option>
+                <option value="school">School Name</option>
+            }
+            else if (ViewBag.UserRole == "Educator")
+            {
+                <option value="educator">Educator Name</option>
+            }
+        </select>
+    </div>
+        <!-- Search Value -->
+        <div class="col-md-3">
+            <label for="searchValue" class="form-label">Value</label>
+            <input type="text" id="searchValue" class="form-control" placeholder="Type to search..." />
+            <input type="hidden" id="selectedId">
+        </div>
+
+        <!-- Search For Dropdown -->
+        <div class="col-md-3">
+            <label for="searchFor" class="form-label">Search For</label>
+            <select id="searchFor" class="form-control">
+                <option value="">Please select</option>
+            </select>
+        </div>
+
+        <!-- Dynamic Dropdown for Courses or Sessions -->
+        <div class="col-md-3">
+            <label id="dynamicDropdownLabel" for="dynamicDropdown" class="form-label">Select Session</label>
+            <select id="dynamicDropdown" class="form-control">
+                <option value="">Please select</option>
+            </select>
+        </div>
+
+        <!-- New Module Dropdown (hidden by default) -->
+        <div class="col-md-3" id="moduleDropdownContainer" style="display: none;">
+            <label for="moduleDropdown" class="form-label">Select Module</label>
+            <select id="moduleDropdown" class="form-control">
+                <option value="">Please select</option>
+            </select>
+        </div>
+
+        <!-- Date Range Selection -->
+        <div class="col-md-3">
+            <label for="dateFilterType" class="form-label">Date Filter</label>
+            <select id="dateFilterType" class="form-control">
+                <option value="last3months" selected>Last 3 Months</option>
+                <option value="monthly">Monthly</option>
+                <option value="weekly">Weekly</option>
+                <option value="custom">Custom</option>
+            </select>
+        </div>
+
+        <!-- Custom Date Picker (Initially Hidden) -->
+        <div class="col-md-3 custom-date-range d-none">
+            <label for="startDate" class="form-label">Start Date</label>
+            <input type="date" id="startDate" class="form-control">
+        </div>
+
+        <div class="col-md-3 custom-date-range d-none">
+            <label for="endDate" class="form-label">End Date</label>
+            <input type="date" id="endDate" class="form-control">
+        </div>
+
+        <!-- Search Button -->
+        <div class="col-md-3 mt-2">
+            <button id="searchBtn" class="btn btn-primary w-100">Search</button>
+        </div>
+    </div>
+
+    <!-- Placeholder for Results -->
+
+    <h5>Search Results:</h5>
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs" id="reportTabs">
+        <li class="nav-item">
+            <a class="nav-link active" id="table-tab" data-bs-toggle="tab" href="#charts">Charts</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="chart-tab" data-bs-toggle="tab" href="#tables">Tables</a>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content mt-3">
+        <!-- Table View -->
+        <div class="tab-pane show active" id="charts">
+            <div class="row">
+                <!-- Bar Chart -->
+                <div class="col-md-6">
+                    <canvas id="barChartId"></canvas>
+                </div>
+                <!-- Pie Chart -->
+                <div class="col-md-6">
+                    <canvas id="pieChartId"></canvas>
+                </div>
+            </div>
+            @* <div id="resultsContent" class="mt-3"></div> <!-- Table will be populated here --> *@
+        </div>
+
+        <!-- Charts View -->
+        <div class="tab-pane " id="tables">
+            <div id="results" class="mt-5">
+
+                <pre id="resultsContent">No results yet.</pre>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<!-- Load jQuery, jQuery UI, and Bootstrap Select -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        console.log("Document Ready!");
+
+        // Initial setup
+        setupAutocomplete();
+        setupSearchForOptions();
+
+        // Show/Hide Custom Date Picker
+        $('#dateFilterType').change(function () {
+            if ($(this).val() === 'custom') {
+                $('.custom-date-range').removeClass('d-none');
+            } else {
+                $('.custom-date-range').addClass('d-none');
+            }
+        });
+
+
+        // Handle search type change
+        $('#searchType').change(function () {
+            console.log("Search Type Changed: " + $(this).val());
+            $('#searchValue').val('');
+            $('#dynamicDropdown').empty().append('<option value="">Please select</option>');
+            setupAutocomplete();
+            setupSearchForOptions();
+        });
+
+            function setupSearchForOptions() {
+            let searchType = $('#searchType').val();
+            let searchForDropdown = $('#searchFor');
+            searchForDropdown.empty();
+
+            if (searchType === 'student') {
+                searchForDropdown.append(new Option("Grades", "grades"));
+                searchForDropdown.append(new Option("Time Spent on Slides", "timeSpent"));
+                searchForDropdown.append(new Option("Number of Slides Viewed", "slidesViewed"));
+            } else if (searchType === 'course' || searchType === 'educator') {
+                searchForDropdown.append(new Option("Grades", "grades"));
+            } else if (searchType === 'school') {  // New condition for School
+                searchForDropdown.append(new Option("Grades", "grades"));
+            } else {
+                searchForDropdown.append(new Option("Please select", ""));
+            }
+        }
+
+
+        // Setup autocomplete based on search type
+        function setupAutocomplete() {
+        let searchType = $('#searchType').val();
+        let dynamicDropdownLabel = $("#dynamicDropdownLabel");
+        let dynamicDropdown = $('#dynamicDropdown');
+
+        // Enable the dropdown for schools as well
+        if (searchType === 'school' || searchType === 'student' || searchType === 'educator') {
+            $('#dynamicDropdown').prop('disabled', false);
+            dynamicDropdownLabel.text("Select Course");  // Show course selection
+            //loadCourses();  // Load courses for schools, students, and educators
+        } else if (searchType === 'course') {
+            dynamicDropdownLabel.text("Select Session");
+        } else {
+            $('#dynamicDropdown').prop('disabled', true).empty().append('<option value="">Please select</option>');
+        }
+
+        let url = "";
+        if (searchType === 'student') {
+            url = '/Report/Report/GetStudentList';
+        } else if (searchType === 'course') {
+            url = '/Report/Report/GetCourseList';
+        } else if (searchType === 'educator') {
+            url = '/Report/Report/GetEducatorList';
+        } else if (searchType === 'school') {
+            url = '/Report/Report/GetSchoolList';
+        }
+
+        $('#searchValue').autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    data: JSON.stringify({ keyword: request.term }),
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                label: item.name,
+                                value: item.id
+                            };
+                        }));
+                    }
+                });
+            },
+            select: function (event, ui) {
+                $('#searchValue').val(ui.item.label);
+                $('#selectedId').val(ui.item.value);
+
+                var name = $('#searchValue').val();
+                var url = "";
+                //loadCourses();
+                // Load courses for schools, students, and educators
+                if (searchType === 'student'){
+                    url = '/Report/Report/GetStudentCourses';
+                    fetchData(url, name);
+                } else if (searchType === 'educator') {
+                    url = '/Report/Report/GetEducatorCourses';
+                    fetchData(url, name);
+                } else {
+                    loadCourses();
+                }
+
+                return false;
+            }
+        });
+    }
+
+         $('#dynamicDropdown').on('change', function () {
+        let searchFor = $('#searchFor').val();
+        if (searchFor === 'timeSpent' || searchFor === 'slidesViewed') {
+            let courseId = $(this).val();
+            if (courseId) {
+                loadModules(courseId);
+            } else {
+                $('#moduleDropdownContainer').hide();
+            }
+        } else {
+            $('#moduleDropdownContainer').hide();
+        }
+         });
+
+        $('#searchFor').on('change', function() {
+        let searchFor = $(this).val();
+        if (searchFor === 'timeSpent' || searchFor === 'slidesViewed') {
+            let courseId = $('#dynamicDropdown').val();
+            if (courseId) {
+                loadModules(courseId);
+            } else {
+                // Optionally show the module container with a default message or leave it hidden.
+                $('#moduleDropdownContainer').hide();
+            }
+        } else {
+            $('#moduleDropdownContainer').hide();
+        }
+    });
+
+        function loadModules(courseId) {
+        $.ajax({
+            url: '/Report/Report/GetModulesByCourse', // Ensure the URL and property names match your API
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            data: JSON.stringify({ Id: courseId }), // Note: using "Id" to match your model
+            success: function (data) {
+                let moduleDropdown = $('#moduleDropdown');
+                moduleDropdown.empty();
+                moduleDropdown.append('<option value="">Please select</option>');
+                if (data && data.length > 0) {
+                    $.each(data, function (index, module) {
+                        moduleDropdown.append(new Option(module.moduleName, module.id));
+                    });
+                }
+                // Always show the dropdown container regardless of whether data was returned.
+                $('#moduleDropdownContainer').show();
+            },
+            error: function (xhr, status, error) {
+                console.error("Failed to load modules:", error);
+                $('#moduleDropdownContainer').hide();
+            }
+        });
+    }
+
+        function fetchData(url, data){
+            //var UserId=$("selectedId").val();
+            //var searchType = $('#searchType').val();
+            debugger;
+            $.ajax({
+                url: url, // Fetch courses
+                type: 'POST',
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                //data: JSON.stringify({ keyword: "", UserId:UserId, SearchType:searchType }), // Fetch all courses
+                data: JSON.stringify({ keyword: data}),
+                success: function (data) {
+                    $('#dynamicDropdown').empty().append('<option value="">Please select</option>');
+                    $.each(data, function (index, item) {
+                        $('#dynamicDropdown').append(new Option(item.name, item.id));
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.error("Failed to load courses:", error);
+                }
+            });
+        }
+
+        function loadCourses() {
+            //var UserId=$("selectedId").val();
+            //var searchType = $('#searchType').val();
+
+        $.ajax({
+            url: '/Report/Report/GetCourseList', // Fetch courses
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            //data: JSON.stringify({ keyword: "", UserId:UserId, SearchType:searchType }), // Fetch all courses
+            data: JSON.stringify({ keyword: ""}),
+            success: function (data) {
+                $('#dynamicDropdown').empty().append('<option value="">Please select</option>');
+                $.each(data, function (index, item) {
+                    $('#dynamicDropdown').append(new Option(item.name, item.id));
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error("Failed to load courses:", error);
+            }
+        });
+    }
+
+        // Load sessions based on selected type
+        function loadSessions(selectedId) {
+            let searchType = $('#searchType').val();
+            let url = searchType === 'student' ? '/Report/Report/GetSessionsByStudent' :
+                      searchType === 'course' ? '/Report/Report/GetSessionsByCourse' :
+                      '/Report/Report/GetSessionsByEducator';
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                data: JSON.stringify({ id: selectedId }),
+                success: function (data) {
+                    $('#dynamicDropdown').empty().append('<option value="">Please select</option>');
+                    $.each(data, function (index, item) {
+                        $('#dynamicDropdown').append(new Option(item.name, item.id));
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.error("Failed to load sessions:", error);
+                }
+            });
+        }
+
+        // Handle Search Button Click
+            // Handle Search Button Click
+    $('#searchBtn').off('click').on('click', function () {
+        console.log("Search Button Clicked");
+        let studentId = $('#selectedId').val();  
+        let courseId = $('#dynamicDropdown').val();  
+        let moduleId = $('#moduleDropdown').val();   
+        let selectedDropdownValue = $('#dynamicDropdown').val(); // This is the CourseID
+        let searchType = $('#searchType').val();
+        let searchFor = $('#searchFor').val();
+        let selectedId = $('#selectedId').val(); // This is the SchoolID, StudentID, or EducatorID
+        let dateFilter = $('#dateFilterType').val();
+        let startDate = $('#startDate').val();
+        let endDate = $('#endDate').val();
+
+        console.log(`SearchType: ${searchType}, SearchFor: ${searchFor}, SelectedID: ${selectedId}, SelectedCourseID: ${selectedDropdownValue}`);
+
+        if (!selectedId) {
+            $('#resultsContent').text('Please select a valid value from the dropdown.');
+            return;
+        }
+
+        if (searchType === 'student' && searchFor === 'grades' && selectedDropdownValue) {
+            fetchGrades(selectedId, selectedDropdownValue, dateFilter, startDate, endDate);
+        } else  if (searchFor === 'timeSpent' && courseId && moduleId) {
+        fetchSlideTimeSpent(studentId, courseId, moduleId, dateFilter, startDate, endDate);
+         }else if (searchType === 'educator' && searchFor === 'grades' && selectedDropdownValue) {
+            fetchEducatorCourseGrades(selectedId, selectedDropdownValue, dateFilter, startDate, endDate);
+        } else if (searchType === 'course' && searchFor === 'grades' && selectedDropdownValue) {
+            fetchCourseGrades(selectedDropdownValue, dateFilter, startDate, endDate);
+        } else if (searchType === 'school' && searchFor === 'grades' && selectedDropdownValue) {
+            fetchSchoolGrades(selectedId, selectedDropdownValue, dateFilter, startDate, endDate);
+        }else if (searchType === 'student' && searchFor === 'slidesViewed' && selectedDropdownValue && moduleId) {
+            // fetchSlidesViewedCount(selectedId, selectedDropdownValue, moduleId, dateFilter, startDate, endDate);
+            fetchSlidesViewedDetails(selectedId, selectedDropdownValue, moduleId, dateFilter, startDate, endDate);
+        } else {
+            $('#resultsContent').text('Please select a valid search option.');
+        }
+    });
+
+
+       function fetchSchoolGrades(schoolId, courseId, dateFilter, startDate, endDate) {
+        $.ajax({
+            url: '/Report/Report/GetSchoolGrades',
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            data: JSON.stringify({
+                Id: schoolId,
+                CourseID: courseId, // ✅ Pass Course ID to Backend
+                DateFilter: dateFilter,
+                StartDate: dateFilter === 'custom' ? startDate : null,
+                EndDate: dateFilter === 'custom' ? endDate : null
+            }),
+            success: function (data) {
+                let resultsContent = $('#resultsContent');
+                resultsContent.empty();
+
+                console.log("✅ School Grades received:", data);
+
+                if (data && data.courses && data.courses.length > 0) {
+                    let content = "";
+
+                    data.courses.forEach(function (course) {
+                        content += `<h4 class="mt-3">${course.courseTitle}</h4>`;
+                        content += `<table id= "schoolTable" class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Student Name</th>
+                                    <th>Quiz Title</th>
+                                    <th>Score</th>
+                                    <th>Full Marks</th>
+                                    <th>Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+
+                        course.students.forEach(function (student) {
+                            if (student.quizzes.length > 0) {
+                                student.quizzes.forEach(function (quiz, index) {
+                                    content += `<tr>
+                                        
+                                        <td>${student.studentName}</td>
+                                        <td>${quiz.quizTitle}</td>
+                                        <td>${quiz.score}</td>
+                                        <td>${quiz.fullMarks}</td>
+                                        <td>${(quiz.fullMarks > 0) ? ((quiz.score / quiz.fullMarks) * 100).toFixed(2) + "%" : "N/A"}</td>
+                                    </tr>`;
+                                });
+                            } else {
+                                content += `<tr>
+                                    <td>${student.studentName}</td>
+                                    <td colspan="4" class="text-center">No quizzes available</td>
+                                </tr>`;
+                            }
+                        });
+
+                        content += `</tbody></table>`;
+                    });
+
+                    resultsContent.html(content);
+
+                    new DataTable('#schoolTable', {
+                        rowReorder: true,
+                        paging: true
+                        // You can add other options here if needed (e.g., ordering, info, lengthChange, etc.)
+                    });
+
+                    let quizScores = {};
+                    let gradeCounts = { A: 0, B: 0, C: 0, D: 0, F: 0 };
+
+                    data.courses.forEach(course => {
+                        course.students.forEach(student => {
+                            student.quizzes.forEach(quiz => {
+                                if (!quizScores[quiz.quizTitle] || quizScores[quiz.quizTitle].date < quiz.quizDate) {
+                                    quizScores[quiz.quizTitle] = { total: 0, count: 0 };
+                                }
+                                quizScores[quiz.quizTitle].total += quiz.percentage;
+                                quizScores[quiz.quizTitle].count += 1;
+                            });
+
+                            let percentage = student.overallPercentage;
+                            if (percentage >= 90) gradeCounts.A++;
+                            else if (percentage >= 80) gradeCounts.B++;
+                            else if (percentage >= 70) gradeCounts.C++;
+                            else if (percentage >= 60) gradeCounts.D++;
+                            else gradeCounts.F++;
+                        });
+                    });
+
+                    let chartData = {
+                        searchType: "school",
+                        barChartData: {
+                            labels: Object.keys(quizScores),
+                            data: Object.values(quizScores).map(q => q.total / q.count)
+                        },
+                        pieChartData: {
+                            labels: ["A", "B", "C", "D", "F"],
+                            data: Object.values(gradeCounts)
+                        }
+                    };
+
+                    updateBarChart(chartData);
+                    updatePieChart(chartData);
+
+                } else {
+                    console.warn("⚠️ No grades found in response:", data);
+                    resultsContent.html("<div class='alert alert-warning'>No grades available for this school.</div>");
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("❌ Failed to fetch school grades:", error);
+                $('#resultsContent').html("<div class='alert alert-danger'>Failed to load grades. Please try again.</div>");
+            }
+        });
+    }
+
+            function fetchSlideTimeSpent(studentId, courseId, moduleId, dateFilter, startDate, endDate) {
+        $('#resultsContent').html("<div class='text-center'><span class='spinner-border'></span> Loading slide time...</div>");
+
+        $.ajax({
+            url: '/Report/Report/GetStudentSlideTime',
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            data: JSON.stringify({
+                StudentID: studentId,
+                CourseID: courseId,
+                ModuleID: parseInt(moduleId),
+                DateFilter: dateFilter,
+                StartDate: dateFilter === 'custom' ? startDate : null,
+                EndDate: dateFilter === 'custom' ? endDate : null
+            }),
+               success: function (data) {
+                const results = $('#resultsContent').empty();
+
+                if (!data.slides || data.slides.length === 0) {
+                    return results.html("<div class='alert alert-warning'>No slide time data available.</div>");
+                }
+
+                // Overall total
+                results.append(`<p><strong>Total Time Spent:</strong> ${data.totalTimeSpent} seconds</p>`);
+
+                // Build per‑slide table
+                let html = `<table class="table table-striped table-bordered mt-3">
+                    <thead><tr><th>Slide Title</th><th>Time Spent (seconds)</th></tr></thead><tbody>`;
+
+                data.slides.forEach(slide => {
+                    html += `<tr>
+                                <td>${slide.slideTitle}</td>
+                                <td>${slide.timeSpent}</td>
+                             </tr>`;
+                });
+
+                html += `</tbody></table>`;
+                results.append(html);
+            },
+            error: function (xhr, status, error) {
+                console.error("❌ Failed to fetch slide time:", error);
+                $('#resultsContent').html("<div class='alert alert-danger'>Failed to load slide time data.</div>");
+            }
+        });
+    }
+
+         function fetchSlidesViewedDetails(studentId, courseId, moduleId, dateFilter, startDate, endDate) {
+        $('#resultsContent').html("<div class='text-center'><span class='spinner-border'></span> Loading slide details...</div>");
+
+        $.ajax({
+            url: '/Report/Report/GetStudentSlidesViewedDetails',
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            data: JSON.stringify({
+                StudentID: studentId,
+                CourseID: courseId,
+                ModuleID: parseInt(moduleId),
+                DateFilter: dateFilter,
+                StartDate: dateFilter === 'custom' ? startDate : null,
+                EndDate: dateFilter === 'custom' ? endDate : null
+            }),
+               success: function(data) {
+                const results = $('#resultsContent').empty();
+
+                // Ensure the data exists and has at least one viewed slide
+                if (!data.viewedSlides || data.viewedSlides.length === 0) {
+                    return results.html("<div class='alert alert-warning'>No slides viewed in this module.</div>");
+                }
+
+                // Summary
+                results.append(`<p><strong>Total Slides in Module:</strong> ${data.totalSlidesInModule}</p>`);
+                results.append(`<p><strong>Slides Viewed:</strong> ${data.slidesViewedCount}</p>`);
+                results.append(`<p><strong>Progress:</strong> ${data.percentageViewed}%</p>`);
+
+                // Last viewed slide
+                if (data.lastViewedSlide) {
+                    results.append(`<p><strong>Last Viewed Slide:</strong> ${data.lastViewedSlide.slideTitle} on ${new Date(data.lastViewedSlide.lastViewed).toLocaleString()}</p>`);
+                }
+
+                // Per-slide breakdown
+                let html = `<table class="table table-striped mt-3">
+                    <thead><tr><th>Slide Title</th><th>Time Spent (sec)</th><th>Last Viewed</th></tr></thead><tbody>`;
+
+                data.viewedSlides.forEach(slide => {
+                    html += `<tr>
+                        <td>${slide.slideTitle}</td>
+                        <td>${slide.timeSpent}</td>
+                        <td>${new Date(slide.lastViewed).toLocaleString()}</td>
+                    </tr>`;
+                });
+
+                html += `</tbody></table>`;
+                results.append(html);
+            },
+            error: function(xhr, status, error) {
+                console.error("❌ Failed to fetch slide details:", error);
+                $('#resultsContent').html("<div class='alert alert-danger'>Failed to load slide details.</div>");
+            }
+        });
+    }
+
+
+    //    function fetchSlidesViewedCount(studentId, courseId, moduleId, dateFilter, startDate, endDate) {
+    //     $('#resultsContent').html("<div class='text-center'><span class='spinner-border'></span> Loading slide count...</div>");
+
+    //     $.ajax({
+    //         url: '/Report/Report/GetStudentSlidesViewedCount',
+    //         type: 'POST',
+    //         contentType: 'application/json; charset=utf-8',
+    //         dataType: 'json',
+    //         data: JSON.stringify({
+    //             StudentID: studentId,
+    //             CourseID: courseId,
+    //             ModuleID: parseInt(moduleId),
+    //             DateFilter: dateFilter,
+    //             StartDate: dateFilter === 'custom' ? startDate : null,
+    //             EndDate: dateFilter === 'custom' ? endDate : null
+    //         }),
+    //         success: function(data) {
+    //             $('#resultsContent').html(`<p><strong>Slides Viewed:</strong> ${data.SlidesViewedCount}</p>`);
+    //         },
+    //         error: function(xhr, status, error) {
+    //             console.error("❌ Failed to fetch slide‑view count:", error);
+    //             $('#resultsContent').html("<div class='alert alert-danger'>Failed to load slide count.</div>");
+    //         }
+    //     });
+    // }
+
+
+
+          function fetchEducatorCourseGrades(educatorId, courseId, dateFilter, startDate, endDate) {
+        $('#resultsContent').html("<div class='text-center'><span class='spinner-border'></span> Loading grades...</div>");
+
+        $.ajax({
+            url: '/Report/Report/GetEducatorCourseGrades',
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            data: JSON.stringify({
+                EducatorID: educatorId,
+                CourseID: courseId,
+                DateFilter: dateFilter,
+                StartDate: dateFilter === 'custom' ? startDate : null,
+                EndDate: dateFilter === 'custom' ? endDate : null
+            }),
+            success: function (data) {
+                let resultsContent = $('#resultsContent');
+                resultsContent.empty();
+
+                if (!data.students || data.students.length === 0) {
+                    resultsContent.html("<div class='alert alert-warning'>No grades available for this course.</div>");
+                    return;
+                }
+
+                // 🔹 Course Summary
+                let totalStudents = data.students.length;
+                let totalScore = data.students.reduce((sum, student) => sum + student.totalScore, 0);
+                let totalObtained = data.students.reduce((sum, student) => sum + student.obtainedScore, 0);
+                let avgPercentage = totalScore > 0 ? ((totalObtained / totalScore) * 100).toFixed(2) : "N/A";
+
+                let summaryTable = `<table class="table table-striped table-bordered mt-3">
+                    <thead>
+                        <tr><th colspan="2" class="text-center bg-primary text-white">Course Summary</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>Course Title</strong></td><td>${data.courseTitle}</td></tr>
+                        <tr><td><strong>Total Students</strong></td><td>${totalStudents}</td></tr>
+                        <tr><td><strong>Overall Class Performance</strong></td><td>${avgPercentage}%</td></tr>
+                    </tbody>
+                </table>`;
+
+                // 🔹 Student Performance Table (Grouped by Student)
+                let studentTable = `<table id="studentTable" class="table table-bordered mt-4">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Total Score</th>
+                            <th>Percentage</th>
+                            <th>Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+                data.students.forEach((student) => {
+                    let studentPerformance = student.percentage > 0 ? (student.percentage).toFixed(2) : "N/A";
+                    studentTable += `<tr>
+                        <td>${student.studentName}</td>
+                        <td>${student.obtainedScore} / ${student.totalScore}</td>
+                        <td>${studentPerformance}%</td>
+                        <td><span class="badge ${student.grade === 'F' ? 'bg-danger' : 'bg-success'}">${student.grade}</span></td>
+                    </tr>`;
+                });
+
+                studentTable += `</tbody></table>`;
+
+                resultsContent.html(summaryTable + studentTable);
+
+                new DataTable('#studentTable', {
+                        rowReorder: true,
+                        paging: true
+                        // You can add other options here if needed (e.g., ordering, info, lengthChange, etc.)
+                    });
+
+                let quizScores = {};
+                let gradeCounts = { A: 0, B: 0, C: 0, D: 0, F: 0 };
+
+                data.students.forEach(student => {
+                    student.quizzes.forEach(quiz => {
+                        if (!quizScores[quiz.quizTitle] || quizScores[quiz.quizTitle].date < quiz.date) {
+                            quizScores[quiz.quizTitle] = { total: 0, count: 0 };
+                        }
+                        quizScores[quiz.quizTitle].total += (quiz.obtainedScore / quiz.totalScore) * 100;
+                        quizScores[quiz.quizTitle].count += 1;
+                    });
+
+                    let percentage = student.percentage;
+                    if (percentage >= 90) gradeCounts.A++;
+                    else if (percentage >= 80) gradeCounts.B++;
+                    else if (percentage >= 70) gradeCounts.C++;
+                    else if (percentage >= 60) gradeCounts.D++;
+                    else gradeCounts.F++;
+                });
+
+                let chartData = {
+                    searchType: "educator",
+                    barChartData: {
+                        labels: Object.keys(quizScores),
+                        data: Object.values(quizScores).map(q => q.total / q.count)
+                    },
+                    pieChartData: {
+                        labels: ["A", "B", "C", "D", "F"],
+                        data: Object.values(gradeCounts)
+                    }
+                };
+
+                updateBarChart(chartData);
+                updatePieChart(chartData);
+
+            },
+            error: function (xhr, status, error) {
+                console.error("❌ Failed to fetch educator's course grades:", error);
+                $('#resultsContent').html("<div class='alert alert-danger'>Failed to load grades. Please try again.</div>");
+            }
+        });
+    }
+
+        // Fetch Grades Function
+    function fetchGrades(studentId, courseId, dateFilter, startDate, endDate) {
+        $.ajax({
+            url: '/Report/Report/GetStudentGrades',
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            data: JSON.stringify({
+                CourseID: courseId,
+                Keyword: studentId,
+                DateFilter: dateFilter,
+                StartDate: dateFilter === 'custom' ? startDate : null,
+                EndDate: dateFilter === 'custom' ? endDate : null
+            }),
+            success: function (data) {
+                let resultsContent = $('#resultsContent');
+                resultsContent.empty();
+
+                console.log("Grades received:", data);
+                console.log("QuizResults:", data.quizResults);
+
+                if (data && data.quizResults && data.quizResults.length > 0) {
+                    // 🔹 Summary Table (Placed at the Top)
+                    let summaryTable = `<table class="table table-striped table-bordered mt-3">
+                        <thead>
+                            <tr><th colspan="2" class="text-center bg-primary text-white">Student Performance Summary</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Total Percentage</strong></td><td>${data.totalPercentage.toFixed(2)}%</td></tr>
+                            <tr><td><strong>Average Score Per Quiz</strong></td><td>${data.averageScorePerQuiz.toFixed(2)}</td></tr>
+                            <tr><td><strong>Total Quizzes Attempted</strong></td><td>${data.totalQuizzesAttempted}</td></tr>
+                            <tr><td><strong>Pass Status</strong></td>
+                                <td><span class="badge ${data.passStatus === 'Passed' ? 'bg-success' : 'bg-danger'}">${data.passStatus}</span></td>
+                            </tr>
+                        </tbody>
+                    </table>`;
+
+                    // 🔹 Grades Table
+                    let gradeTable = `<table class="table table-bordered mt-4">
+                        <thead>
+                            <tr>
+                                <th>Quiz Title</th>
+                                <th>Score</th>
+                                <th>Full Marks</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                    data.quizResults.forEach(function (quiz) {
+                        gradeTable += `<tr>
+                            <td>${quiz.quizTitle}</td>
+                            <td>${quiz.score}</td>
+                            <td>${quiz.fullMarks}</td>
+                            <td>${new Date(quiz.date).toLocaleDateString()}</td>
+                        </tr>`;
+                    });
+
+                    // gradeTable += `<tr class="font-weight-bold">
+                    //     <td>Total</td>
+                    //     <td>${data.totalScore}</td>
+                    //     <td>${data.totalFullMarks}</td>
+                    //     <td></td>
+                    // </tr>`;
+
+                    gradeTable += "</tbody></table>";
+
+                    // 🔹 Append Summary and Grades Table
+                    resultsContent.html(summaryTable + gradeTable);
+
+                    let latestScores = {};
+                    //debugger;
+                    data.quizResults.forEach(quiz => {
+                        //console.log("🔹 Processing Quiz:", quiz); //debugging
+
+                            if (!latestScores[quiz.quizTitle]) {
+                                // No entry yet, so set this quiz as the latest
+                                latestScores[quiz.quizTitle] = quiz;
+                            } else {
+                                // Compare dates only if we already have an entry
+                                let existingDate = new Date(latestScores[quiz.quizTitle].date);
+                                let currentDate = new Date(quiz.date);
+
+                                if (currentDate > existingDate) {
+                                    latestScores[quiz.quizTitle] = quiz;
+                                }
+                            }
+                    });
+
+                    let chartData = {
+                        searchType: "student",
+                        barChartData: {
+                            labels: Object.keys(latestScores),
+                            data: Object.values(latestScores).map(q => (q.score / q.fullMarks) * 100)
+                        }
+                    };
+
+                    updateBarChart(chartData);
+
+                } else {
+                    resultsContent.html("<div class='alert alert-warning'>No grades available for this selection.</div>");
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Failed to fetch grades:", error);
+                resultsContent.html("<div class='alert alert-danger'>Failed to load grades. Please try again.</div>");
+            }
+        });
+    }
+
+    //        $(document).ready(function () {
+    //     fetchCourseGrades(sessionId, dateFilter, startDate, endDate);
+
+    //     // ✅ Use event delegation for dynamically generated buttons
+    //     $(document).on('click', '.view-details-btn', function () {
+    //         let index = $(this).data('index'); // Get the student index
+    //         toggleDetails(index);
+    //     });
+    // });
+
+    function fetchCourseGrades(sessionId, dateFilter, startDate, endDate) {
+        $('#resultsContent').html("<div class='text-center'><span class='spinner-border'></span> Loading grades...</div>");
+
+        $.ajax({
+            url: '/Report/Report/GetCourseGrades',
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            data: JSON.stringify({
+                Id: sessionId,
+                DateFilter: dateFilter,
+                StartDate: dateFilter === 'custom' ? startDate : null,
+                EndDate: dateFilter === 'custom' ? endDate : null
+            }),
+            success: function (data) {
+                let resultsContent = $('#resultsContent');
+                resultsContent.empty();
+
+                if (!data.students || data.students.length === 0) {
+                    resultsContent.html("<div class='alert alert-warning'>No grades available for this session.</div>");
+                    return;
+                }
+
+                // 🔹 Course Summary
+                let totalStudents = data.students.length;
+                let totalScore = data.students.reduce((sum, student) => sum + student.totalScore, 0);
+                let totalObtained = data.students.reduce((sum, student) => sum + student.obtainedScore, 0);
+                let avgPercentage = totalScore > 0 ? ((totalObtained / totalScore) * 100).toFixed(2) : 0;
+
+                let summaryTable = `<table class="table table-striped table-bordered mt-3">
+                    <thead>
+                        <tr><th colspan="2" class="text-center bg-primary text-white">Course Summary</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>Course Title</strong></td><td>${data.courseTitle}</td></tr>
+                        <tr><td><strong>Session Title</strong></td><td>${data.sessionTitle}</td></tr>
+                        <tr><td><strong>Total Students</strong></td><td>${totalStudents}</td></tr>
+                        <tr><td><strong>Overall Class Performance</strong></td><td>${avgPercentage}%</td></tr>
+                    </tbody>
+                </table>`;
+
+                // 🔹 Student Performance Table
+                let studentTable = `<table class="table table-bordered mt-4">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Total Score</th>
+                            <th>Percentage</th>
+                            <th>Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+                data.students.forEach((student) => {
+                    let studentPerformance = (student.percentage).toFixed(2);
+                    studentTable += `<tr>
+                        <td>${student.studentName}</td>
+                        <td>${student.obtainedScore} / ${student.totalScore}</td>
+                        <td>${studentPerformance}%</td>
+                        <td><span class="badge ${student.grade === 'F' ? 'bg-danger' : 'bg-success'}">${student.grade}</span></td>
+                    </tr>`;
+                });
+
+                studentTable += `</tbody></table>`;
+
+                resultsContent.html(summaryTable + studentTable);
+            },
+            error: function (xhr, status, error) {
+                console.error("Failed to fetch grades:", error);
+                $('#resultsContent').html("<div class='alert alert-danger'>Failed to load grades. Please try again later.</div>");
+            }
+        });
+    }
+
+
+        function updateBarChart(chartData) {
+            console.log("📊 updateBarChart called with:", chartData);
+
+            // 1️⃣ Check if barChartData is present
+            if (!chartData.barChartData || !chartData.barChartData.labels || !chartData.barChartData.data) {
+                console.warn("⚠️ Missing bar chart data; cannot render chart.");
+                return;
+            }
+
+            // 2️⃣ Destroy any existing bar chart
+            if (window.barChartInstance) {
+                window.barChartInstance.destroy();
+            }
+
+            // 3️⃣ Get Canvas Context
+            let ctx = document.getElementById('barChartId').getContext('2d');
+
+            // 4️⃣ Choose a label depending on search type
+            let barLabel = (chartData.searchType === 'student')
+                ? "Latest Quiz Score (%)"
+                : "Class Average (%)";
+
+            // 5️⃣ Create Bar Chart
+            window.barChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartData.barChartData.labels,
+                    datasets: [{
+                        label: barLabel,
+                        data: chartData.barChartData.data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100, // because these are percentages
+                            title: {
+                                display: true,
+                                text: 'Percentage (%)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Quiz Titles'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+
+            function updatePieChart(chartData) {
+                console.log("📊 updatePieChart called with:", chartData);
+
+                // 1️⃣ If there's no pieChartData (or it's a student search), skip
+                if (!chartData.pieChartData) {
+                    console.warn("⚠️ No pie chart data; skipping pie chart.");
+                    return;
+                }
+
+                // 2️⃣ Destroy any existing pie chart
+                if (window.pieChartInstance) {
+                    window.pieChartInstance.destroy();
+                }
+
+                // 3️⃣ Get Canvas Context
+                let ctx = document.getElementById('pieChartId').getContext('2d');
+
+                // 4️⃣ Create Pie Chart
+                window.pieChartInstance = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: chartData.pieChartData.labels, // e.g. ["A", "B", "C", "D", "F"]
+                        datasets: [{
+                            data: chartData.pieChartData.data,   // e.g. [5, 10, 12, 3, 2]
+                            backgroundColor: [
+                                'rgba(75, 192, 192, 0.6)',  // A - teal
+                                'rgba(54, 162, 235, 0.6)',  // B - blue
+                                'rgba(255, 206, 86, 0.6)',  // C - yellow
+                                'rgba(255, 159, 64, 0.6)',  // D - orange
+                                'rgba(255, 99, 132, 0.6)'   // F - red
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Grade Distribution'
+                            }
+                        }
+                    }
+                });
+            }
+
+
+
+    });
+</script>

@@ -1,0 +1,52 @@
+﻿@model GraceProject.ViewModels.TeacherGradebookViewModel
+
+<div class="container">
+    <h2 class="text-center">Gradebook for @Model.CourseTitle - @Model.SessionTitle</h2>
+    <table class="table table-bordered table-hover mt-4">
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                @if (Model.Students.Any() && Model.Students.First().Quizzes.Any())
+                {
+                    @foreach (var quiz in Model.Students.First().Quizzes)
+                    {
+                        <th>@quiz.QuizTitle</th>
+                    }
+                }
+                <th>Total Score</th>
+                <th>Obtained Score</th>
+                <th>Percentage</th>
+                <th>Grade</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var student in Model.Students)
+            {
+                <tr>
+                    <td>@student.StudentName</td>
+                    @foreach (var quiz in student.Quizzes)
+                    {
+                        <td>
+                            @if (quiz.IsAttempted)
+                            {
+                                @($"{quiz.ObtainedScore}/{quiz.TotalScore}")
+                            }
+                            else if (quiz.IsPastDue)
+                            {
+                                @($"0/{quiz.TotalScore}")
+                            }
+                            else
+                            {
+                                <span class="text-muted">- / @quiz.TotalScore</span>
+                            }
+                        </td>
+                    }
+                    <td>@student.TotalScore</td>
+                    <td>@student.ObtainedScore</td>
+                    <td>@($"{student.Percentage:F2}%")</td>
+                    <td>@student.Grade</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
